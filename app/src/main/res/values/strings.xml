@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">Fluently</string>
+    <string name="loading">Loading...</string>
+    <string name="back_day">День</string>
+    <string name="today_day">Сегодня</string>
+    <string name="forward_day">День</string>
+    <string name="new_interview">Новый собес</string>
+    <string name="ok">Ок</string>
+    <string name="cancel">Отмена</string>
+    <string name="interviews">Собесы</string>
+    <string name="interview_company_name">Название компании</string>
+    <string name="save">Сохранить</string>
+    <string name="title_must_not_be_less_three_symbols">Название не должно быть меньше 3-х символов</string>
+    <string name="start_time">Время начала собеса:</string>
+    <string name="date">Дата:</string>
+    <string name="time">Время:</string>
+    <string name="end_time">Время завершения собеса:</string>
+    <string name="reschedule">Перенести</string>
+    <string name="already_scheduled_events">Уже есть запланированные собесы на время: %1$s</string>
+    <string name="try_folowing_ranges">Попробуйте следующие диапазоны: </string>
+    <string name="remove_event">Удалить собес</string>
+    <string name="show_event">Посмотреть в календаре</string>    <string name="calendar_permission_denied">Вы запретили доступ к календарю(</string>
+    <string name="request_access_again">Запросить снова</string>
+    <string name="hour_suffix">%1$s ч.</string>
+    <string name="theme_settings">Настройка темы</string>
+    <string name="dynamic">Динамический</string>
+    <string name="light">Лёгкий</string>
+    <string name="medium">Средний</string>
+    <string name="high">Высокий</string>
+    <string name="choose_contrast">Выберите контраст:</string>
+    <string name="today_not_interviews">Сегодня у вас нет собесов, можёте купить себе шампанское)</string>
+    <string name="turn_alarm_or_not">Включить будильник</string>
+</resources>
