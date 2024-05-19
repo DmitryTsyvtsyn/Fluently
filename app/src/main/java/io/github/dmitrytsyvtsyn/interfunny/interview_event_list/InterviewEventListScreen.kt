@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -48,6 +49,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -184,7 +186,8 @@ fun InterviewEventListScreen() {
                         onView = { eventId ->
                             val uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId)
                             context.startActivity(Intent(Intent.ACTION_VIEW).setData(uri))
-                        }
+                        },
+                        onNextDay = viewModel::forwardDay
                     )
                 }
             }
@@ -229,7 +232,8 @@ private fun InterviewEventList(
     events: PersistentList<InterviewEventListItemState>,
     onClick: (id: Long) -> Unit,
     onRemove: (id: Long, eventId: Long, reminderId: Long) -> Unit,
-    onView: (eventId: Long) -> Unit
+    onView: (eventId: Long) -> Unit,
+    onNextDay: () -> Unit
 ) {
     val listState = rememberLazyListState()
 
@@ -242,7 +246,13 @@ private fun InterviewEventList(
         items(events.size) { index ->
             when (val listItemState = events[index]) {
                 is InterviewEventListItemState.Content -> {
-                    InterviewContentListItem(listItemState.model, onClick, onRemove, onView)
+                    InterviewContentListItem(
+                        model = listItemState.model,
+                        onClick = onClick,
+                        onRemove = onRemove,
+                        onView = onView,
+                        onNextDay = onNextDay
+                    )
                 }
                 is InterviewEventListItemState.Title -> {
                     Text(
@@ -265,7 +275,8 @@ private fun InterviewContentListItem(
     model: InterviewEventModel,
     onClick: (id: Long) -> Unit,
     onRemove: (id: Long, eventId: Long, reminderId: Long) -> Unit,
-    onView: (eventId: Long) -> Unit
+    onView: (eventId: Long) -> Unit,
+    onNextDay: () -> Unit
 ) {
     val dropdownExpanded = remember { mutableStateOf(false) }
 
@@ -293,14 +304,23 @@ private fun InterviewContentListItem(
         Column {
             Text(
                 text = model.title,
-                fontSize = 17.sp
+                fontSize = 19.sp
             )
             Spacer(modifier = Modifier.size(8.dp))
             Text(
                 text = "${CalendarRepository.formatHoursMinutes(model.startDate)} - ${CalendarRepository.formatHoursMinutes(model.endDate)}",
-                fontSize = 23.sp,
+                fontSize = 26.sp,
+                textDecoration = if (model.status != InterviewEventStatus.ACTUAL) TextDecoration.LineThrough else null,
                 fontWeight = FontWeight.Medium
             )
+//            Box {
+//
+//                Text(
+//                    text = stringResource(id = R.string.tomorrow),
+//                    text = stringResource(id = R.string.yesterday)
+//                    fontSize = 14.sp
+//                )
+//            }
 
             if (dropdownExpanded.value) {
                 DropdownMenu(
@@ -324,17 +344,37 @@ private fun InterviewContentListItem(
                 }
             }
         }
-        Text(
-            text = formatFloatingHours(hours = (model.endDate - model.startDate) / 3_600_000f),
-            color = MaterialTheme.colorScheme.onPrimary,
-            fontSize = 14.sp,
-            modifier = Modifier
-                .background(
-                    color = MaterialTheme.colorScheme.primary,
-                    shape = RoundedCornerShape(12.dp)
+        Row(modifier = Modifier.align(Alignment.TopEnd), verticalAlignment = Alignment.CenterVertically) {
+            if (model.reminderId >= 0) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_notification),
+                    contentDescription = ""
                 )
-                .padding(horizontal = 8.dp, vertical = 2.dp)
-                .align(Alignment.TopEnd),
-        )
+                Spacer(modifier = Modifier.size(4.dp))
+            }
+
+            Text(
+                text = formatFloatingHours(hours = (model.endDate - model.startDate) / 3_600_000f),
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = 14.sp,
+                modifier = Modifier
+                    .background(
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .padding(horizontal = 8.dp, vertical = 2.dp),
+            )
+        }
+//        if (CalendarRepository.time(model.endDate) < CalendarRepository.time(model.startDate)) {
+//            IconButton(
+//                modifier = Modifier.align(Alignment.BottomEnd),
+//                onClick = { onNextDay.invoke() }
+//            ) {
+//                Icon(
+//                    painterResource(id = R.drawable.ic_forward),
+//                    contentDescription = ""
+//                )
+//            }
+//        }
     }
 }

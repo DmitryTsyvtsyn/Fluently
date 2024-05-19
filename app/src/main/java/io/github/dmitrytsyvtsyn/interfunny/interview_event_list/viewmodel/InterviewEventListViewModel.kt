@@ -104,7 +104,7 @@ class InterviewEventListViewModel : ViewModel() {
     private fun PersistentList<InterviewEventModel>.filteredAndSorted(dateRange: LongRange): PersistentList<InterviewEventListItemState> {
         var current = dateRange.first
         val listStates = mutableListOf<InterviewEventListItemState>()
-        val models = filter { it.startDate in dateRange }.sortedBy { it.startDate }
+        val models = filter { it.startDate in dateRange || it.endDate in dateRange }.sortedBy { it.startDate }
         val lastIndex = models.size - 1
         val minimumTimelineInterval = CalendarRepository.minutesInMillis(15)
         models.forEachIndexed { index, model ->
@@ -149,7 +149,6 @@ class InterviewEventListViewModel : ViewModel() {
 
     companion object {
         private const val DAY = 24 * 3600 * 1000
-        private const val MINUTE = 60 * 1000
         private val calendar = Calendar.getInstance()
     }
 

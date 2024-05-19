@@ -12,14 +12,16 @@ data class InterviewEventDetailState(
     val endDate: Long,
     val titleError: Boolean = false,
     val timeError: Boolean = false,
-    val alreadyScheduledState: InterviewEventScheduledState = InterviewEventScheduledState.Empty,
+    val busyState: InterviewEventBusyState = InterviewEventBusyState.NotBusy,
     val hasReminder: Boolean = false,
 )
 
-sealed interface InterviewEventScheduledState {
-    data class Content(
+sealed interface InterviewEventBusyState {
+    data class BusyWithSuggestions(
+        val startDate: Long,
+        val endDate: Long,
         val scheduledStates: PersistentList<InterviewEventModel>,
-        val freeRanges: PersistentList<LongRange>
-    ) : InterviewEventScheduledState
-    data object Empty : InterviewEventScheduledState
+        val suggestionRanges: PersistentList<LongRange>
+    ) : InterviewEventBusyState
+    data object NotBusy : InterviewEventBusyState
 }

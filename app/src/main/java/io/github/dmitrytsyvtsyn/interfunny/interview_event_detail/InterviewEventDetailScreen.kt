@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -60,7 +62,7 @@ import io.github.dmitrytsyvtsyn.interfunny.R
 import io.github.dmitrytsyvtsyn.interfunny.core.navigation.LocalNavController
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.viewmodel.InterviewEventDetailViewModel
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.viewmodel.actions.InterviewEventDetailAction
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.viewmodel.states.InterviewEventScheduledState
+import io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.viewmodel.states.InterviewEventBusyState
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.CalendarRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -118,10 +120,10 @@ fun InterviewEventDetailScreen(id: Long = -1) {
                 )
             }
             is InterviewEventDetailAction.TimePicker -> {
-                InterviewTimeDialog(
+                InterviewTimePicker(
                     dismiss = viewModel::resetAction,
-                    ok = { startHours, startMinutes, endHours, endMinutes ->
-                        viewModel.timeChanged(startHours, startMinutes, endHours, endMinutes)
+                    ok = { startHours, startMinutes, endHours, endMinutes, nextDay ->
+                        viewModel.timeChanged(startHours, startMinutes, endHours, endMinutes, nextDay)
                         viewModel.resetAction()
                     },
                     startHours = actionStateValue.startHours,
@@ -139,143 +141,173 @@ fun InterviewEventDetailScreen(id: Long = -1) {
                     .fillMaxWidth()
                     .padding(16.dp),
             ) {
-                TextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusable(true),
-                    shape = RoundedCornerShape(16.dp),
-                    textStyle = LocalTextStyle.current.copy(
-                        fontSize = 21.sp,
-                    ),
-                    placeholder = {
-                        Text(stringResource(id = R.string.interview_company_name))
-                    },
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
-                    ),
-                    singleLine = true,
-                    isError = state.titleError,
-                    value = state.title,
-                    onValueChange = { title ->
-                        viewModel.titleChanged(title)
-                    })
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    TextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusable(true),
+                        shape = RoundedCornerShape(16.dp),
+                        textStyle = LocalTextStyle.current.copy(
+                            fontSize = 21.sp,
+                        ),
+                        placeholder = {
+                            Text(stringResource(id = R.string.interview_company_name))
+                        },
+                        colors = TextFieldDefaults.colors(
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent
+                        ),
+                        singleLine = true,
+                        isError = state.titleError,
+                        value = state.title,
+                        onValueChange = { title ->
+                            viewModel.titleChanged(title)
+                        })
 
-                if (state.titleError) {
-                    Spacer(modifier = Modifier.size(8.dp))
-                    Text(
-                        text = stringResource(id = R.string.title_must_not_be_less_three_symbols),
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-
-                Spacer(modifier = Modifier.size(24.dp))
-
-                Text(
-                    text = stringResource(id = R.string.date),
-                    fontSize = 18.sp
-                )
-
-                Spacer(modifier = Modifier.size(8.dp))
-
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = rememberRipple(bounded = true),
-                        ) {
-                            viewModel.navigateToDatePicker()
-                        }
-                        .padding(8.dp)
-
-                ) {
-                    Text(
-                        text = CalendarRepository.formatDateMonthYear(state.startDate),
-                        fontSize = 26.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-
-                Spacer(modifier = Modifier.size(16.dp))
-
-                Text(
-                    text = stringResource(id = R.string.time),
-                    fontSize = 18.sp
-                )
-
-                Spacer(modifier = Modifier.size(8.dp))
-
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = rememberRipple(bounded = true),
-                        ) {
-                            viewModel.navigateToTimePicker()
-                        }
-                        .padding(8.dp)
-
-                ) {
-                    Text(
-                        text = "${CalendarRepository.formatHoursMinutes(state.startDate)} - ${CalendarRepository.formatHoursMinutes(state.endDate)}",
-                        fontSize = 31.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-
-                when (val scheduledState = state.alreadyScheduledState) {
-                    is InterviewEventScheduledState.Empty -> {}
-                    is InterviewEventScheduledState.Content -> {
-                        Spacer(Modifier.size(8.dp))
+                    if (state.titleError) {
+                        Spacer(modifier = Modifier.size(8.dp))
                         Text(
-                            text = stringResource(id = R.string.already_scheduled_events, "${CalendarRepository.formatHoursMinutes(state.startDate)} - ${CalendarRepository.formatHoursMinutes(state.endDate)}"),
-                            color = MaterialTheme.colorScheme.error,
-                            fontSize = 18.sp,
+                            text = stringResource(id = R.string.title_must_not_be_less_three_symbols),
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.size(24.dp))
+
+                    Text(
+                        text = stringResource(id = R.string.date),
+                        fontSize = 18.sp
+                    )
+
+                    Spacer(modifier = Modifier.size(8.dp))
+
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(16.dp))
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = rememberRipple(bounded = true),
+                            ) {
+                                viewModel.navigateToDatePicker()
+                            }
+                            .padding(8.dp)
+
+                    ) {
+                        Text(
+                            text = CalendarRepository.formatDateMonthYear(state.startDate),
+                            fontSize = 26.sp,
                             fontWeight = FontWeight.Medium
                         )
+                    }
 
-                        Spacer(Modifier.size(8.dp))
+                    Spacer(modifier = Modifier.size(16.dp))
 
-                        val annotatedString = buildAnnotatedString {
-                            append(stringResource(id = R.string.try_folowing_ranges))
+                    Text(
+                        text = stringResource(id = R.string.time),
+                        fontSize = 18.sp
+                    )
 
-                            scheduledState.freeRanges.forEach {
-                                pushStringAnnotation("range", "${it.first}/${it.last}")
+                    Spacer(modifier = Modifier.size(8.dp))
 
-                                withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                                    append("${CalendarRepository.formatHoursMinutes(it.first)} - ${CalendarRepository.formatHoursMinutes(it.last)} ")
-                                }
-
-                                pop()
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(16.dp))
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = rememberRipple(bounded = true),
+                            ) {
+                                viewModel.navigateToTimePicker()
                             }
-                        }
+                            .padding(8.dp)
 
-                        ClickableText(
-                            text = annotatedString,
-                            style = LocalTextStyle.current.copy(
+                    ) {
+                        Text(
+                            text = "${CalendarRepository.formatHoursMinutes(state.startDate)} - ${CalendarRepository.formatHoursMinutes(state.endDate)}",
+                            fontSize = 31.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+
+                    when (val busyState = state.busyState) {
+                        is InterviewEventBusyState.NotBusy -> {}
+                        is InterviewEventBusyState.BusyWithSuggestions -> {
+                            Spacer(Modifier.size(8.dp))
+                            Text(
+                                text = stringResource(id = R.string.already_scheduled_events),
+                                //text = stringResource(id = R.string.already_scheduled_events, "${CalendarRepository.formatHoursMinutes(busyState.startDate)} - ${CalendarRepository.formatHoursMinutes(busyState.endDate)}"),
+                                color = MaterialTheme.colorScheme.error,
                                 fontSize = 18.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onBackground
-                            ),
-                        ) { offset ->
-                            annotatedString.getStringAnnotations(tag = "range", start = offset, end = offset).firstOrNull()?.let {
-                                val some = it.item.split("/")
-                                val startDate = CalendarRepository.formatHoursMinutes(some.first().toLong())
-                                val endDate = CalendarRepository.formatHoursMinutes(some.last().toLong())
+                                fontWeight = FontWeight.Medium
+                            )
 
-                                val startHoursAndMinutes = startDate.split(":")
-                                val endHoursAndMinutes = endDate.split(":")
+                            Spacer(Modifier.size(8.dp))
 
-                                viewModel.timeChanged(
-                                    startHoursAndMinutes.first().toInt(),
-                                    startHoursAndMinutes.last().toInt(),
-                                    endHoursAndMinutes.first().toInt(),
-                                    endHoursAndMinutes.last().toInt()
-                                )
+                            val annotatedString = buildAnnotatedString {
+                                append(stringResource(id = R.string.try_folowing_ranges))
+                                append(" ")
+
+                                val suggestionRanges = busyState.suggestionRanges
+                                suggestionRanges.forEachIndexed { index, range ->
+                                    pushStringAnnotation("range", "${range.first}/${range.last}")
+
+                                    withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+                                        val trailingSymbol = if (index != suggestionRanges.lastIndex) "\n" else ""
+
+                                        val now = System.currentTimeMillis()
+                                        val startDate = range.first
+                                        val endDate = range.last
+
+                                        val startDateString = CalendarRepository.formatDateMonthYearBrief(startDate)
+                                        val nowDateString = CalendarRepository.formatDateMonthYearBrief(now)
+                                        val endDateString = CalendarRepository.formatDateMonthYearBrief(endDate)
+
+                                        val dates = if (startDateString == endDateString) {
+                                            if (startDateString == nowDateString) {
+                                                stringResource(id = R.string.at_today)
+                                            } else {
+                                                stringResource(id = R.string.at_date, nowDateString)
+                                            }
+                                        } else {
+                                            stringResource(id = R.string.at_dates, startDateString, endDateString)
+                                        }
+
+                                        stringResource(id = R.string.at_date, )
+                                        stringResource(id = R.string.at_date)
+
+                                        append("${index + 1}. ${CalendarRepository.formatHoursMinutes(startDate)} - ${CalendarRepository.formatHoursMinutes(endDate)} $dates $trailingSymbol")
+                                    }
+
+                                    pop()
+                                }
+                            }
+
+                            ClickableText(
+                                text = annotatedString,
+                                style = LocalTextStyle.current.copy(
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    lineHeight = 28.sp
+                                ),
+                            ) { offset ->
+                                annotatedString.getStringAnnotations(tag = "range", start = offset, end = offset).firstOrNull()?.let {
+                                    val some = it.item.split("/")
+                                    val startDate = CalendarRepository.formatHoursMinutes(some.first().toLong())
+                                    val endDate = CalendarRepository.formatHoursMinutes(some.last().toLong())
+
+                                    val startHoursAndMinutes = startDate.split(":")
+                                    val endHoursAndMinutes = endDate.split(":")
+
+                                    viewModel.timeChanged(
+                                        startHoursAndMinutes.first().toInt(),
+                                        startHoursAndMinutes.last().toInt(),
+                                        endHoursAndMinutes.first().toInt(),
+                                        endHoursAndMinutes.last().toInt(),
+                                        nextDay = false
+                                    )
+                                }
                             }
                         }
                     }
@@ -327,7 +359,10 @@ fun InterviewDatePicker(
 ) {
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = time)
     val confirmEnabled = remember {
-        derivedStateOf { datePickerState.selectedDateMillis != null }
+        derivedStateOf {
+            val date = datePickerState.selectedDateMillis
+            date != null && date > System.currentTimeMillis()
+        }
     }
 
     DatePickerDialog(
@@ -352,11 +387,11 @@ fun InterviewDatePicker(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InterviewTimeDialog(
+fun InterviewTimePicker(
     dismiss: () -> Unit,
-    ok: (startHours: Int, startMinutes: Int, endHours: Int, endMinutes: Int) -> Unit,
+    ok: (startHours: Int, startMinutes: Int, endHours: Int, endMinutes: Int, nextDay: Boolean) -> Unit,
     startHours: Int,
     startMinutes: Int,
     endHours: Int,
@@ -375,9 +410,12 @@ fun InterviewTimeDialog(
     val confirmEnabled = remember {
         derivedStateOf {
             when {
+                startTimeState.hour < CalendarRepository.currentHours() -> false
+                startTimeState.hour == CalendarRepository.currentHours() && startTimeState.minute < CalendarRepository.currentMinutes() -> false
                 startTimeState.hour < endTimeState.hour -> true
+                startTimeState.hour > endTimeState.hour -> true
                 startTimeState.hour == endTimeState.hour -> {
-                    startTimeState.minute < endTimeState.minute
+                     startTimeState.minute < endTimeState.minute
                 }
                 else -> false
             }
@@ -389,7 +427,13 @@ fun InterviewTimeDialog(
         confirmButton = {
             TextButton(
                 onClick = {
-                    ok.invoke(startTimeState.hour, startTimeState.minute, endTimeState.hour, endTimeState.minute)
+                    ok.invoke(
+                        startTimeState.hour,
+                        startTimeState.minute,
+                        endTimeState.hour,
+                        endTimeState.minute,
+                        startTimeState.hour > endTimeState.hour
+                    )
                 },
                 enabled = confirmEnabled.value
             ) {

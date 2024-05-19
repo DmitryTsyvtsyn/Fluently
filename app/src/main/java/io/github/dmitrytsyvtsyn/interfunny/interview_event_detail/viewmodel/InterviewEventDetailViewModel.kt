@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import io.github.dmitrytsyvtsyn.interfunny.core.di.DI
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.viewmodel.actions.InterviewEventDetailAction
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.viewmodel.states.InterviewEventDetailState
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.viewmodel.states.InterviewEventScheduledState
+import io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.viewmodel.states.InterviewEventBusyState
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.CalendarRepository
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.data.InterviewEventRepository
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.viewmodel.states.InterviewEventModel
@@ -23,7 +23,7 @@ class InterviewEventDetailViewModel : ViewModel() {
     private val _state = MutableStateFlow(
         InterviewEventDetailState(
             title = "",
-            startDate = System.currentTimeMillis(),
+            startDate = System.currentTimeMillis() + CalendarRepository.minutesInMillis(5L),
             endDate = System.currentTimeMillis() + CalendarRepository.minutesInMillis(60)
         )
     )
@@ -79,7 +79,7 @@ class InterviewEventDetailViewModel : ViewModel() {
         )
     }
 
-    fun timeChanged(startHours: Int, startMinutes: Int, endHours: Int, endMinutes: Int) {
+    fun timeChanged(startHours: Int, startMinutes: Int, endHours: Int, endMinutes: Int, nextDay: Boolean) {
         val state = _state.value
 
         calendar.timeInMillis = state.startDate
@@ -90,6 +90,9 @@ class InterviewEventDetailViewModel : ViewModel() {
         calendar.timeInMillis = state.endDate
         calendar.set(Calendar.HOUR_OF_DAY, endHours)
         calendar.set(Calendar.MINUTE, endMinutes)
+        if (nextDay) {
+            calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH) + 1)
+        }
         val endDate = calendar.timeInMillis
 
         _state.value = state.copy(startDate = startDate, endDate = endDate)
@@ -111,38 +114,40 @@ class InterviewEventDetailViewModel : ViewModel() {
             val dateRange = state.startDate..state.endDate
 
             val alreadyScheduledEvents = mutableListOf<InterviewEventModel>()
-            val freeRanges = mutableListOf<LongRange>()
+            val suggestionRanges = mutableListOf<LongRange>()
             var currentDate = state.startDate
 
-            val minimumInterval = CalendarRepository.minutesInMillis(60)
+            val minimumInterval = CalendarRepository.plusMinutes((dateRange.last - dateRange.first), 10)
 
             repository.fetchInterviewEvents(state.startDate)
                 .filter { it.endDate > state.startDate && it.id != state.id }
                 .sortedBy { it.startDate }
-                .forEach {
-                    if (it.startDate in dateRange || it.endDate in dateRange) {
-                        alreadyScheduledEvents.add(it)
+                .forEach { interview ->
+                    if (interview.startDate in dateRange || interview.endDate in dateRange) {
+                        alreadyScheduledEvents.add(interview)
                     }
-                    if (currentDate < it.startDate && freeRanges.size < 2) {
-                        var differenceBetweenEndAndStartDates = it.startDate - currentDate
-                        while (differenceBetweenEndAndStartDates > minimumInterval) {
-                            freeRanges.add(currentDate..minimumInterval)
-                            differenceBetweenEndAndStartDates -= minimumInterval
+                    if (currentDate < interview.startDate && suggestionRanges.size < 2) {
+                        val differenceBetweenEndAndStartDates = interview.startDate - currentDate
+                        if (differenceBetweenEndAndStartDates > minimumInterval) {
+                            val startSuggestionDate = CalendarRepository.plusMinutes(currentDate, 5)
+                            suggestionRanges.add(startSuggestionDate..startSuggestionDate + minimumInterval)
                         }
                     }
-                    currentDate = it.endDate
+                    currentDate = interview.endDate
                 }
 
-            while (freeRanges.size < 2) {
-                freeRanges.add(currentDate..currentDate + minimumInterval)
+            while (suggestionRanges.size < 2) {
+                suggestionRanges.add(currentDate..currentDate + minimumInterval)
                 currentDate += 2 * minimumInterval
             }
 
             if (alreadyScheduledEvents.isNotEmpty()) {
                 _state.value = state.copy(
-                    alreadyScheduledState = InterviewEventScheduledState.Content(
+                    busyState = InterviewEventBusyState.BusyWithSuggestions(
+                        startDate = _state.value.startDate,
+                        endDate = _state.value.endDate,
                         scheduledStates = alreadyScheduledEvents.toPersistentList(),
-                        freeRanges = freeRanges.toPersistentList()
+                        suggestionRanges = suggestionRanges.toPersistentList()
                     )
                 )
             } else {
