@@ -198,11 +198,11 @@ private val highContrastDarkColorScheme = darkColorScheme(
     inversePrimary = inversePrimaryDarkHighContrast,
 )
 
-enum class ThemeContrast(val stringResource: Int) {
-    DYNAMIC(R.string.dynamic),
-    LIGHT(R.string.light),
-    MEDIUM(R.string.medium),
-    HIGH(R.string.high)
+enum class ThemeContrast(val title: Int, val description: Int) {
+    DYNAMIC(R.string.dynamic, R.string.dynamic_contrast_description),
+    LIGHT(R.string.light, R.string.light_contrast_description),
+    MEDIUM(R.string.medium, R.string.medium_contrast_description),
+    HIGH(R.string.high, R.string.high_contrast_description)
 }
 
 @SuppressLint("NewApi")

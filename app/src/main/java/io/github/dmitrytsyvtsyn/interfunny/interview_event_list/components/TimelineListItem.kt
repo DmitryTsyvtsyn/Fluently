@@ -8,10 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
@@ -19,11 +17,11 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.dmitrytsyvtsyn.interfunny.R
+import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.formatFloatingHours
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.viewmodel.states.InterviewEventListItemState
-import java.util.Locale
 
 private const val TIMELINE_SIZE_FACTOR = 24f
+private const val ONE_HOUR_IN_MILLIS = 1000 * 3600f
 
 @Composable
 fun TimelineListItem(
@@ -42,25 +40,20 @@ fun TimelineListItem(
 
     val textMeasurer = rememberTextMeasurer()
 
-    val hourFactor = timeline.hourFactor
-    val hourString = stringResource(id = R.string.hour_suffix, String.format(
-        Locale.getDefault(),
-        "%.1f",
-        hourFactor
-    ))
+    val hourFactor = (timeline.endDate - timeline.startDate) / ONE_HOUR_IN_MILLIS
+    val hourString = formatFloatingHours(hourFactor)
     val textLayoutResult = remember { textMeasurer.measure(hourString, textStyle) }
 
-    val pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+    val shortPathEffect = remember { PathEffect.dashPathEffect(floatArrayOf(6f, 6f), 0f) }
+    val longPathEffect = remember { PathEffect.dashPathEffect(floatArrayOf(16f, 16f), 0f) }
 
-//    val bigTimelineColor = Color(0xFF1c750d)
-//    val smallTimelineColor = Color(0xFFa60316)
     val normalColor = MaterialTheme.colorScheme.primary
     val errorColor = MaterialTheme.colorScheme.error
     Canvas(
         Modifier
             .fillMaxWidth()
-            .height((hourFactor * TIMELINE_SIZE_FACTOR).dp)) {
-
+            .height((hourFactor * TIMELINE_SIZE_FACTOR).dp)
+    ) {
         val color = when {
             hourFactor < 2f -> errorColor
             else -> normalColor
@@ -68,10 +61,10 @@ fun TimelineListItem(
 
         drawLine(
             color = color,
-            strokeWidth = 8f,
+            strokeWidth = 4f,
             start = Offset(paddingHorizontalFloat, 0f),
             end = Offset(paddingHorizontalFloat, size.height),
-            pathEffect = pathEffect
+            pathEffect = if (hourFactor < 1.5f) shortPathEffect else longPathEffect
         )
 
         drawText(

@@ -61,10 +61,7 @@ import io.github.dmitrytsyvtsyn.interfunny.core.navigation.LocalNavController
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.viewmodel.InterviewEventDetailViewModel
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.viewmodel.actions.InterviewEventDetailAction
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.viewmodel.states.InterviewEventScheduledState
-import java.text.SimpleDateFormat
-
-private val dateFormat = SimpleDateFormat("dd MMM yyyy")
-private val timeFormat = SimpleDateFormat("HH:mm")
+import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.CalendarRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -133,10 +130,7 @@ fun InterviewEventDetailScreen(id: Long = -1) {
                     endMinutes = actionStateValue.endMinutes
                 )
             }
-            is InterviewEventDetailAction.Back -> {
-                navController.popBackStack()
-                viewModel.resetAction()
-            }
+            is InterviewEventDetailAction.Back -> { navController.popBackStack() }
         }
 
         Box(modifier = Modifier.padding(innerPadding)) {
@@ -199,7 +193,7 @@ fun InterviewEventDetailScreen(id: Long = -1) {
 
                 ) {
                     Text(
-                        text = dateFormat.format(state.startDate),
+                        text = CalendarRepository.formatDateMonthYear(state.startDate),
                         fontSize = 26.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -227,7 +221,7 @@ fun InterviewEventDetailScreen(id: Long = -1) {
 
                 ) {
                     Text(
-                        text = "${timeFormat.format(state.startDate)} - ${timeFormat.format(state.endDate)}",
+                        text = "${CalendarRepository.formatHoursMinutes(state.startDate)} - ${CalendarRepository.formatHoursMinutes(state.endDate)}",
                         fontSize = 31.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -238,7 +232,7 @@ fun InterviewEventDetailScreen(id: Long = -1) {
                     is InterviewEventScheduledState.Content -> {
                         Spacer(Modifier.size(8.dp))
                         Text(
-                            text = stringResource(id = R.string.already_scheduled_events, "${timeFormat.format(state.startDate)} - ${timeFormat.format(state.endDate)}"),
+                            text = stringResource(id = R.string.already_scheduled_events, "${CalendarRepository.formatHoursMinutes(state.startDate)} - ${CalendarRepository.formatHoursMinutes(state.endDate)}"),
                             color = MaterialTheme.colorScheme.error,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Medium
@@ -253,7 +247,7 @@ fun InterviewEventDetailScreen(id: Long = -1) {
                                 pushStringAnnotation("range", "${it.first}/${it.last}")
 
                                 withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                                    append("${timeFormat.format(it.first)} - ${timeFormat.format(it.last)} ")
+                                    append("${CalendarRepository.formatHoursMinutes(it.first)} - ${CalendarRepository.formatHoursMinutes(it.last)} ")
                                 }
 
                                 pop()
@@ -270,8 +264,8 @@ fun InterviewEventDetailScreen(id: Long = -1) {
                         ) { offset ->
                             annotatedString.getStringAnnotations(tag = "range", start = offset, end = offset).firstOrNull()?.let {
                                 val some = it.item.split("/")
-                                val startDate = timeFormat.format(some.first().toLong())
-                                val endDate = timeFormat.format(some.last().toLong())
+                                val startDate = CalendarRepository.formatHoursMinutes(some.first().toLong())
+                                val endDate = CalendarRepository.formatHoursMinutes(some.last().toLong())
 
                                 val startHoursAndMinutes = startDate.split(":")
                                 val endHoursAndMinutes = endDate.split(":")
@@ -289,22 +283,24 @@ fun InterviewEventDetailScreen(id: Long = -1) {
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Checkbox(
-                        checked = state.hasReminder,
-                        onCheckedChange = {
-                            viewModel.changeHasReminder(it)
-                        }
-                    )
-                    Spacer(modifier = Modifier.size(8.dp))
-                    Text(
-                        stringResource(id = R.string.turn_alarm_or_not)
-                    )
-                }
+                if (state.startDate > System.currentTimeMillis()) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = state.hasReminder,
+                            onCheckedChange = {
+                                viewModel.changeHasReminder(it)
+                            }
+                        )
+                        Spacer(modifier = Modifier.size(8.dp))
+                        Text(
+                            stringResource(id = R.string.turn_alarm_or_not)
+                        )
+                    }
 
-                Spacer(modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.size(16.dp))
+                }
 
                 Button(
                     modifier = Modifier.fillMaxWidth(),
@@ -312,11 +308,7 @@ fun InterviewEventDetailScreen(id: Long = -1) {
                     onClick = viewModel::save
                 ) {
                     Text(
-                        text = if (state.rescheduleInterview) {
-                            stringResource(id = R.string.reschedule)
-                        } else {
-                            stringResource(id = R.string.save)
-                        },
+                        text =  stringResource(id = R.string.save),
                         fontWeight = FontWeight.Medium,
                         fontSize = 18.sp
                     )

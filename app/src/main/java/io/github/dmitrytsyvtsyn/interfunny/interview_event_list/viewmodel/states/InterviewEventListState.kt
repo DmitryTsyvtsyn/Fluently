@@ -7,7 +7,7 @@ import kotlinx.collections.immutable.PersistentList
 sealed interface InterviewEventListItemState {
     data class Title(val value: String) : InterviewEventListItemState
     data class Content(val model: InterviewEventModel) : InterviewEventListItemState
-    data class Timeline(val hourFactor: Float) : InterviewEventListItemState
+    data class Timeline(val startDate: Long, val endDate: Long) : InterviewEventListItemState
 }
 
 data class InterviewEventListState(

@@ -47,19 +47,38 @@ class PlatformCalendarAPI(context: Context) {
 
     suspend fun updateEvent(
         eventId: Long,
+        reminderId: Long,
         title: String,
         startDate: Long,
-        endDate: Long
+        endDate: Long,
+        hasReminder: Boolean = false,
     ) = withContext(Dispatchers.Default) {
         val values = ContentValues().apply {
             put(CalendarContract.Events.TITLE, title)
             put(CalendarContract.Events.DTSTART, startDate)
             put(CalendarContract.Events.DTEND, endDate)
         }
-        val eventUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId)
-        val eventRows = contentResolver.update(eventUri, values, null, null)
 
-        eventRows > 0
+        contentResolver.update(ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId), values, null, null)
+
+        when {
+            reminderId >= 0 && !hasReminder -> {
+                contentResolver.delete(ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, reminderId), null, null)
+                -1
+            }
+            reminderId < 0 && hasReminder -> {
+                values.clear()
+                with(values) {
+                    put(CalendarContract.Reminders.MINUTES, 1)
+                    put(CalendarContract.Reminders.EVENT_ID, eventId)
+                    put(CalendarContract.Reminders.METHOD, CalendarContract.Reminders.METHOD_ALERT)
+                }
+                val reminderResult = contentResolver.insert(CalendarContract.Reminders.CONTENT_URI, values)
+
+                reminderResult?.lastPathSegment?.toLong() ?: -1
+            }
+            else -> reminderId
+        }
     }
 
     suspend fun removeEvent(eventId: Long, reminderId: Long) = withContext(Dispatchers.Default) {

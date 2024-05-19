@@ -22,6 +22,7 @@
     <string name="show_event">Посмотреть в календаре</string>    <string name="calendar_permission_denied">Вы запретили доступ к календарю(</string>
     <string name="request_access_again">Запросить снова</string>
     <string name="hour_suffix">%1$s ч.</string>
+    <string name="minute_suffix">%1$s мин.</string>
     <string name="theme_settings">Настройка темы</string>
     <string name="dynamic">Динамический</string>
     <string name="light">Лёгкий</string>
@@ -30,4 +31,8 @@
     <string name="choose_contrast">Выберите контраст:</string>
     <string name="today_not_interviews">Сегодня у вас нет собесов, можёте купить себе шампанское)</string>
     <string name="turn_alarm_or_not">Включить будильник</string>
+    <string name="dynamic_contrast_description">Подбирает цвет под обои вашего телефона</string>
+    <string name="light_contrast_description">Слегка насыщенные цвета подчёркивают дизайн</string>
+    <string name="medium_contrast_description">Что-то похожее на золотую середину</string>
+    <string name="high_contrast_description">Увеличивает процент людей с отклонением зрения(</string>
 </resources>

@@ -12,7 +12,6 @@ data class InterviewEventDetailState(
     val endDate: Long,
     val titleError: Boolean = false,
     val timeError: Boolean = false,
-    val rescheduleInterview: Boolean = false,
     val alreadyScheduledState: InterviewEventScheduledState = InterviewEventScheduledState.Empty,
     val hasReminder: Boolean = false,
 )

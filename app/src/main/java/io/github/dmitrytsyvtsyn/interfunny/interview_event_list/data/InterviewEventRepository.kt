@@ -13,8 +13,8 @@ class InterviewEventRepository(
 
     suspend fun addInterviewEvent(model: InterviewEventModel, hasReminder: Boolean = false) = withContext(Dispatchers.Default) {
         if (model.id >= 0) {
-            calendarAPI.updateEvent(model.eventId, model.title, model.startDate, model.endDate)
-            database.update(model.toDatabase())
+            val reminderId = calendarAPI.updateEvent(model.eventId, model.reminderId, model.title, model.startDate, model.endDate, hasReminder)
+            database.update(model.copy(reminderId = reminderId).toDatabase())
         } else {
             val (eventId, reminderId) = calendarAPI.insertEvent(model.title, model.startDate, model.endDate, hasReminder)
             database.insert(model.copy(eventId = eventId, reminderId = reminderId).toDatabase())

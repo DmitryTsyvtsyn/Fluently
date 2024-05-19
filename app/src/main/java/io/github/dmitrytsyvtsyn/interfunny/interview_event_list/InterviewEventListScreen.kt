@@ -1,12 +1,8 @@
 package io.github.dmitrytsyvtsyn.interfunny.interview_event_list
 
-import android.Manifest
 import android.content.ContentUris
 import android.content.Intent
-import android.net.Uri
 import android.provider.CalendarContract
-import android.provider.Settings
-import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -16,11 +12,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -28,7 +22,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -38,12 +31,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -54,9 +42,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -70,23 +55,14 @@ import io.github.dmitrytsyvtsyn.interfunny.R
 import io.github.dmitrytsyvtsyn.interfunny.core.navigation.LocalNavController
 import io.github.dmitrytsyvtsyn.interfunny.core.navigation.Screens
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.InterviewDatePicker
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.InterviewTimeDialog
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.viewmodel.actions.InterviewEventDetailAction
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.components.InterviewCalendarError
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.components.InterviewTabs
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.components.TimelineListItem
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.viewmodel.actions.InterviewEventListAction
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.viewmodel.InterviewEventListViewModel
+import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.viewmodel.actions.InterviewEventListAction
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.viewmodel.states.InterviewEventListItemState
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.viewmodel.states.InterviewEventModel
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.viewmodel.states.InterviewEventStatus
 import kotlinx.collections.immutable.PersistentList
-import java.text.SimpleDateFormat
-import java.util.Locale
-
-private val dateTimeFormat = SimpleDateFormat("dd MMM")
-private val dateTimeWeekFormat = SimpleDateFormat("dd MMM, EEE")
-private val timeFormat = SimpleDateFormat("HH:mm")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -180,15 +156,15 @@ fun InterviewEventListScreen() {
                 .padding(innerPadding),
             content = {
                 InterviewTabs(
-                    prevDate = dateTimeFormat.format(state.prevDate),
+                    prevDate = CalendarRepository.formatDateMonth(state.prevDate),
                     prevClick = viewModel::backDay,
-                    nowDate = if (dateTimeFormat.format(state.date) == dateTimeFormat.format(System.currentTimeMillis())) {
+                    nowDate = if (CalendarRepository.formatDateMonth(state.date) == CalendarRepository.formatDateMonth(System.currentTimeMillis())) {
                         stringResource(id = R.string.today_day)
                     } else {
-                        dateTimeWeekFormat.format(state.date)
+                        CalendarRepository.formatDateMonthWeek(state.date)
                     },
                     nowClick = viewModel::showDatePicker,
-                    nextDate = dateTimeFormat.format(state.nextDate),
+                    nextDate = CalendarRepository.formatDateMonth(state.nextDate),
                     nextClick = viewModel::forwardDay
                 )
 
@@ -236,11 +212,12 @@ private fun InterviewEmptyList() {
         Spacer(modifier = Modifier.size(16.dp))
 
         Text(
-            stringResource(id = R.string.today_not_interviews),
+            text = stringResource(id = R.string.today_not_interviews),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 16.dp, end = 16.dp),
             textAlign = TextAlign.Center,
+            lineHeight = 30.sp,
             fontSize = 23.sp,
             fontWeight = FontWeight.Medium
         )
@@ -306,7 +283,7 @@ private fun InterviewContentListItem(
                 shape = RoundedCornerShape(8.dp)
             )
             .combinedClickable(
-                interactionSource = MutableInteractionSource(),
+                interactionSource = remember { MutableInteractionSource() },
                 indication = rememberRipple(bounded = true),
                 onClick = { onClick.invoke(model.id) },
                 onLongClick = { dropdownExpanded.value = true }
@@ -320,7 +297,7 @@ private fun InterviewContentListItem(
             )
             Spacer(modifier = Modifier.size(8.dp))
             Text(
-                text = "${timeFormat.format(model.startDate)} - ${timeFormat.format(model.endDate)}",
+                text = "${CalendarRepository.formatHoursMinutes(model.startDate)} - ${CalendarRepository.formatHoursMinutes(model.endDate)}",
                 fontSize = 23.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -348,7 +325,7 @@ private fun InterviewContentListItem(
             }
         }
         Text(
-            text = stringResource(id = R.string.hour_suffix, String.format(Locale.getDefault(), "%.1f", (model.endDate - model.startDate) / 3_600_000f)),
+            text = formatFloatingHours(hours = (model.endDate - model.startDate) / 3_600_000f),
             color = MaterialTheme.colorScheme.onPrimary,
             fontSize = 14.sp,
             modifier = Modifier
@@ -356,81 +333,8 @@ private fun InterviewContentListItem(
                     color = MaterialTheme.colorScheme.primary,
                     shape = RoundedCornerShape(12.dp)
                 )
-                .padding(4.dp)
+                .padding(horizontal = 8.dp, vertical = 2.dp)
                 .align(Alignment.TopEnd),
         )
     }
-
-//    Column(
-//        modifier = Modifier
-//            .alpha(
-//                when (model.status) {
-//                    InterviewEventStatus.ACTUAL -> 1f
-//                    InterviewEventStatus.PASSED -> 0.5f
-//                }
-//            )
-//            .fillMaxWidth()
-//            .background(
-//                color = MaterialTheme.colorScheme.tertiaryContainer,
-//                shape = RoundedCornerShape(8.dp)
-//            )
-//            .combinedClickable(
-//                interactionSource = MutableInteractionSource(),
-//                indication = rememberRipple(bounded = true),
-//                onClick = { onClick.invoke(model.id) },
-//                onLongClick = { dropdownExpanded.value = true }
-//            )
-//            .padding(16.dp)
-//
-//    ) {
-//        Text(
-//            text = model.title,
-//            fontSize = 17.sp
-//        )
-//        Spacer(modifier = Modifier.size(8.dp))
-//        Text(
-//            text = "${timeFormat.format(model.startDate)} - ${timeFormat.format(model.endDate)}",
-//            fontSize = 23.sp,
-//            fontWeight = FontWeight.Medium
-//        )
-//
-//        if (dropdownExpanded.value) {
-//            DropdownMenu(
-//                expanded = true,
-//                onDismissRequest = { dropdownExpanded.value = false }
-//            ) {
-//                DropdownMenuItem(
-//                    text = {  Text(stringResource(id = R.string.remove_event)) },
-//                    onClick = {
-//                        onRemove.invoke(model.id, model.eventId)
-//                        dropdownExpanded.value = false
-//                    }
-//                )
-//                DropdownMenuItem(
-//                    text = { Text(stringResource(id = R.string.show_event)) },
-//                    onClick = {
-//                        onView.invoke(model.eventId)
-//                        dropdownExpanded.value = false
-//                    }
-//                )
-//            }
-//        }
-//    }
 }
-
-//                modifier = when (event.status) {
-//                    InterviewEventStatus.ACTUAL -> modifier
-//                        .combinedClickable(
-//                            interactionSource = MutableInteractionSource(),
-//                            indication = rememberRipple(bounded = true),
-//                            onClick = {
-//                                onClick.invoke(event.id)
-//                            },
-//                            onLongClick = {
-//                                dropdownExpanded.value = true
-////                                onLongClick.invoke(event.id, event.eventId)
-//                            }
-//                        )
-//                        .padding(16.dp)
-//                    InterviewEventStatus.PASSED -> modifier.padding(16.dp)
-//                }

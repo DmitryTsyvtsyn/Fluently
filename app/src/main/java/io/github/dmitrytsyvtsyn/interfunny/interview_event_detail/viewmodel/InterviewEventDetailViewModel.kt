@@ -7,6 +7,7 @@ import io.github.dmitrytsyvtsyn.interfunny.core.di.DI
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.viewmodel.actions.InterviewEventDetailAction
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.viewmodel.states.InterviewEventDetailState
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.viewmodel.states.InterviewEventScheduledState
+import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.CalendarRepository
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.data.InterviewEventRepository
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.viewmodel.states.InterviewEventModel
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.viewmodel.states.InterviewEventStatus
@@ -23,7 +24,7 @@ class InterviewEventDetailViewModel : ViewModel() {
         InterviewEventDetailState(
             title = "",
             startDate = System.currentTimeMillis(),
-            endDate = System.currentTimeMillis() + 60 * MINUTE
+            endDate = System.currentTimeMillis() + CalendarRepository.minutesInMillis(60)
         )
     )
     val state: StateFlow<InterviewEventDetailState> = _state
@@ -39,15 +40,14 @@ class InterviewEventDetailViewModel : ViewModel() {
             val event = repository.fetchInterviewEvent(id, state.startDate)
             _state.value = state.copy(
                 id = event.id,
-                eventId = event.id,
+                eventId = event.eventId,
                 reminderId = event.reminderId,
                 title = event.title,
                 startDate = event.startDate,
                 endDate = event.endDate,
                 titleError = false,
                 timeError = false,
-                rescheduleInterview = event.endDate > System.currentTimeMillis(),
-                hasReminder = event.id >= 0
+                hasReminder = event.reminderId >= 0
             )
         }
     }
@@ -114,6 +114,8 @@ class InterviewEventDetailViewModel : ViewModel() {
             val freeRanges = mutableListOf<LongRange>()
             var currentDate = state.startDate
 
+            val minimumInterval = CalendarRepository.minutesInMillis(60)
+
             repository.fetchInterviewEvents(state.startDate)
                 .filter { it.endDate > state.startDate && it.id != state.id }
                 .sortedBy { it.startDate }
@@ -122,18 +124,18 @@ class InterviewEventDetailViewModel : ViewModel() {
                         alreadyScheduledEvents.add(it)
                     }
                     if (currentDate < it.startDate && freeRanges.size < 2) {
-                        var dateRange = it.startDate - currentDate
-                        while (dateRange > 60 * MINUTE) {
-                            freeRanges.add(currentDate..60 * MINUTE)
-                            dateRange -= 60 * MINUTE
+                        var differenceBetweenEndAndStartDates = it.startDate - currentDate
+                        while (differenceBetweenEndAndStartDates > minimumInterval) {
+                            freeRanges.add(currentDate..minimumInterval)
+                            differenceBetweenEndAndStartDates -= minimumInterval
                         }
                     }
                     currentDate = it.endDate
                 }
 
             while (freeRanges.size < 2) {
-                freeRanges.add(currentDate..currentDate + 60 * MINUTE)
-                currentDate += 120 * MINUTE
+                freeRanges.add(currentDate..currentDate + minimumInterval)
+                currentDate += 2 * minimumInterval
             }
 
             if (alreadyScheduledEvents.isNotEmpty()) {
@@ -189,7 +191,6 @@ class InterviewEventDetailViewModel : ViewModel() {
 
     companion object {
         private val calendar = Calendar.getInstance()
-        private const val MINUTE = 60 * 1000
     }
 
 }

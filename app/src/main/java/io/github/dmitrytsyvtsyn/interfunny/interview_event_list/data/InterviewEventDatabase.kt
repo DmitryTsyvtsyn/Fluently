@@ -28,7 +28,7 @@ class InterviewEventDatabase(
         contentValues.put(id_reminder_column, reminderId)
         contentValues.put(title_column, title)
         contentValues.put(start_date_column, startDate)
-        contentValues.put(end_date_column, end_date_column)
+        contentValues.put(end_date_column, endDate)
 
         database.update(table_name, contentValues, "$id_column = ?", arrayOf(id.toString()))
     }

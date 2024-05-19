@@ -4,6 +4,7 @@ import android.icu.util.Calendar
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.dmitrytsyvtsyn.interfunny.core.di.DI
+import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.CalendarRepository
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.data.InterviewEventRepository
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.viewmodel.actions.InterviewEventListAction
 import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.viewmodel.states.InterviewEventListItemState
@@ -105,23 +106,21 @@ class InterviewEventListViewModel : ViewModel() {
         val listStates = mutableListOf<InterviewEventListItemState>()
         val models = filter { it.startDate in dateRange }.sortedBy { it.startDate }
         val lastIndex = models.size - 1
-        val factor = 1000 * 3600f
+        val minimumTimelineInterval = CalendarRepository.minutesInMillis(15)
         models.forEachIndexed { index, model ->
             if (index == 0) {
                 listStates.add(InterviewEventListItemState.Title("00:00"))
             }
 
-            val startCurrentDifference = model.startDate - current
-            if (startCurrentDifference > 0) {
-                listStates.add(InterviewEventListItemState.Timeline(startCurrentDifference / factor))
+            if ((model.startDate - current) > minimumTimelineInterval) {
+                listStates.add(InterviewEventListItemState.Timeline(current, model.startDate))
             }
 
             listStates.add(InterviewEventListItemState.Content(model))
 
             if (index == lastIndex) {
-                val endLastDifference = dateRange.last - model.endDate
-                if (endLastDifference > 0) {
-                    listStates.add(InterviewEventListItemState.Timeline(endLastDifference / factor))
+                if ((dateRange.last - model.endDate) > minimumTimelineInterval) {
+                    listStates.add(InterviewEventListItemState.Timeline(model.endDate, dateRange.last))
                 }
 
                 listStates.add(InterviewEventListItemState.Title("24:00"))
@@ -150,6 +149,7 @@ class InterviewEventListViewModel : ViewModel() {
 
     companion object {
         private const val DAY = 24 * 3600 * 1000
+        private const val MINUTE = 60 * 1000
         private val calendar = Calendar.getInstance()
     }
 
