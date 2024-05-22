@@ -34,10 +34,10 @@ import androidx.navigation.navArgument
 import io.github.dmitrytsyvtsyn.interfunny.core.navigation.LocalNavController
 import io.github.dmitrytsyvtsyn.interfunny.core.navigation.Screens
 import io.github.dmitrytsyvtsyn.interfunny.core.theme.InterFunnyTheme
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.InterviewEventDetailScreen
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.InterviewEventListScreen
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.components.InterviewCalendarError
-import io.github.dmitrytsyvtsyn.interfunny.theme_settings.InterviewThemeSettingsScreen
+import io.github.dmitrytsyvtsyn.interfunny.interview_detail.InterviewDetailScreen
+import io.github.dmitrytsyvtsyn.interfunny.interview_list.InterviewListScreen
+import io.github.dmitrytsyvtsyn.interfunny.interview_list.components.InterviewCalendarError
+import io.github.dmitrytsyvtsyn.interfunny.theme_settings.ThemeSettingsScreen
 import io.github.dmitrytsyvtsyn.interfunny.theme_settings.SettingsViewModel
 
 val LocalSettingsViewModel = staticCompositionLocalOf<SettingsViewModel> { error("Don't forget about me(") }
@@ -104,30 +104,32 @@ private fun MainNavGraph(settingsViewModel: SettingsViewModel) {
 
         NavHost(
             navController = navController,
-            startDestination = Screens.InterviewEventListScreen.name,
+            startDestination = Screens.InterviewEventListScreen.NAME,
             modifier = Modifier.background(MaterialTheme.colorScheme.background)
         ) {
             composable(
-                route = Screens.InterviewEventListScreen.name
+                route = Screens.InterviewEventListScreen.NAME
             ) {
-                InterviewEventListScreen()
+                InterviewListScreen()
             }
 
             composable(
-                route = "${Screens.InterviewEventDetailScreen.name}/{${Screens.InterviewEventDetailScreen.id}}",
+                route = "${Screens.InterviewDetailScreen.NAME}/{${Screens.InterviewDetailScreen.ID}}/{${Screens.InterviewDetailScreen.INITIAL_DATE}}",
                 arguments = listOf(
-                    navArgument(Screens.InterviewEventDetailScreen.id) { type = NavType.LongType }
+                    navArgument(Screens.InterviewDetailScreen.ID) { type = NavType.LongType },
+                    navArgument(Screens.InterviewDetailScreen.INITIAL_DATE) { type = NavType.LongType }
                 )
             ) { backStackEntry ->
-                InterviewEventDetailScreen(
-                    backStackEntry.arguments?.getLong(Screens.InterviewEventDetailScreen.id) ?: -1
+                InterviewDetailScreen(
+                    backStackEntry.arguments?.getLong(Screens.InterviewDetailScreen.ID) ?: -1,
+                    backStackEntry.arguments?.getLong(Screens.InterviewDetailScreen.INITIAL_DATE) ?: System.currentTimeMillis()
                 )
             }
 
             composable(
-                route = Screens.InterviewThemeSettingsScreen.name,
+                route = Screens.InterviewThemeSettingsScreen.NAME,
             ) {
-                InterviewThemeSettingsScreen()
+                ThemeSettingsScreen()
             }
 
         }

@@ -1,5 +1,6 @@
-package io.github.dmitrytsyvtsyn.interfunny.interview_event_detail
+package io.github.dmitrytsyvtsyn.interfunny.interview_detail
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -42,7 +43,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
@@ -60,20 +60,21 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.dmitrytsyvtsyn.interfunny.R
 import io.github.dmitrytsyvtsyn.interfunny.core.navigation.LocalNavController
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.viewmodel.InterviewEventDetailViewModel
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.viewmodel.actions.InterviewEventDetailAction
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.viewmodel.states.InterviewEventBusyState
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.CalendarRepository
+import io.github.dmitrytsyvtsyn.interfunny.core.theme.components.DebounceIconButton
+import io.github.dmitrytsyvtsyn.interfunny.interview_detail.viewmodel.InterviewDetailViewModel
+import io.github.dmitrytsyvtsyn.interfunny.interview_detail.viewmodel.actions.InterviewEventDetailAction
+import io.github.dmitrytsyvtsyn.interfunny.interview_detail.viewmodel.states.InterviewEventBusyState
+import io.github.dmitrytsyvtsyn.interfunny.interview_list.CalendarRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InterviewEventDetailScreen(id: Long = -1) {
-    val viewModel: InterviewEventDetailViewModel = viewModel()
+fun InterviewDetailScreen(id: Long = -1, initialDate: Long = System.currentTimeMillis()) {
+    val viewModel: InterviewDetailViewModel = viewModel()
 
     val navController = LocalNavController.current
 
     LaunchedEffect(key1 = Unit) {
-        viewModel.init(id)
+        viewModel.init(id, initialDate)
     }
 
     Scaffold(
@@ -83,14 +84,14 @@ fun InterviewEventDetailScreen(id: Long = -1) {
                 title = {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(id = R.string.new_interview),
+                        text = if (id >= 0) stringResource(id = R.string.editing_interview) else stringResource(id = R.string.new_interview),
                         textAlign = TextAlign.Center
                     )
                 },
                 navigationIcon = {
-                    IconButton(
+                    DebounceIconButton(
                         onClick = {
-                            navController.popBackStack()
+                            viewModel.navigateToBack()
                         }
                     ) {
                         Icon(painter = painterResource(id = R.drawable.ic_back), contentDescription = "")
@@ -111,7 +112,8 @@ fun InterviewEventDetailScreen(id: Long = -1) {
             is InterviewEventDetailAction.Empty -> {}
             is InterviewEventDetailAction.DatePicker -> {
                 InterviewDatePicker(
-                    time = actionStateValue.date,
+                    initialDate = actionStateValue.date,
+                    minDate = CalendarRepository.dateMonthYearMillis(),
                     dismiss = viewModel::resetAction,
                     ok = { date ->
                         viewModel.dateChanged(date)
@@ -353,15 +355,17 @@ fun InterviewEventDetailScreen(id: Long = -1) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InterviewDatePicker(
-    time: Long = 0,
+    initialDate: Long = 0,
+    minDate: Long = Long.MIN_VALUE,
+    maxDate: Long = Long.MAX_VALUE,
     dismiss: () -> Unit,
     ok: (Long) -> Unit
 ) {
-    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = time)
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialDate)
     val confirmEnabled = remember {
         derivedStateOf {
             val date = datePickerState.selectedDateMillis
-            date != null && date > System.currentTimeMillis()
+            date != null && date >= minDate && date <= maxDate
         }
     }
 

@@ -1,6 +1,6 @@
-package io.github.dmitrytsyvtsyn.interfunny.interview_event_list.viewmodel.states
+package io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel.states
 
-data class InterviewEventModel(
+data class InterviewModel(
     val id: Long = -1,
     val eventId: Long = -1,
     val reminderId: Long = -1,

@@ -1,5 +1,6 @@
 package io.github.dmitrytsyvtsyn.interfunny.theme_settings
 
+import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.dmitrytsyvtsyn.interfunny.core.di.DI
@@ -16,7 +17,10 @@ class SettingsViewModel : ViewModel() {
     private val _state = MutableStateFlow(
         SettingsViewState(
             contrast = ThemeContrast.LIGHT,
-            contrasts = ThemeContrast.entries.toPersistentList()
+            contrasts = ThemeContrast.entries.filter { contrast ->
+                if (contrast != ThemeContrast.DYNAMIC) true
+                else Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+            }.toPersistentList()
         )
     )
     val state: StateFlow<SettingsViewState> = _state

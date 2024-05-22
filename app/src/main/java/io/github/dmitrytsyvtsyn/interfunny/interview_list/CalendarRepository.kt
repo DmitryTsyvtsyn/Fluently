@@ -1,4 +1,4 @@
-package io.github.dmitrytsyvtsyn.interfunny.interview_event_list
+package io.github.dmitrytsyvtsyn.interfunny.interview_list
 
 import android.annotation.SuppressLint
 import android.icu.util.Calendar
@@ -9,7 +9,7 @@ object CalendarRepository {
 
     @SuppressLint("ConstantLocale")
     private val locale = Locale.getDefault()
-    private val dateMonthFormat = SimpleDateFormat("dd MMM", locale)
+    private val dateMonthFormat = SimpleDateFormat("dd MMMM", locale)
     private val dateMonthWeekFormat = SimpleDateFormat("dd MMM, EEE", locale)
     private val dateMonthYearFormat = SimpleDateFormat("dd MMM yyyy", locale)
     private val briefDateMonthYearFormat = SimpleDateFormat("dd.MM.yyyy", locale)
@@ -60,16 +60,25 @@ object CalendarRepository {
         return calendar.get(Calendar.MINUTE)
     }
 
-    fun dayOfYear(value: Long): Int {
-        calendar.timeInMillis = value
-        return calendar.get(Calendar.DAY_OF_YEAR)
+    fun dateMonthYearMillis(date: Long = System.currentTimeMillis()): Long {
+        calendar.timeInMillis = date
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        return calendar.timeInMillis
     }
 
-    fun time(value: Long): Long {
-        calendar.timeInMillis = value
-        val hours = calendar.get(Calendar.HOUR_OF_DAY)
-        val minutes = calendar.get(Calendar.MINUTE)
-        return hours * 60 * MINUTE + minutes * MINUTE
-    }
+//    fun dayOfYear(value: Long): Int {
+//        calendar.timeInMillis = value
+//        return calendar.get(Calendar.DAY_OF_YEAR)
+//    }
+//
+//    fun time(value: Long): Long {
+//        calendar.timeInMillis = value
+//        val hours = calendar.get(Calendar.HOUR_OF_DAY)
+//        val minutes = calendar.get(Calendar.MINUTE)
+//        return hours * 60 * MINUTE + minutes * MINUTE
+//    }
 
 }

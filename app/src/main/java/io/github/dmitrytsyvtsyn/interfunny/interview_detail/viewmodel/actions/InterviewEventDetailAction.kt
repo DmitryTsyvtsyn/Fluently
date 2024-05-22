@@ -1,4 +1,4 @@
-package io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.viewmodel.actions
+package io.github.dmitrytsyvtsyn.interfunny.interview_detail.viewmodel.actions
 
 sealed interface InterviewEventDetailAction {
     data object Empty : InterviewEventDetailAction

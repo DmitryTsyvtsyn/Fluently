@@ -1,4 +1,4 @@
-package io.github.dmitrytsyvtsyn.interfunny.interview_event_list
+package io.github.dmitrytsyvtsyn.interfunny.interview_list
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource

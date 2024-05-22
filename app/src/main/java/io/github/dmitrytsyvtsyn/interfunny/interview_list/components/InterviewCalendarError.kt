@@ -1,4 +1,4 @@
-package io.github.dmitrytsyvtsyn.interfunny.interview_event_list.components
+package io.github.dmitrytsyvtsyn.interfunny.interview_list.components
 
 import android.Manifest
 import androidx.activity.compose.ManagedActivityResultLauncher
@@ -31,7 +31,7 @@ fun InterviewCalendarError(launcher: ManagedActivityResultLauncher<Array<String>
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.size(16.dp))
+        Spacer(modifier = Modifier.size(32.dp))
 
         Image(
             painter = painterResource(id = R.drawable.ic_permission_denied),

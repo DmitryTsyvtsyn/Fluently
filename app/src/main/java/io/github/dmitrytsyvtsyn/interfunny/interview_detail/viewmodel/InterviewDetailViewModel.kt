@@ -1,30 +1,30 @@
-package io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.viewmodel
+package io.github.dmitrytsyvtsyn.interfunny.interview_detail.viewmodel
 
 import android.icu.util.Calendar
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.dmitrytsyvtsyn.interfunny.core.di.DI
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.viewmodel.actions.InterviewEventDetailAction
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.viewmodel.states.InterviewEventDetailState
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.viewmodel.states.InterviewEventBusyState
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.CalendarRepository
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.data.InterviewEventRepository
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.viewmodel.states.InterviewEventModel
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.viewmodel.states.InterviewEventStatus
+import io.github.dmitrytsyvtsyn.interfunny.interview_detail.viewmodel.actions.InterviewEventDetailAction
+import io.github.dmitrytsyvtsyn.interfunny.interview_detail.viewmodel.states.InterviewEventDetailState
+import io.github.dmitrytsyvtsyn.interfunny.interview_detail.viewmodel.states.InterviewEventBusyState
+import io.github.dmitrytsyvtsyn.interfunny.interview_list.CalendarRepository
+import io.github.dmitrytsyvtsyn.interfunny.interview_list.data.InterviewRepository
+import io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel.states.InterviewModel
+import io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel.states.InterviewEventStatus
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class InterviewEventDetailViewModel : ViewModel() {
+class InterviewDetailViewModel : ViewModel() {
 
-    private val repository = InterviewEventRepository(DI.sqliteHelper, DI.platformAPI)
+    private val repository = InterviewRepository(DI.sqliteHelper, DI.platformAPI)
 
     private val _state = MutableStateFlow(
         InterviewEventDetailState(
             title = "",
             startDate = System.currentTimeMillis() + CalendarRepository.minutesInMillis(5L),
-            endDate = System.currentTimeMillis() + CalendarRepository.minutesInMillis(60)
+            endDate = System.currentTimeMillis() + CalendarRepository.minutesInMillis(65L)
         )
     )
     val state: StateFlow<InterviewEventDetailState> = _state
@@ -32,22 +32,27 @@ class InterviewEventDetailViewModel : ViewModel() {
     private val _action = MutableStateFlow<InterviewEventDetailAction>(InterviewEventDetailAction.Empty)
     val action: StateFlow<InterviewEventDetailAction> = _action
 
-    fun init(id: Long) {
-        if (id < 0) return
-
-        viewModelScope.launch {
-            val state = _state.value
-            val event = repository.fetchInterviewEvent(id, state.startDate)
-            _state.value = state.copy(
-                id = event.id,
-                eventId = event.eventId,
-                reminderId = event.reminderId,
-                title = event.title,
-                startDate = event.startDate,
-                endDate = event.endDate,
-                titleError = false,
-                timeError = false,
-                hasReminder = event.reminderId >= 0
+    fun init(id: Long, initialDate: Long) {
+        if (id >= 0) {
+            viewModelScope.launch {
+                val state = _state.value
+                val event = repository.fetchInterviewEvent(id, state.startDate)
+                _state.value = state.copy(
+                    id = event.id,
+                    eventId = event.eventId,
+                    reminderId = event.reminderId,
+                    title = event.title,
+                    startDate = event.startDate,
+                    endDate = event.endDate,
+                    titleError = false,
+                    timeError = false,
+                    hasReminder = event.reminderId >= 0
+                )
+            }
+        } else {
+            _state.value = _state.value.copy(
+                startDate = initialDate + CalendarRepository.minutesInMillis(5L),
+                endDate = initialDate + CalendarRepository.minutesInMillis(65L)
             )
         }
     }
@@ -113,7 +118,7 @@ class InterviewEventDetailViewModel : ViewModel() {
         viewModelScope.launch {
             val dateRange = state.startDate..state.endDate
 
-            val alreadyScheduledEvents = mutableListOf<InterviewEventModel>()
+            val alreadyScheduledEvents = mutableListOf<InterviewModel>()
             val suggestionRanges = mutableListOf<LongRange>()
             var currentDate = state.startDate
 
@@ -152,7 +157,7 @@ class InterviewEventDetailViewModel : ViewModel() {
                 )
             } else {
                 repository.addInterviewEvent(
-                    model = InterviewEventModel(
+                    model = InterviewModel(
                         id = state.id,
                         eventId = state.eventId,
                         reminderId = state.reminderId,
@@ -188,6 +193,10 @@ class InterviewEventDetailViewModel : ViewModel() {
 
     fun navigateToDatePicker() {
         _action.value = InterviewEventDetailAction.DatePicker(_state.value.startDate)
+    }
+
+    fun navigateToBack() {
+        _action.value = InterviewEventDetailAction.Back
     }
 
     fun resetAction() {

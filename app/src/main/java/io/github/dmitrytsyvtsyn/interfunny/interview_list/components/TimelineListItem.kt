@@ -1,4 +1,4 @@
-package io.github.dmitrytsyvtsyn.interfunny.interview_event_list.components
+package io.github.dmitrytsyvtsyn.interfunny.interview_list.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,8 +17,8 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.formatFloatingHours
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.viewmodel.states.InterviewEventListItemState
+import io.github.dmitrytsyvtsyn.interfunny.interview_list.formatFloatingHours
+import io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel.states.InterviewListItemState
 
 private const val TIMELINE_SIZE_FACTOR = 24f
 private const val ONE_HOUR_IN_MILLIS = 1000 * 3600f
@@ -32,7 +32,7 @@ fun TimelineListItem(
     ),
     paddingHorizontal: Dp = 16.dp,
     textMargin: Dp = 8.dp,
-    timeline: InterviewEventListItemState.Timeline
+    timeline: InterviewListItemState.Timeline
 ) {
     val density = LocalDensity.current.density
     val paddingHorizontalFloat = paddingHorizontal.value * density

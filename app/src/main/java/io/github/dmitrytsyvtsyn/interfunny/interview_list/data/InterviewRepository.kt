@@ -1,17 +1,17 @@
-package io.github.dmitrytsyvtsyn.interfunny.interview_event_list.data
+package io.github.dmitrytsyvtsyn.interfunny.interview_list.data
 
 import io.github.dmitrytsyvtsyn.interfunny.core.data.InterviewSqliteHelper
 import io.github.dmitrytsyvtsyn.interfunny.core.data.PlatformCalendarAPI
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.viewmodel.states.InterviewEventModel
+import io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel.states.InterviewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class InterviewEventRepository(
+class InterviewRepository(
     private val database: InterviewSqliteHelper,
     private val calendarAPI: PlatformCalendarAPI
 ) {
 
-    suspend fun addInterviewEvent(model: InterviewEventModel, hasReminder: Boolean = false) = withContext(Dispatchers.Default) {
+    suspend fun addInterviewEvent(model: InterviewModel, hasReminder: Boolean = false) = withContext(Dispatchers.Default) {
         if (model.id >= 0) {
             val reminderId = calendarAPI.updateEvent(model.eventId, model.reminderId, model.title, model.startDate, model.endDate, hasReminder)
             database.update(model.copy(reminderId = reminderId).toDatabase())

@@ -209,7 +209,7 @@ enum class ThemeContrast(val title: Int, val description: Int) {
 @Composable
 fun InterFunnyTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    contrast: ThemeContrast = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) ThemeContrast.DYNAMIC else ThemeContrast.LIGHT,
+    contrast: ThemeContrast,
     content: @Composable () -> Unit
 ) {
 

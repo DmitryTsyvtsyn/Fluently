@@ -5,6 +5,7 @@
     <string name="today_day">Сегодня</string>
     <string name="forward_day">День</string>
     <string name="new_interview">Новый собес</string>
+    <string name="editing_interview">Изменение собеса</string>
     <string name="ok">Ок</string>
     <string name="cancel">Отмена</string>
     <string name="interviews">Собесы</string>

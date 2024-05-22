@@ -1,4 +1,4 @@
-package io.github.dmitrytsyvtsyn.interfunny.interview_event_list
+package io.github.dmitrytsyvtsyn.interfunny.interview_list
 
 import android.content.ContentUris
 import android.content.Intent
@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -56,37 +58,37 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.dmitrytsyvtsyn.interfunny.R
 import io.github.dmitrytsyvtsyn.interfunny.core.navigation.LocalNavController
 import io.github.dmitrytsyvtsyn.interfunny.core.navigation.Screens
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.InterviewDatePicker
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.components.InterviewTabs
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.components.TimelineListItem
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.viewmodel.InterviewEventListViewModel
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.viewmodel.actions.InterviewEventListAction
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.viewmodel.states.InterviewEventListItemState
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.viewmodel.states.InterviewEventModel
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.viewmodel.states.InterviewEventStatus
+import io.github.dmitrytsyvtsyn.interfunny.interview_detail.InterviewDatePicker
+import io.github.dmitrytsyvtsyn.interfunny.interview_list.components.InterviewTabs
+import io.github.dmitrytsyvtsyn.interfunny.interview_list.components.TimelineListItem
+import io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel.InterviewListViewModel
+import io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel.actions.InterviewListAction
+import io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel.states.InterviewListItemState
+import io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel.states.InterviewModel
+import io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel.states.InterviewEventStatus
 import kotlinx.collections.immutable.PersistentList
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InterviewEventListScreen() {
+fun InterviewListScreen() {
     val navController = LocalNavController.current
 
-    val viewModel: InterviewEventListViewModel = viewModel()
+    val viewModel: InterviewListViewModel = viewModel()
 
     val state by viewModel.state.collectAsState()
-    val action = viewModel.action.collectAsState(InterviewEventListAction.Empty)
+    val action = viewModel.action.collectAsState(InterviewListAction.Empty)
 
     val context = LocalContext.current
 
     when (val actionStateValue = action.value) {
-        is InterviewEventListAction.Empty -> {}
-        is InterviewEventListAction.Detail -> {
-            navController.navigate("${Screens.InterviewEventDetailScreen.name}/${actionStateValue.id}")
+        is InterviewListAction.Empty -> {}
+        is InterviewListAction.Detail -> {
+            navController.navigate("${Screens.InterviewDetailScreen.NAME}/${actionStateValue.id}/${actionStateValue.date}")
             viewModel.resetAction()
         }
-        is InterviewEventListAction.ShowDatePicker -> {
+        is InterviewListAction.ShowDatePicker -> {
             InterviewDatePicker(
-                time = actionStateValue.date,
+                initialDate = actionStateValue.date,
                 dismiss = { viewModel.resetAction() },
                 ok = { date ->
                     viewModel.changeDate(date)
@@ -94,7 +96,7 @@ fun InterviewEventListScreen() {
                 }
             )
         }
-        is InterviewEventListAction.ShowDropdownMenu -> {
+        is InterviewListAction.ShowDropdownMenu -> {
             DropdownMenu(
                 expanded = true,
                 onDismissRequest = { viewModel.resetAction() }
@@ -102,7 +104,7 @@ fun InterviewEventListScreen() {
                 DropdownMenuItem(
                     text = {  Text(stringResource(id = R.string.remove_event)) },
                     onClick = {
-                        viewModel.removeInterviewEvent(actionStateValue.id, actionStateValue.eventId, actionStateValue.reminderId)
+                        viewModel.removeInterview(actionStateValue.id, actionStateValue.eventId, actionStateValue.reminderId)
                         viewModel.resetAction()
                     }
                 )
@@ -131,7 +133,7 @@ fun InterviewEventListScreen() {
                 },
                 actions = {
                     IconButton(onClick = {
-                        navController.navigate(Screens.InterviewThemeSettingsScreen.name)
+                        navController.navigate(Screens.InterviewThemeSettingsScreen.NAME)
                     }) {
                         Icon(painter = painterResource(id = R.drawable.ic_settings), contentDescription = "")
                     }
@@ -142,7 +144,7 @@ fun InterviewEventListScreen() {
             FloatingActionButton(
                 shape = RoundedCornerShape(24.dp),
                 onClick = {
-                    viewModel.addInterviewEvent()
+                    viewModel.navigateToAddingInterview()
                 }
             ) {
                 Icon(
@@ -159,15 +161,11 @@ fun InterviewEventListScreen() {
             content = {
                 InterviewTabs(
                     prevDate = CalendarRepository.formatDateMonth(state.prevDate),
-                    prevClick = viewModel::backDay,
-                    nowDate = if (CalendarRepository.formatDateMonth(state.date) == CalendarRepository.formatDateMonth(System.currentTimeMillis())) {
-                        stringResource(id = R.string.today_day)
-                    } else {
-                        CalendarRepository.formatDateMonthWeek(state.date)
-                    },
+                    prevClick = viewModel::navigateToPreviousDay,
+                    nowDate = stringResource(id = R.string.today_day),
                     nowClick = viewModel::showDatePicker,
                     nextDate = CalendarRepository.formatDateMonth(state.nextDate),
-                    nextClick = viewModel::forwardDay
+                    nextClick = viewModel::navigateToNextDay
                 )
 
                 val events = state.filteredEvents
@@ -181,13 +179,13 @@ fun InterviewEventListScreen() {
                             viewModel.navigateToDetail(id)
                         },
                         onRemove = { id, eventId, reminderId ->
-                            viewModel.removeInterviewEvent(id, eventId, reminderId)
+                            viewModel.removeInterview(id, eventId, reminderId)
                         },
                         onView = { eventId ->
                             val uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId)
                             context.startActivity(Intent(Intent.ACTION_VIEW).setData(uri))
                         },
-                        onNextDay = viewModel::forwardDay
+                        onNextDay = viewModel::navigateToNextDay
                     )
                 }
             }
@@ -229,7 +227,7 @@ private fun InterviewEmptyList() {
 
 @Composable
 private fun InterviewEventList(
-    events: PersistentList<InterviewEventListItemState>,
+    events: PersistentList<InterviewListItemState>,
     onClick: (id: Long) -> Unit,
     onRemove: (id: Long, eventId: Long, reminderId: Long) -> Unit,
     onView: (eventId: Long) -> Unit,
@@ -245,7 +243,7 @@ private fun InterviewEventList(
     ) {
         items(events.size) { index ->
             when (val listItemState = events[index]) {
-                is InterviewEventListItemState.Content -> {
+                is InterviewListItemState.Content -> {
                     InterviewContentListItem(
                         model = listItemState.model,
                         onClick = onClick,
@@ -254,14 +252,14 @@ private fun InterviewEventList(
                         onNextDay = onNextDay
                     )
                 }
-                is InterviewEventListItemState.Title -> {
+                is InterviewListItemState.Title -> {
                     Text(
                         text = listItemState.value,
                         fontSize = 18.sp,
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
-                is InterviewEventListItemState.Timeline -> {
+                is InterviewListItemState.Timeline -> {
                     TimelineListItem(timeline = listItemState)
                 }
             }
@@ -272,7 +270,7 @@ private fun InterviewEventList(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun InterviewContentListItem(
-    model: InterviewEventModel,
+    model: InterviewModel,
     onClick: (id: Long) -> Unit,
     onRemove: (id: Long, eventId: Long, reminderId: Long) -> Unit,
     onView: (eventId: Long) -> Unit,
@@ -290,7 +288,7 @@ private fun InterviewContentListItem(
             )
             .fillMaxWidth()
             .background(
-                color = MaterialTheme.colorScheme.tertiaryContainer,
+                color = MaterialTheme.colorScheme.primaryContainer,
                 shape = RoundedCornerShape(8.dp)
             )
             .combinedClickable(
@@ -304,14 +302,16 @@ private fun InterviewContentListItem(
         Column {
             Text(
                 text = model.title,
-                fontSize = 19.sp
+                fontSize = 19.sp,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
             )
             Spacer(modifier = Modifier.size(8.dp))
             Text(
                 text = "${CalendarRepository.formatHoursMinutes(model.startDate)} - ${CalendarRepository.formatHoursMinutes(model.endDate)}",
                 fontSize = 26.sp,
                 textDecoration = if (model.status != InterviewEventStatus.ACTUAL) TextDecoration.LineThrough else null,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
             )
 //            Box {
 //

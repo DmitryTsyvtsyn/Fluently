@@ -1,6 +1,6 @@
-package io.github.dmitrytsyvtsyn.interfunny.interview_event_detail.viewmodel.states
+package io.github.dmitrytsyvtsyn.interfunny.interview_detail.viewmodel.states
 
-import io.github.dmitrytsyvtsyn.interfunny.interview_event_list.viewmodel.states.InterviewEventModel
+import io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel.states.InterviewModel
 import kotlinx.collections.immutable.PersistentList
 
 data class InterviewEventDetailState(
@@ -20,7 +20,7 @@ sealed interface InterviewEventBusyState {
     data class BusyWithSuggestions(
         val startDate: Long,
         val endDate: Long,
-        val scheduledStates: PersistentList<InterviewEventModel>,
+        val scheduledStates: PersistentList<InterviewModel>,
         val suggestionRanges: PersistentList<LongRange>
     ) : InterviewEventBusyState
     data object NotBusy : InterviewEventBusyState
