@@ -38,7 +38,7 @@ import io.github.dmitrytsyvtsyn.interfunny.interview_detail.InterviewDetailScree
 import io.github.dmitrytsyvtsyn.interfunny.interview_list.InterviewListScreen
 import io.github.dmitrytsyvtsyn.interfunny.interview_list.components.InterviewCalendarError
 import io.github.dmitrytsyvtsyn.interfunny.theme_settings.ThemeSettingsScreen
-import io.github.dmitrytsyvtsyn.interfunny.theme_settings.SettingsViewModel
+import io.github.dmitrytsyvtsyn.interfunny.theme_settings.viewmodel.SettingsViewModel
 
 val LocalSettingsViewModel = staticCompositionLocalOf<SettingsViewModel> { error("Don't forget about me(") }
 

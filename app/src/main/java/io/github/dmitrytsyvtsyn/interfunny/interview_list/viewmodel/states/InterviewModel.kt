@@ -6,6 +6,5 @@ data class InterviewModel(
     val reminderId: Long = -1,
     val title: String,
     val startDate: Long,
-    val endDate: Long,
-    val status: InterviewEventStatus
+    val endDate: Long
 )

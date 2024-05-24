@@ -26,17 +26,12 @@ class InterviewRepository(
         database.delete(id)
     }
 
-    suspend fun fetchInterviewEvent(
-        id: Long,
-        nowDate: Long
-    ) = withContext(Dispatchers.Default) {
-        database.fetch(id).toModel(nowDate)
+    suspend fun fetchInterviewEvent(id: Long) = withContext(Dispatchers.Default) {
+        database.fetch(id).toModel()
     }
 
-    suspend fun fetchInterviewEvents(
-        nowDate: Long
-    ) = withContext(Dispatchers.Default) {
-        database.fetch().map { it.toModel(nowDate) }
+    suspend fun fetchInterviewEvents() = withContext(Dispatchers.Default) {
+        database.fetch().map { it.toModel() }
     }
 
 }

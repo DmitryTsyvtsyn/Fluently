@@ -22,7 +22,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -41,6 +41,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -59,16 +61,19 @@ import io.github.dmitrytsyvtsyn.interfunny.R
 import io.github.dmitrytsyvtsyn.interfunny.core.navigation.LocalNavController
 import io.github.dmitrytsyvtsyn.interfunny.core.navigation.Screens
 import io.github.dmitrytsyvtsyn.interfunny.interview_detail.InterviewDatePicker
+import io.github.dmitrytsyvtsyn.interfunny.interview_list.components.InterviewTabModel
 import io.github.dmitrytsyvtsyn.interfunny.interview_list.components.InterviewTabs
 import io.github.dmitrytsyvtsyn.interfunny.interview_list.components.TimelineListItem
 import io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel.InterviewListViewModel
 import io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel.actions.InterviewListAction
 import io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel.states.InterviewListItemState
 import io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel.states.InterviewModel
-import io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel.states.InterviewEventStatus
+import io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel.states.InterviewTimingStatus
 import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun InterviewListScreen() {
     val navController = LocalNavController.current
@@ -159,34 +164,80 @@ fun InterviewListScreen() {
                 .fillMaxSize()
                 .padding(innerPadding),
             content = {
+                val pagerState = remember(key1 = state.pages) {
+                    object : PagerState(state.initialPage) {
+                        override val pageCount: Int = state.pages.size
+                    }
+                }
+                val coroutineScope = rememberCoroutineScope()
+
+                LaunchedEffect(pagerState) {
+                    snapshotFlow { pagerState.currentPage }.collect {
+                        viewModel.changeDateByPageIndex(it)
+                    }
+                }
+
+                LaunchedEffect(pagerState) {
+                    snapshotFlow { pagerState.isScrollInProgress }.collect {
+                        if (!pagerState.isScrollInProgress) {
+                            viewModel.changePagesByPageIndex(pagerState.currentPage)
+                        }
+                    }
+                }
+
+                val nowDate = CalendarRepository.nowDate()
                 InterviewTabs(
-                    prevDate = CalendarRepository.formatDateMonth(state.prevDate),
-                    prevClick = viewModel::navigateToPreviousDay,
-                    nowDate = stringResource(id = R.string.today_day),
-                    nowClick = viewModel::showDatePicker,
-                    nextDate = CalendarRepository.formatDateMonth(state.nextDate),
-                    nextClick = viewModel::navigateToNextDay
+                    tabs = persistentListOf(
+                        InterviewTabModel(
+                            title = formatDate(date = CalendarRepository.minusDays(state.date, 1), nowDate = nowDate),
+                            onClick = {
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                                }
+                            }
+                        ),
+                        InterviewTabModel(
+                            title = formatDate(date = state.date, nowDate = nowDate),
+                            onClick = {
+                                viewModel.showDatePicker()
+                            }
+                        ),
+                        InterviewTabModel(
+                            title = formatDate(date = CalendarRepository.plusDays(state.date, 1), nowDate = nowDate),
+                            onClick = {
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                                }
+                            }
+                        )
+                    )
                 )
 
-                val events = state.filteredEvents
-
-                if (events.isEmpty()) {
-                    InterviewEmptyList()
-                } else {
-                    InterviewEventList(
-                        events = state.filteredEvents,
-                        onClick = { id ->
-                            viewModel.navigateToDetail(id)
-                        },
-                        onRemove = { id, eventId, reminderId ->
-                            viewModel.removeInterview(id, eventId, reminderId)
-                        },
-                        onView = { eventId ->
-                            val uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId)
-                            context.startActivity(Intent(Intent.ACTION_VIEW).setData(uri))
-                        },
-                        onNextDay = viewModel::navigateToNextDay
-                    )
+                val pages = state.pages
+                HorizontalPager(state = pagerState) { index ->
+                    val interviews = pages[index].items
+                    if (interviews.isEmpty()) {
+                        InterviewEmptyList()
+                    } else {
+                        InterviewEventList(
+                            events = interviews,
+                            onClick = { id ->
+                                viewModel.navigateToDetail(id)
+                            },
+                            onRemove = { id, eventId, reminderId ->
+                                viewModel.removeInterview(id, eventId, reminderId)
+                            },
+                            onView = { eventId ->
+                                val uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId)
+                                context.startActivity(Intent(Intent.ACTION_VIEW).setData(uri))
+                            },
+                            onNextDay = {
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                                }
+                            }
+                        )
+                    }
                 }
             }
         )
@@ -196,7 +247,8 @@ fun InterviewListScreen() {
 @Composable
 private fun InterviewEmptyList() {
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxSize()
     ) {
         Spacer(modifier = Modifier.size(32.dp))
 
@@ -245,7 +297,7 @@ private fun InterviewEventList(
             when (val listItemState = events[index]) {
                 is InterviewListItemState.Content -> {
                     InterviewContentListItem(
-                        model = listItemState.model,
+                        item = listItemState,
                         onClick = onClick,
                         onRemove = onRemove,
                         onView = onView,
@@ -270,7 +322,7 @@ private fun InterviewEventList(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun InterviewContentListItem(
-    model: InterviewModel,
+    item: InterviewListItemState.Content,
     onClick: (id: Long) -> Unit,
     onRemove: (id: Long, eventId: Long, reminderId: Long) -> Unit,
     onView: (eventId: Long) -> Unit,
@@ -278,12 +330,13 @@ private fun InterviewContentListItem(
 ) {
     val dropdownExpanded = remember { mutableStateOf(false) }
 
+    val model = item.model
     Box(
         modifier = Modifier
             .alpha(
-                when (model.status) {
-                    InterviewEventStatus.ACTUAL -> 1f
-                    InterviewEventStatus.PASSED -> 0.5f
+                when (item.status) {
+                    InterviewTimingStatus.ACTUAL -> 1f
+                    InterviewTimingStatus.PASSED -> 0.5f
                 }
             )
             .fillMaxWidth()
@@ -309,18 +362,10 @@ private fun InterviewContentListItem(
             Text(
                 text = "${CalendarRepository.formatHoursMinutes(model.startDate)} - ${CalendarRepository.formatHoursMinutes(model.endDate)}",
                 fontSize = 26.sp,
-                textDecoration = if (model.status != InterviewEventStatus.ACTUAL) TextDecoration.LineThrough else null,
+                textDecoration = if (item.status != InterviewTimingStatus.ACTUAL) TextDecoration.LineThrough else null,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
-//            Box {
-//
-//                Text(
-//                    text = stringResource(id = R.string.tomorrow),
-//                    text = stringResource(id = R.string.yesterday)
-//                    fontSize = 14.sp
-//                )
-//            }
 
             if (dropdownExpanded.value) {
                 DropdownMenu(
@@ -343,6 +388,7 @@ private fun InterviewContentListItem(
                     )
                 }
             }
+
         }
         Row(modifier = Modifier.align(Alignment.TopEnd), verticalAlignment = Alignment.CenterVertically) {
             if (model.reminderId >= 0) {
@@ -354,7 +400,7 @@ private fun InterviewContentListItem(
             }
 
             Text(
-                text = formatFloatingHours(hours = (model.endDate - model.startDate) / 3_600_000f),
+                text = formatFloatingHours(model.startDate, model.endDate),
                 color = MaterialTheme.colorScheme.onPrimary,
                 fontSize = 14.sp,
                 modifier = Modifier

@@ -6,7 +6,9 @@ import io.github.dmitrytsyvtsyn.interfunny.R
 import kotlin.math.roundToInt
 
 @Composable
-fun formatFloatingHours(hours: Float): String {
+fun formatFloatingHours(startDate: Long, endDate: Long): String {
+    val hours = (endDate - startDate) / 3_600_000f
+
     if (hours < 1) {
         return stringResource(id = R.string.minute_suffix, (hours * 60).toInt())
     }
@@ -17,8 +19,19 @@ fun formatFloatingHours(hours: Float): String {
     }
 
     if (divider == 5) {
-        stringResource(id = R.string.minute_suffix, "${hours.toInt()}.5")
+        return stringResource(id = R.string.hour_suffix, "${hours.toInt()}.5")
     }
 
     return stringResource(id = R.string.hour_suffix, hours.roundToInt())
+}
+
+@Composable
+fun formatDate(date: Long, nowDate: Long): String {
+    val formattedDate = CalendarRepository.formatDateMonth(date)
+    val formattedNowDate = CalendarRepository.formatDateMonth(nowDate)
+    return if (formattedNowDate == formattedDate) {
+        stringResource(id = R.string.today_day)
+    } else {
+        formattedDate
+    }
 }

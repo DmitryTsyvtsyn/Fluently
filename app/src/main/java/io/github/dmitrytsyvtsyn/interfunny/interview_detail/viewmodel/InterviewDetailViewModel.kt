@@ -10,7 +10,6 @@ import io.github.dmitrytsyvtsyn.interfunny.interview_detail.viewmodel.states.Int
 import io.github.dmitrytsyvtsyn.interfunny.interview_list.CalendarRepository
 import io.github.dmitrytsyvtsyn.interfunny.interview_list.data.InterviewRepository
 import io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel.states.InterviewModel
-import io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel.states.InterviewEventStatus
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -36,7 +35,7 @@ class InterviewDetailViewModel : ViewModel() {
         if (id >= 0) {
             viewModelScope.launch {
                 val state = _state.value
-                val event = repository.fetchInterviewEvent(id, state.startDate)
+                val event = repository.fetchInterviewEvent(id)
                 _state.value = state.copy(
                     id = event.id,
                     eventId = event.eventId,
@@ -50,9 +49,10 @@ class InterviewDetailViewModel : ViewModel() {
                 )
             }
         } else {
+            val actualDate = CalendarRepository.matchDateWithTime(initialDate, CalendarRepository.nowDate())
             _state.value = _state.value.copy(
-                startDate = initialDate + CalendarRepository.minutesInMillis(5L),
-                endDate = initialDate + CalendarRepository.minutesInMillis(65L)
+                startDate = CalendarRepository.plusMinutes(actualDate, 5L),
+                endDate = CalendarRepository.plusMinutes(actualDate, 65L)
             )
         }
     }
@@ -67,40 +67,28 @@ class InterviewDetailViewModel : ViewModel() {
     fun dateChanged(date: Long) {
         val state = _state.value
 
-        calendar.timeInMillis = date
-        val dayOfYear = calendar.get(Calendar.DAY_OF_YEAR)
-
-        calendar.timeInMillis = state.startDate
-        calendar.set(Calendar.DAY_OF_YEAR, dayOfYear)
-        val newStartDate = calendar.timeInMillis
-
-        calendar.timeInMillis = state.endDate
-        calendar.set(Calendar.DAY_OF_YEAR, dayOfYear)
-        val newEndDate = calendar.timeInMillis
-
         _state.value = state.copy(
-            startDate = newStartDate,
-            endDate = newEndDate
+            startDate = CalendarRepository.matchTimeWithDate(state.startDate, date),
+            endDate = CalendarRepository.matchTimeWithDate(state.endDate, date)
         )
     }
 
-    fun timeChanged(startHours: Int, startMinutes: Int, endHours: Int, endMinutes: Int, nextDay: Boolean) {
+    fun timeChanged(startHours: Int, startMinutes: Int, endHours: Int, endMinutes: Int) {
         val state = _state.value
 
-        calendar.timeInMillis = state.startDate
-        calendar.set(Calendar.HOUR_OF_DAY, startHours)
-        calendar.set(Calendar.MINUTE, startMinutes)
-        val startDate = calendar.timeInMillis
+        val currentTime = CalendarRepository.nowDate()
 
-        calendar.timeInMillis = state.endDate
-        calendar.set(Calendar.HOUR_OF_DAY, endHours)
-        calendar.set(Calendar.MINUTE, endMinutes)
-        if (nextDay) {
-            calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH) + 1)
+        val startDate = CalendarRepository.matchDateWithHoursAndMinutes(state.startDate, startHours, startMinutes)
+        val endDate = CalendarRepository.matchDateWithHoursAndMinutes(state.endDate, endHours, endMinutes)
+        val (actualStartDate, actualEndDate) = if (currentTime > startDate) {
+            CalendarRepository.plusDays(startDate, 1) to CalendarRepository.plusDays(endDate, 1)
+        } else if (currentTime > endDate) {
+            startDate to CalendarRepository.plusDays(endDate, 1)
+        } else {
+            startDate to endDate
         }
-        val endDate = calendar.timeInMillis
 
-        _state.value = state.copy(startDate = startDate, endDate = endDate)
+        _state.value = state.copy(startDate = actualStartDate, endDate = actualEndDate)
     }
 
     fun changeHasReminder(value: Boolean) {
@@ -124,7 +112,7 @@ class InterviewDetailViewModel : ViewModel() {
 
             val minimumInterval = CalendarRepository.plusMinutes((dateRange.last - dateRange.first), 10)
 
-            repository.fetchInterviewEvents(state.startDate)
+            repository.fetchInterviewEvents()
                 .filter { it.endDate > state.startDate && it.id != state.id }
                 .sortedBy { it.startDate }
                 .forEach { interview ->
@@ -164,7 +152,6 @@ class InterviewDetailViewModel : ViewModel() {
                         title = state.title,
                         startDate = state.startDate,
                         endDate = state.endDate,
-                        status = InterviewEventStatus.ACTUAL
                     ),
                     hasReminder = state.hasReminder
                 )

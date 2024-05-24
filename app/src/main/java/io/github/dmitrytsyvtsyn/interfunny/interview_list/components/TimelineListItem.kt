@@ -21,7 +21,7 @@ import io.github.dmitrytsyvtsyn.interfunny.interview_list.formatFloatingHours
 import io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel.states.InterviewListItemState
 
 private const val TIMELINE_SIZE_FACTOR = 24f
-private const val ONE_HOUR_IN_MILLIS = 1000 * 3600f
+private const val ONE_HOUR_IN_MILLIS = 3_600f * 1_000
 
 @Composable
 fun TimelineListItem(
@@ -41,7 +41,7 @@ fun TimelineListItem(
     val textMeasurer = rememberTextMeasurer()
 
     val hourFactor = (timeline.endDate - timeline.startDate) / ONE_HOUR_IN_MILLIS
-    val hourString = formatFloatingHours(hourFactor)
+    val hourString = formatFloatingHours(timeline.startDate, timeline.endDate)
     val textLayoutResult = remember { textMeasurer.measure(hourString, textStyle) }
 
     val shortPathEffect = remember { PathEffect.dashPathEffect(floatArrayOf(6f, 6f), 0f) }

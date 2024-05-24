@@ -1,6 +1,5 @@
 package io.github.dmitrytsyvtsyn.interfunny.interview_detail
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -124,8 +123,8 @@ fun InterviewDetailScreen(id: Long = -1, initialDate: Long = System.currentTimeM
             is InterviewEventDetailAction.TimePicker -> {
                 InterviewTimePicker(
                     dismiss = viewModel::resetAction,
-                    ok = { startHours, startMinutes, endHours, endMinutes, nextDay ->
-                        viewModel.timeChanged(startHours, startMinutes, endHours, endMinutes, nextDay)
+                    apply = { startHours, startMinutes, endHours, endMinutes ->
+                        viewModel.timeChanged(startHours, startMinutes, endHours, endMinutes)
                         viewModel.resetAction()
                     },
                     startHours = actionStateValue.startHours,
@@ -306,8 +305,7 @@ fun InterviewDetailScreen(id: Long = -1, initialDate: Long = System.currentTimeM
                                         startHoursAndMinutes.first().toInt(),
                                         startHoursAndMinutes.last().toInt(),
                                         endHoursAndMinutes.first().toInt(),
-                                        endHoursAndMinutes.last().toInt(),
-                                        nextDay = false
+                                        endHoursAndMinutes.last().toInt()
                                     )
                                 }
                             }
@@ -395,7 +393,7 @@ fun InterviewDatePicker(
 @Composable
 fun InterviewTimePicker(
     dismiss: () -> Unit,
-    ok: (startHours: Int, startMinutes: Int, endHours: Int, endMinutes: Int, nextDay: Boolean) -> Unit,
+    apply: (startHours: Int, startMinutes: Int, endHours: Int, endMinutes: Int) -> Unit,
     startHours: Int,
     startMinutes: Int,
     endHours: Int,
@@ -413,15 +411,14 @@ fun InterviewTimePicker(
     )
     val confirmEnabled = remember {
         derivedStateOf {
+            val startTime = startTimeState.hour * 60 + startTimeState.minute
+            val endTime = endTimeState.hour * 60 + endTimeState.minute
+            val currentTime = CalendarRepository.currentTime()
+
             when {
-                startTimeState.hour < CalendarRepository.currentHours() -> false
-                startTimeState.hour == CalendarRepository.currentHours() && startTimeState.minute < CalendarRepository.currentMinutes() -> false
-                startTimeState.hour < endTimeState.hour -> true
-                startTimeState.hour > endTimeState.hour -> true
-                startTimeState.hour == endTimeState.hour -> {
-                     startTimeState.minute < endTimeState.minute
-                }
-                else -> false
+                startTime < currentTime && endTime < currentTime && startTime > endTime -> false
+                startTime > currentTime && endTime > currentTime && startTime > endTime -> false
+                else -> true
             }
         }
     }
@@ -431,12 +428,11 @@ fun InterviewTimePicker(
         confirmButton = {
             TextButton(
                 onClick = {
-                    ok.invoke(
+                    apply.invoke(
                         startTimeState.hour,
                         startTimeState.minute,
                         endTimeState.hour,
-                        endTimeState.minute,
-                        startTimeState.hour > endTimeState.hour
+                        endTimeState.minute
                     )
                 },
                 enabled = confirmEnabled.value

@@ -4,8 +4,12 @@ import kotlinx.collections.immutable.PersistentList
 
 data class InterviewListState(
     val date: Long,
-    val prevDate: Long,
-    val nextDate: Long,
-    val totalEvents: PersistentList<InterviewModel>,
-    val filteredEvents: PersistentList<InterviewListItemState>
+    val totalItems: PersistentList<InterviewModel>,
+    val initialPage: Int,
+    val pages: PersistentList<InterviewListPagingState>
+)
+
+data class InterviewListPagingState(
+    val date: Long,
+    val items: PersistentList<InterviewListItemState>
 )

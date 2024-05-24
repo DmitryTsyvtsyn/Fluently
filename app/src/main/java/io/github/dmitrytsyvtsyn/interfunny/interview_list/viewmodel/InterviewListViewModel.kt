@@ -1,6 +1,5 @@
 package io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel
 
-import android.icu.util.Calendar
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.dmitrytsyvtsyn.interfunny.core.di.DI
@@ -8,8 +7,10 @@ import io.github.dmitrytsyvtsyn.interfunny.interview_list.CalendarRepository
 import io.github.dmitrytsyvtsyn.interfunny.interview_list.data.InterviewRepository
 import io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel.actions.InterviewListAction
 import io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel.states.InterviewListItemState
+import io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel.states.InterviewListPagingState
 import io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel.states.InterviewListState
 import io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel.states.InterviewModel
+import io.github.dmitrytsyvtsyn.interfunny.interview_list.viewmodel.states.InterviewTimingStatus
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
@@ -24,10 +25,9 @@ class InterviewListViewModel : ViewModel() {
     private val _state: MutableStateFlow<InterviewListState> = MutableStateFlow(
         InterviewListState(
             date = System.currentTimeMillis(),
-            prevDate = System.currentTimeMillis() - DAY,
-            nextDate = System.currentTimeMillis() + DAY,
-            totalEvents = persistentListOf(),
-            filteredEvents = persistentListOf()
+            totalItems = persistentListOf(),
+            initialPage = 0,
+            pages = persistentListOf(),
         )
     )
     val state: StateFlow<InterviewListState> = _state
@@ -37,52 +37,47 @@ class InterviewListViewModel : ViewModel() {
 
     fun init() = viewModelScope.launch {
         val state = _state.value
-        val dateRange = calculateDateFilter(state.date)
-        val totalEvents = repository.fetchInterviewEvents(state.date).toPersistentList()
+        val interviews = repository.fetchInterviewEvents().toPersistentList()
 
+        val pages = interviews.filteredAndSortedPages(state.date)
         _state.value = state.copy(
-            totalEvents = totalEvents,
-            filteredEvents = totalEvents.filteredAndSorted(dateRange)
+            totalItems = interviews,
+            initialPage = pages.size / 2,
+            pages = pages
         )
     }
 
     fun changeDate(newDate: Long) {
         val state = _state.value
-        val dateRange = calculateDateFilter(newDate)
-        _state.value = state.copy(
-            date = newDate,
-            prevDate = newDate - DAY,
-            nextDate  = newDate + DAY,
-            filteredEvents = state.totalEvents.filteredAndSorted(dateRange)
-        )
-    }
+        if (newDate == state.date) return
 
-    fun navigateToPreviousDay() {
-        val state = _state.value
-        val newDate = state.date - DAY
-        val dateRange = calculateDateFilter(newDate)
         _state.value = state.copy(
             date = newDate,
-            prevDate = newDate - DAY,
-            nextDate = newDate + DAY,
-            filteredEvents = state.totalEvents.filteredAndSorted(dateRange)
-        )
-    }
-
-    fun navigateToNextDay() {
-        val state = _state.value
-        val newDate = state.date + DAY
-        val dateRange = calculateDateFilter(newDate)
-        _state.value = state.copy(
-            date = newDate,
-            prevDate = state.date,
-            nextDate = newDate + DAY,
-            filteredEvents = state.totalEvents.filteredAndSorted(dateRange)
+            pages = state.totalItems.filteredAndSortedPages(newDate)
         )
     }
 
     fun resetAction() {
         _action.value = InterviewListAction.Empty
+    }
+
+    fun changeDateByPageIndex(page: Int) {
+        val state = _state.value
+        if (page !in state.pages.indices) return
+        _state.value = state.copy(date = state.pages[page].date)
+    }
+
+    fun changePagesByPageIndex(page: Int) {
+        val state = _state.value
+        if (page !in state.pages.indices) return
+        if (page == 0 || page == PAGE_SIZE - 1) {
+
+            val newDate = state.pages[page].date
+            _state.value = state.copy(
+                date = newDate,
+                pages = state.totalItems.filteredAndSortedPages(newDate)
+            )
+        }
     }
 
     fun showDatePicker() {
@@ -102,51 +97,86 @@ class InterviewListViewModel : ViewModel() {
         init()
     }
 
-    private fun PersistentList<InterviewModel>.filteredAndSorted(dateRange: LongRange): PersistentList<InterviewListItemState> {
-        var current = dateRange.first
-        val listStates = mutableListOf<InterviewListItemState>()
-        val models = filter { it.startDate in dateRange || it.endDate in dateRange }.sortedBy { it.startDate }
-        val lastIndex = models.size - 1
-        val minimumTimelineInterval = CalendarRepository.minutesInMillis(15)
-        models.forEachIndexed { index, model ->
-            if (index == 0) {
-                listStates.add(InterviewListItemState.Title("00:00"))
-            }
-
-            if ((model.startDate - current) > minimumTimelineInterval) {
-                listStates.add(InterviewListItemState.Timeline(current, model.startDate))
-            }
-
-            listStates.add(InterviewListItemState.Content(model))
-
-            if (index == lastIndex) {
-                if ((dateRange.last - model.endDate) > minimumTimelineInterval) {
-                    listStates.add(InterviewListItemState.Timeline(model.endDate, dateRange.last))
-                }
-
-                listStates.add(InterviewListItemState.Title("24:00"))
-            }
-
-            current = model.endDate
+    private fun PersistentList<InterviewModel>.filteredAndSortedPages(date: Long): PersistentList<InterviewListPagingState> {
+        val centerIndex = PAGE_SIZE / 2
+        val pages = MutableList(PAGE_SIZE) { index ->
+            val pageDate = CalendarRepository.plusDays(date, index - centerIndex)
+            Triple<Long, LongRange, MutableList<InterviewListItemState>>(
+                pageDate,
+                CalendarRepository.dateRangeInDays(pageDate, 1),
+                mutableListOf()
+            )
         }
 
-        return listStates.toPersistentList()
-    }
+        var pageIndex = 0
+        var itemIndex = 0
+        var listItemIndex = 0
+        val minimumTimelineInterval = CalendarRepository.minutesInMillis(15)
+        val items = sortedBy { it.startDate }
+        val nowDate = CalendarRepository.nowDate()
+        while (itemIndex < items.size && pageIndex < pages.size) {
 
-    private fun calculateDateFilter(date: Long): LongRange {
-        calendar.timeInMillis = date
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        val fromDate = calendar.timeInMillis
-        calendar.add(Calendar.DAY_OF_MONTH, 1)
-        val toDate = calendar.timeInMillis
+            val item = items[itemIndex]
+            val (_, dateRange, listItems) = pages[pageIndex]
 
-        return fromDate until toDate
+            if (item.startDate in dateRange || item.endDate in dateRange) {
+                if (listItems.isEmpty()) {
+                    listItems.add(InterviewListItemState.Title("00:00"))
+                }
+
+                if (listItemIndex == 0) {
+                    if ((item.startDate - dateRange.first) > minimumTimelineInterval) {
+                        listItems.add(InterviewListItemState.Timeline(dateRange.first, item.startDate))
+                    }
+                } else {
+                    if ((item.startDate - items[itemIndex - 1].endDate) > minimumTimelineInterval) {
+                        listItems.add(InterviewListItemState.Timeline(items[itemIndex - 1].endDate, item.startDate))
+                    }
+                }
+
+                listItems.add(InterviewListItemState.Content(item, if (item.endDate < nowDate) InterviewTimingStatus.PASSED else InterviewTimingStatus.ACTUAL))
+
+                val nextPageIndex = pageIndex + 1
+                val nextIndex = itemIndex + 1
+                when {
+                    nextPageIndex < pages.size && item.endDate in pages[nextPageIndex].second -> {
+                        if ((dateRange.last - item.endDate) > minimumTimelineInterval) {
+                            listItems.add(InterviewListItemState.Timeline(item.endDate, dateRange.last))
+                        }
+
+                        listItems.add(InterviewListItemState.Title("24:00"))
+
+                        listItemIndex = 0
+                        pageIndex++
+                    }
+                    nextIndex >= items.size || items[nextIndex].startDate !in dateRange -> {
+                        if ((dateRange.last - item.endDate) > minimumTimelineInterval) {
+                            listItems.add(InterviewListItemState.Timeline(item.endDate, dateRange.last))
+                        }
+
+                        listItems.add(InterviewListItemState.Title("24:00"))
+
+                        listItemIndex = 0
+                        pageIndex++
+                        itemIndex++
+                    }
+                    else -> {
+                        listItemIndex++
+                        itemIndex++
+                    }
+                }
+            } else {
+                listItemIndex = 0
+                pageIndex++
+            }
+        }
+
+        return pages.map { (date, _, models) -> InterviewListPagingState(date, models.toPersistentList()) }
+            .toPersistentList()
     }
 
     companion object {
-        private const val DAY = 24 * 3600 * 1000
-        private val calendar = Calendar.getInstance()
+        private const val PAGE_SIZE = 15
     }
 
 }
