@@ -19,7 +19,7 @@
     <string name="reschedule">Перенести</string>
     <string name="already_scheduled_events">У вас уже есть запланированные события на это время</string>
     <string name="try_folowing_ranges">Попробуйте следующие диапазоны:</string>
-    <string name="remove_event">Удалить собес</string>
+    <string name="remove_event">Удалить событие</string>
     <string name="show_event">Посмотреть в календаре</string>    <string name="calendar_permission_denied">Вы запретили доступ к календарю(</string>
     <string name="request_access_again">Запросить снова</string>
     <string name="hour_suffix">%1$s ч.</string>
