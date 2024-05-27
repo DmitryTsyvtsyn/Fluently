@@ -1,8 +1,6 @@
 package io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel
 
-import io.github.dmitrytsyvtsyn.fluently.core.viewmodel.ViewEvent
-
-sealed interface HappeningListEvent : ViewEvent {
+sealed interface HappeningListEvent {
     data class ChangeDate(val date: Long) : HappeningListEvent
     data class ChangeDateByPageIndex(val index: Int) : HappeningListEvent
     data class ChangePagesByPageIndex(val index: Int) : HappeningListEvent

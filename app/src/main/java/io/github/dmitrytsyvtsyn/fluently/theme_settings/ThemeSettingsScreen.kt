@@ -84,14 +84,14 @@ fun ThemeSettingsScreen() {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            viewModel.pushEvent(
+                            viewModel.handleEvent(
                                 SettingsEvent.ChangeContrast(contrast = contrast)
                             )
                         }
                         .padding(horizontal = 16.dp, vertical = 12.dp)
                 ) {
                     RadioButton(selected = contrast == state.contrast, onClick = {
-                        viewModel.pushEvent(
+                        viewModel.handleEvent(
                             SettingsEvent.ChangeContrast(contrast = contrast)
                         )
                     })

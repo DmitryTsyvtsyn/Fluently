@@ -42,6 +42,7 @@ import io.github.dmitrytsyvtsyn.fluently.happening_list.components.HappeningCale
 import io.github.dmitrytsyvtsyn.fluently.happening_time_picker.HappeningTimePicker
 import io.github.dmitrytsyvtsyn.fluently.theme_settings.ThemeSettingsScreen
 import io.github.dmitrytsyvtsyn.fluently.theme_settings.viewmodel.SettingsViewModel
+import kotlinx.coroutines.flow.flow
 
 val LocalSettingsViewModel = staticCompositionLocalOf<SettingsViewModel> { error("Don't forget about me(") }
 

@@ -1,6 +1,5 @@
 package io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel
 
-import io.github.dmitrytsyvtsyn.fluently.core.viewmodel.ViewState
 import io.github.dmitrytsyvtsyn.fluently.happening_list.model.HappeningModel
 import kotlinx.collections.immutable.PersistentList
 
@@ -9,7 +8,7 @@ data class HappeningListState(
     val totalItems: PersistentList<HappeningModel>,
     val currentPage: Int,
     val pages: PersistentList<InterviewListPagingState>
-) : ViewState
+)
 
 data class InterviewListPagingState(
     val date: Long,

@@ -1,11 +1,10 @@
 package io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel
 
-import io.github.dmitrytsyvtsyn.fluently.core.viewmodel.ViewState
 import io.github.dmitrytsyvtsyn.fluently.happening_list.model.HappeningModel
 import kotlinx.collections.immutable.PersistentList
 
 data class HappeningDetailState(
-    val id: Long = -1,
+    val id: Long = 0,
     val eventId: Long = -1,
     val reminderId: Long = -1,
     val title: String,
@@ -15,7 +14,7 @@ data class HappeningDetailState(
     val timeError: Boolean = false,
     val busyState: InterviewEventBusyState = InterviewEventBusyState.NotBusy,
     val hasReminder: Boolean = false,
-) : ViewState
+)
 
 sealed interface InterviewEventBusyState {
     data class BusyWithSuggestions(

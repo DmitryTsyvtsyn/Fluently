@@ -1,8 +1,6 @@
 package io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel
 
-import io.github.dmitrytsyvtsyn.fluently.core.viewmodel.ViewEvent
-
-sealed interface HappeningDetailEvent : ViewEvent {
+sealed interface HappeningDetailEvent {
 
     data class TitleChanged(val title: String) : HappeningDetailEvent
 

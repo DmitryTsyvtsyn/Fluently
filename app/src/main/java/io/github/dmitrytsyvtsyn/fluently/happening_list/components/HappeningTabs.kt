@@ -74,7 +74,7 @@ private fun RowScope.StartTab(tabModel: HappeningTabModel) {
             Text(
                 text = tabModel.title,
                 color = MaterialTheme.colorScheme.onBackground,
-                fontSize = 17.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
         }
@@ -105,7 +105,7 @@ private fun RowScope.CenterTab(tabModel: HappeningTabModel) {
     ) {
         Text(
             text = tabModel.title,
-            fontSize = 17.sp,
+            fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
             color = primaryColor
         )
@@ -132,7 +132,7 @@ private fun RowScope.EndTab(tabModel: HappeningTabModel) {
         ) {
             Text(
                 text = tabModel.title,
-                fontSize = 17.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
             )

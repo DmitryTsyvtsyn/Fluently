@@ -62,7 +62,7 @@ fun HappeningListScreen() {
     LaunchedEffect(key1 = newSelectedDate) {
         val date = newSelectedDate.value
         if (date > 0) {
-            viewModel.pushEvent(HappeningListEvent.ChangeDate(date))
+            viewModel.handleEvent(HappeningListEvent.ChangeDate(date))
         }
     }
 
@@ -104,7 +104,7 @@ fun HappeningListScreen() {
             FloatingActionButton(
                 shape = RoundedCornerShape(24.dp),
                 onClick = {
-                    viewModel.pushEvent(HappeningListEvent.ShowHappeningAdding)
+                    viewModel.handleEvent(HappeningListEvent.ShowHappeningAdding)
                 }
             ) {
                 Icon(
@@ -128,14 +128,14 @@ fun HappeningListScreen() {
 
                 LaunchedEffect(pagerState) {
                     snapshotFlow { pagerState.currentPage }.collect {
-                        viewModel.pushEvent(HappeningListEvent.ChangeDateByPageIndex(it))
+                        viewModel.handleEvent(HappeningListEvent.ChangeDateByPageIndex(it))
                     }
                 }
 
                 LaunchedEffect(pagerState) {
                     snapshotFlow { pagerState.isScrollInProgress }.collect {
                         if (!pagerState.isScrollInProgress) {
-                            viewModel.pushEvent(HappeningListEvent.ChangePagesByPageIndex(pagerState.currentPage))
+                            viewModel.handleEvent(HappeningListEvent.ChangePagesByPageIndex(pagerState.currentPage))
                         }
                     }
                 }
@@ -154,7 +154,7 @@ fun HappeningListScreen() {
                         HappeningTabModel(
                             title = formatDate(date = state.date, nowDate = nowDate),
                             onClick = {
-                                viewModel.pushEvent(HappeningListEvent.ShowDatePicker)
+                                viewModel.handleEvent(HappeningListEvent.ShowDatePicker)
                             }
                         ),
                         HappeningTabModel(
@@ -178,10 +178,10 @@ fun HappeningListScreen() {
                         HappeningList(
                             events = interviews,
                             onClick = { id ->
-                                viewModel.pushEvent(HappeningListEvent.ShowHappeningEditing(id))
+                                viewModel.handleEvent(HappeningListEvent.ShowHappeningEditing(id))
                             },
                             onRemove = { id, eventId, reminderId ->
-                                viewModel.pushEvent(HappeningListEvent.RemoveHappening(id, eventId, reminderId))
+                                viewModel.handleEvent(HappeningListEvent.RemoveHappening(id, eventId, reminderId))
                             },
                             onView = { eventId ->
                                 val uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId)

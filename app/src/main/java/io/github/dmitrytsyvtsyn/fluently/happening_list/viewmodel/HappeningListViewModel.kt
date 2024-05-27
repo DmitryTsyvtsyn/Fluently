@@ -4,80 +4,92 @@ import androidx.lifecycle.viewModelScope
 import io.github.dmitrytsyvtsyn.fluently.core.di.DI
 import io.github.dmitrytsyvtsyn.fluently.core.viewmodel.BaseViewModel
 import io.github.dmitrytsyvtsyn.fluently.happening_list.CalendarRepository
-import io.github.dmitrytsyvtsyn.fluently.happening_list.data.InterviewRepository
+import io.github.dmitrytsyvtsyn.fluently.happening_list.data.HappeningRepository
 import io.github.dmitrytsyvtsyn.fluently.happening_list.model.HappeningModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 
-class HappeningListViewModel : BaseViewModel<HappeningListEvent, HappeningListState, HappeningListSideEffect>() {
-
-    private val repository = InterviewRepository(DI.sqliteHelper, DI.platformAPI)
-
-    override fun initialState() = HappeningListState(
+class HappeningListViewModel : BaseViewModel<HappeningListEvent, HappeningListState, HappeningListSideEffect>(
+    HappeningListState(
         date = System.currentTimeMillis(),
         totalItems = persistentListOf(),
         currentPage = 0,
         pages = persistentListOf(),
     )
+) {
 
-    override fun handleEvents(event: HappeningListEvent) {
+    private val repository = HappeningRepository(DI.database.happeningDao(), DI.platformAPI)
+
+    override fun handleEvent(event: HappeningListEvent) {
         when (event) {
-            is HappeningListEvent.ChangeDate -> {
-                if (viewState.value.date == event.date) return
+            is HappeningListEvent.ChangeDate -> handleEvent(event)
+            is HappeningListEvent.ChangeDateByPageIndex -> handleEvent(event)
+            is HappeningListEvent.ChangePagesByPageIndex -> handleEvent(event)
+            is HappeningListEvent.RemoveHappening -> handleEvent(event)
+            is HappeningListEvent.ShowHappeningEditing -> handleEvent(event)
+            is HappeningListEvent.ShowHappeningAdding -> handleEvent(event)
+            is HappeningListEvent.ShowDatePicker -> handleEvent(event)
+        }
+    }
 
-                setState {
-                    copy(
-                        date = event.date,
-                        pages = totalItems.filteredAndSortedPages(event.date)
-                    )
-                }
-            }
-            is HappeningListEvent.ChangeDateByPageIndex -> {
-                val pageIndex = event.index
-                if (pageIndex !in viewState.value.pages.indices) return
-                setState {
-                    copy(
-                        date = pages[pageIndex].date,
-                        currentPage = pageIndex
-                    )
-                }
-            }
-            is HappeningListEvent.ChangePagesByPageIndex -> {
-                val pageIndex = event.index
-                if (pageIndex !in viewState.value.pages.indices) return
-                if (pageIndex == 0 || pageIndex == PAGE_SIZE - 1) {
-                    setState {
-                        val newDate = pages[pageIndex].date
-                        copy(
-                            date = newDate,
-                            currentPage = PAGE_SIZE / 2,
-                            pages = totalItems.filteredAndSortedPages(newDate)
-                        )
-                    }
-                }
-            }
-            is HappeningListEvent.RemoveHappening -> {
-                viewModelScope.launch {
-                    repository.removeInterviewEvent(event.id, event.eventId, event.reminderId)
-                    init()
-                }
-            }
-            is HappeningListEvent.ShowHappeningEditing -> {
-                setEffect(HappeningListSideEffect.ShowDetail(event.id, viewState.value.date))
-            }
-            is HappeningListEvent.ShowHappeningAdding -> {
-                setEffect(HappeningListSideEffect.ShowDetail(-1, viewState.value.date))
-            }
-            is HappeningListEvent.ShowDatePicker -> {
-                setEffect(HappeningListSideEffect.ShowDatePicker(viewState.value.date))
+    private fun handleEvent(event: HappeningListEvent.ChangeDate) {
+        if (viewState.value.date == event.date) return
+
+        setState {
+            copy(
+                date = event.date,
+                pages = totalItems.filteredAndSortedPages(event.date)
+            )
+        }
+    }
+
+    private fun handleEvent(event: HappeningListEvent.ChangeDateByPageIndex) {
+        val pageIndex = event.index
+        if (pageIndex !in viewState.value.pages.indices) return
+        setState {
+            copy(
+                date = pages[pageIndex].date,
+                currentPage = pageIndex
+            )
+        }
+    }
+
+    private fun handleEvent(event: HappeningListEvent.ChangePagesByPageIndex) {
+        val pageIndex = event.index
+        if (pageIndex !in viewState.value.pages.indices) return
+        if (pageIndex == 0 || pageIndex == PAGE_SIZE - 1) {
+            setState {
+                val newDate = pages[pageIndex].date
+                copy(
+                    date = newDate,
+                    currentPage = PAGE_SIZE / 2,
+                    pages = totalItems.filteredAndSortedPages(newDate)
+                )
             }
         }
     }
 
+    private fun handleEvent(event: HappeningListEvent.RemoveHappening) = viewModelScope.launch {
+        repository.delete(event.id, event.eventId, event.reminderId)
+        init()
+    }
+
+    private fun handleEvent(event: HappeningListEvent.ShowHappeningEditing) {
+        setEffect(HappeningListSideEffect.ShowDetail(event.id, viewState.value.date))
+    }
+
+    private fun handleEvent(event: HappeningListEvent.ShowHappeningAdding) {
+        setEffect(HappeningListSideEffect.ShowDetail(-1, viewState.value.date))
+    }
+
+    private fun handleEvent(event: HappeningListEvent.ShowDatePicker) {
+        setEffect(HappeningListSideEffect.ShowDatePicker(viewState.value.date))
+    }
+
     fun init() = viewModelScope.launch {
-        val happenings = repository.fetchInterviewEvents().toPersistentList()
+        val happenings = repository.fetch().toPersistentList()
 
         setState {
             copy(

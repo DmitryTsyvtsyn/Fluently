@@ -85,7 +85,7 @@ fun HappeningDetailScreen(id: Long = -1, initialDate: Long = System.currentTimeM
                 navigationIcon = {
                     DebounceIconButton(
                         onClick = {
-                            viewModel.pushEvent(HappeningDetailEvent.Back)
+                            viewModel.handleEvent(HappeningDetailEvent.Back)
                         }
                     ) {
                         Icon(painter = painterResource(id = R.drawable.ic_back), contentDescription = "")
@@ -93,7 +93,7 @@ fun HappeningDetailScreen(id: Long = -1, initialDate: Long = System.currentTimeM
                 },
                 actions = {
                     IconButton(onClick = {
-                        viewModel.pushEvent(HappeningDetailEvent.SaveHappening)
+                        viewModel.handleEvent(HappeningDetailEvent.SaveHappening)
                     }) {
                         Icon(painter = painterResource(id = R.drawable.ic_check), contentDescription = "")
                     }
@@ -111,7 +111,7 @@ fun HappeningDetailScreen(id: Long = -1, initialDate: Long = System.currentTimeM
         LaunchedEffect(key1 = newSelectedDate.value) {
             val date = newSelectedDate.value
             if (date > 0) {
-                viewModel.pushEvent(HappeningDetailEvent.DateChanged(date))
+                viewModel.handleEvent(HappeningDetailEvent.DateChanged(date))
             }
         }
 
@@ -121,7 +121,7 @@ fun HappeningDetailScreen(id: Long = -1, initialDate: Long = System.currentTimeM
         LaunchedEffect(key1 = newSelectedTime.value) {
             val time = newSelectedTime.value
             if (time.isNotEmpty) {
-                viewModel.pushEvent(HappeningDetailEvent.TimeChanged(time.startHours, time.startMinutes, time.endHours, time.endMinutes))
+                viewModel.handleEvent(HappeningDetailEvent.TimeChanged(time.startHours, time.startMinutes, time.endHours, time.endMinutes))
             }
         }
 
@@ -168,7 +168,7 @@ fun HappeningDetailScreen(id: Long = -1, initialDate: Long = System.currentTimeM
                         isError = state.titleError,
                         value = state.title,
                         onValueChange = { title ->
-                            viewModel.pushEvent(HappeningDetailEvent.TitleChanged(title))
+                            viewModel.handleEvent(HappeningDetailEvent.TitleChanged(title))
                         })
 
                     if (state.titleError) {
@@ -196,7 +196,7 @@ fun HappeningDetailScreen(id: Long = -1, initialDate: Long = System.currentTimeM
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = rememberRipple(bounded = true),
                             ) {
-                                viewModel.pushEvent(HappeningDetailEvent.ShowDatePicker)
+                                viewModel.handleEvent(HappeningDetailEvent.ShowDatePicker)
                              }
                             .padding(8.dp)
 
@@ -224,7 +224,7 @@ fun HappeningDetailScreen(id: Long = -1, initialDate: Long = System.currentTimeM
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = rememberRipple(bounded = true),
                             ) {
-                                viewModel.pushEvent(HappeningDetailEvent.ShowTimePicker)
+                                viewModel.handleEvent(HappeningDetailEvent.ShowTimePicker)
                             }
                             .padding(8.dp)
 
@@ -305,7 +305,7 @@ fun HappeningDetailScreen(id: Long = -1, initialDate: Long = System.currentTimeM
                                     val startHoursAndMinutes = startDate.split(":")
                                     val endHoursAndMinutes = endDate.split(":")
 
-                                    viewModel.pushEvent(
+                                    viewModel.handleEvent(
                                         HappeningDetailEvent.TimeChanged(
                                             startHoursAndMinutes.first().toInt(),
                                             startHoursAndMinutes.last().toInt(),
@@ -328,7 +328,7 @@ fun HappeningDetailScreen(id: Long = -1, initialDate: Long = System.currentTimeM
                         Checkbox(
                             checked = state.hasReminder,
                             onCheckedChange = {
-                                viewModel.pushEvent(HappeningDetailEvent.ChangeHasReminder(it))
+                                viewModel.handleEvent(HappeningDetailEvent.ChangeHasReminder(it))
                             }
                         )
                         Spacer(modifier = Modifier.size(8.dp))
@@ -344,7 +344,7 @@ fun HappeningDetailScreen(id: Long = -1, initialDate: Long = System.currentTimeM
                     modifier = Modifier.fillMaxWidth(),
                     contentPadding = PaddingValues(12.dp),
                     onClick = {
-                        viewModel.pushEvent(HappeningDetailEvent.SaveHappening)
+                        viewModel.handleEvent(HappeningDetailEvent.SaveHappening)
                     }
                 ) {
                     Text(

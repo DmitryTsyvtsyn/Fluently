@@ -1,8 +1,6 @@
 package io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel
 
-import io.github.dmitrytsyvtsyn.fluently.core.viewmodel.ViewSideEffect
-
-sealed interface HappeningDetailSideEffect : ViewSideEffect {
+sealed interface HappeningDetailSideEffect {
 
     data class DatePicker(val date: Long) : HappeningDetailSideEffect
 

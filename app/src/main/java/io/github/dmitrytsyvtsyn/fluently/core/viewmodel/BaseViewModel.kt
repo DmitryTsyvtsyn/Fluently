@@ -2,52 +2,29 @@ package io.github.dmitrytsyvtsyn.fluently.core.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
-interface ViewEvent
-
-interface ViewState
-
-interface ViewSideEffect
-
-abstract class BaseViewModel<Event : ViewEvent, State : ViewState, Effect : ViewSideEffect> : ViewModel() {
-
-    private val initialState: State by lazy { initialState() }
+abstract class BaseViewModel<Event, State, Effect>(initialState: State) : ViewModel() {
 
     private val _viewState: MutableStateFlow<State> = MutableStateFlow(initialState)
     val viewState: StateFlow<State> = _viewState
 
-    private val _event: MutableSharedFlow<Event> = MutableSharedFlow()
+    private val _effect: MutableSharedFlow<Effect> = MutableSharedFlow()
+    val effect = _effect.asSharedFlow()
 
-    private val _effect: Channel<Effect> = Channel()
-    val effect = _effect.receiveAsFlow()
+    abstract fun handleEvent(event: Event)
 
-    init {
-        viewModelScope.launch {
-            _event.collect { handleEvents(it) }
-        }
-    }
-
-    fun pushEvent(event: Event) = viewModelScope.launch {
-        _event.emit(event)
-    }
-
-    protected abstract fun initialState(): State
-
-    protected abstract fun handleEvents(event: Event)
-
-    protected fun setState(reducer: State.() -> State) {
-        val newState = viewState.value.reducer()
+    protected fun setState(update: State.() -> State) {
+        val newState = viewState.value.update()
         _viewState.value = newState
     }
 
     protected fun setEffect(effect: Effect) {
-        viewModelScope.launch { _effect.send(effect) }
+        viewModelScope.launch { _effect.emit(effect) }
     }
 
 }

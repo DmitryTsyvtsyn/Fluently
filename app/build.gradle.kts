@@ -68,5 +68,6 @@ dependencies {
     implementation(libs.androidx.compose.navigation)
     implementation(libs.jetbrains.immutable.collections)
     implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
     ksp(libs.room.compiler)
 }
