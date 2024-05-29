@@ -3,7 +3,6 @@ package io.github.dmitrytsyvtsyn.fluently.happening_list
 import android.annotation.SuppressLint
 import android.icu.util.Calendar
 import androidx.collection.IntIntPair
-import io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel.HappeningDetailViewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -12,21 +11,17 @@ object CalendarRepository {
     @SuppressLint("ConstantLocale")
     private val locale = Locale.getDefault()
     private val dateMonthFormat = SimpleDateFormat("dd MMMM", locale)
-    private val dateMonthWeekFormat = SimpleDateFormat("dd MMM, EEE", locale)
     private val dateMonthYearFormat = SimpleDateFormat("dd MMM yyyy", locale)
     private val briefDateMonthYearFormat = SimpleDateFormat("dd.MM.yyyy", locale)
     private val timeFormat = SimpleDateFormat("HH:mm", locale)
     private val calendar = Calendar.getInstance()
 
-    private const val MINUTE = 60 * 1000L
-    private const val DAY = 24 * 3600 * 1000
+    private const val SECOND = 1_000L
+    private const val MINUTE = 60 * SECOND
+    private const val DAY = 24 * 60 * MINUTE
 
     fun formatDateMonth(time: Long): String {
         return dateMonthFormat.format(time)
-    }
-
-    fun formatDateMonthWeek(time: Long): String {
-        return dateMonthWeekFormat.format(time)
     }
 
     fun formatDateMonthYear(time: Long): String {
@@ -43,10 +38,6 @@ object CalendarRepository {
 
     fun minutesInMillis(value: Long): Long {
         return MINUTE * value
-    }
-
-    fun minusMinutes(value: Long, difference: Long): Long {
-        return value - difference * MINUTE
     }
 
     fun plusMinutes(date: Long, difference: Long): Long {
@@ -82,6 +73,11 @@ object CalendarRepository {
     fun currentTime(): Int {
         calendar.timeInMillis = System.currentTimeMillis()
         return calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE)
+    }
+
+    fun timeFromDate(date: Long): Int {
+        calendar.timeInMillis = date
+        return calendar.get(Calendar.MILLISECONDS_IN_DAY)
     }
 
     fun matchDateWithHoursAndMinutes(date: Long, hours: Int, minutes: Int): Long {
@@ -125,6 +121,24 @@ object CalendarRepository {
 
     fun nowDate(): Long {
         return System.currentTimeMillis()
+    }
+
+    fun compareDates(date1: Long, date2: Long): Boolean {
+        calendar.timeInMillis = date1
+        val days1 = calendar.get(Calendar.DAY_OF_YEAR)
+
+        calendar.timeInMillis = date2
+        val days2 = calendar.get(Calendar.DAY_OF_YEAR)
+
+        return days1 == days2
+    }
+
+    fun calculateMillisForNextMinute(time: Long): Long {
+        calendar.timeInMillis = time
+        calendar.add(Calendar.MINUTE, 1)
+        calendar.set(Calendar.SECOND, 0)
+        val nextTime = calendar.timeInMillis
+        return nextTime - time
     }
 
 }

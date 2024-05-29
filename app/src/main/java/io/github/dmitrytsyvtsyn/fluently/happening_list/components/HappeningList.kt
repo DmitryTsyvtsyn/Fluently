@@ -7,16 +7,15 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -31,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -44,36 +44,41 @@ import kotlinx.collections.immutable.PersistentList
 
 @Composable
 fun HappeningList(
-    events: PersistentList<HappeningListItemState>,
+    listItemStates: PersistentList<HappeningListItemState>,
     onClick: (id: Long) -> Unit,
     onRemove: (id: Long, eventId: Long, reminderId: Long) -> Unit,
     onView: (eventId: Long) -> Unit,
-    onNextDay: () -> Unit
+    onPrevDay: () -> Unit,
+    onNextDay: () -> Unit,
+    titleStyle: TextStyle = TextStyle(
+        fontSize = 18.sp,
+        fontWeight = FontWeight.Medium,
+        color = MaterialTheme.colorScheme.primary
+    )
 ) {
-    val listState = rememberLazyListState()
-
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        state = listState,
-        contentPadding = PaddingValues(16.dp),
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(events.size) { index ->
-            when (val listItemState = events[index]) {
+        listItemStates.forEach { listItemState ->
+            when (listItemState) {
                 is HappeningListItemState.Content -> {
-                    InterviewContentListItem(
+                    HappeningContentListItem(
                         item = listItemState,
                         onClick = onClick,
                         onRemove = onRemove,
                         onView = onView,
+                        onPrevDay = onPrevDay,
                         onNextDay = onNextDay
                     )
                 }
                 is HappeningListItemState.Title -> {
                     Text(
                         text = listItemState.value,
-                        fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.primary
+                        style = titleStyle
                     )
                 }
                 is HappeningListItemState.Timeline -> {
@@ -86,11 +91,12 @@ fun HappeningList(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun InterviewContentListItem(
+private fun HappeningContentListItem(
     item: HappeningListItemState.Content,
     onClick: (id: Long) -> Unit,
     onRemove: (id: Long, eventId: Long, reminderId: Long) -> Unit,
     onView: (eventId: Long) -> Unit,
+    onPrevDay: () -> Unit,
     onNextDay: () -> Unit
 ) {
     val dropdownExpanded = remember { mutableStateOf(false) }
@@ -123,7 +129,9 @@ private fun InterviewContentListItem(
                 fontSize = 19.sp,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
+
             Spacer(modifier = Modifier.size(8.dp))
+
             Text(
                 text = "${CalendarRepository.formatHoursMinutes(model.startDate)} - ${CalendarRepository.formatHoursMinutes(model.endDate)}",
                 fontSize = 26.sp,
@@ -153,7 +161,6 @@ private fun InterviewContentListItem(
                     )
                 }
             }
-
         }
         Row(modifier = Modifier.align(Alignment.TopEnd), verticalAlignment = Alignment.CenterVertically) {
             if (model.reminderId >= 0) {

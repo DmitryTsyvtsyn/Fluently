@@ -9,8 +9,8 @@ import androidx.room.Query
 @Dao
 interface HappeningDao {
 
-    @Query("select * from happening_table order by start_date")
-    suspend fun fetch(): List<HappeningTable>
+    @Query("select * from happening_table where end_date > :startDate and start_date < :endDate order by start_date")
+    suspend fun fetch(startDate: Long, endDate: Long): List<HappeningTable>
 
     @Query("select * from happening_table where id == :id")
     suspend fun fetch(id: Long): HappeningTable

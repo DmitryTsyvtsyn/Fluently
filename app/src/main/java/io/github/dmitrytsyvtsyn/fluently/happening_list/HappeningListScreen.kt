@@ -15,9 +15,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -26,9 +28,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.dmitrytsyvtsyn.fluently.R
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.LocalNavController
@@ -49,6 +54,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun HappeningListScreen() {
     val navController = LocalNavController.current
+    val context = LocalContext.current
 
     val viewModel: HappeningListViewModel = viewModel()
 
@@ -59,7 +65,7 @@ fun HappeningListScreen() {
         .getStateFlow(Screens.HappeningDatePickerDialog.RESULT_KEY, -1L)
         .collectAsState()
 
-    LaunchedEffect(key1 = newSelectedDate) {
+    LaunchedEffect(key1 = newSelectedDate.value) {
         val date = newSelectedDate.value
         if (date > 0) {
             viewModel.handleEvent(HappeningListEvent.ChangeDate(date))
@@ -69,19 +75,42 @@ fun HappeningListScreen() {
     LaunchedEffect(key1 = "side_effects") {
         viewModel.effect.onEach { sideEffect ->
             when (sideEffect) {
+                is HappeningListSideEffect.ShowCalendarEvent -> {
+                    val uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, sideEffect.id)
+                    context.startActivity(Intent(Intent.ACTION_VIEW).setData(uri))
+                }
                 is HappeningListSideEffect.ShowDetail -> {
                     navController.navigate("${Screens.HappeningDetailScreen.NAME}/${sideEffect.id}/${sideEffect.date}")
                 }
                 is HappeningListSideEffect.ShowDatePicker -> {
                     navController.navigate("${Screens.HappeningDatePickerDialog.NAME}?${Screens.HappeningDatePickerDialog.INITIAL_DATE}=${sideEffect.date}")
                 }
-
             }
         }.collect()
     }
 
     LaunchedEffect(key1 = navController.currentBackStackEntry) {
-        viewModel.init()
+        viewModel.handleEvent(HappeningListEvent.FetchHappenings(state.currentDate))
+    }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_START -> {
+                    viewModel.handleEvent(HappeningListEvent.SubscribeTimeUpdates)
+                }
+                Lifecycle.Event.ON_STOP -> {
+                    viewModel.handleEvent(HappeningListEvent.UnsubscribeTimeUpdates)
+                }
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
     }
 
     Scaffold(
@@ -103,6 +132,8 @@ fun HappeningListScreen() {
         floatingActionButton = {
             FloatingActionButton(
                 shape = RoundedCornerShape(24.dp),
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onSecondary,
                 onClick = {
                     viewModel.handleEvent(HappeningListEvent.ShowHappeningAdding)
                 }
@@ -140,11 +171,10 @@ fun HappeningListScreen() {
                     }
                 }
 
-                val nowDate = CalendarRepository.nowDate()
                 HappeningTabs(
                     tabs = persistentListOf(
                         HappeningTabModel(
-                            title = formatDate(date = CalendarRepository.minusDays(state.date, 1), nowDate = nowDate),
+                            title = formatDate(date = CalendarRepository.minusDays(state.currentDate, 1), nowDate = state.nowDate),
                             onClick = {
                                 coroutineScope.launch {
                                     pagerState.animateScrollToPage(pagerState.currentPage - 1)
@@ -152,13 +182,13 @@ fun HappeningListScreen() {
                             }
                         ),
                         HappeningTabModel(
-                            title = formatDate(date = state.date, nowDate = nowDate),
+                            title = formatDate(date = state.currentDate, nowDate = state.nowDate),
                             onClick = {
                                 viewModel.handleEvent(HappeningListEvent.ShowDatePicker)
                             }
                         ),
                         HappeningTabModel(
-                            title = formatDate(date = CalendarRepository.plusDays(state.date, 1), nowDate = nowDate),
+                            title = formatDate(date = CalendarRepository.plusDays(state.currentDate, 1), nowDate = state.nowDate),
                             onClick = {
                                 coroutineScope.launch {
                                     pagerState.animateScrollToPage(pagerState.currentPage + 1)
@@ -170,13 +200,13 @@ fun HappeningListScreen() {
 
                 val pages = state.pages
                 HorizontalPager(state = pagerState) { index ->
-                    val interviews = pages[index].items
-                    if (interviews.isEmpty()) {
+                    val page = pages[index]
+                    val items = page.items
+                    if (items.isEmpty()) {
                         HappeningEmptyList()
                     } else {
-                        val context = LocalContext.current
                         HappeningList(
-                            events = interviews,
+                            listItemStates = items,
                             onClick = { id ->
                                 viewModel.handleEvent(HappeningListEvent.ShowHappeningEditing(id))
                             },
@@ -184,8 +214,12 @@ fun HappeningListScreen() {
                                 viewModel.handleEvent(HappeningListEvent.RemoveHappening(id, eventId, reminderId))
                             },
                             onView = { eventId ->
-                                val uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId)
-                                context.startActivity(Intent(Intent.ACTION_VIEW).setData(uri))
+                                viewModel.handleEvent(HappeningListEvent.ShowCalendarEvent(eventId))
+                            },
+                            onPrevDay = {
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                                }
                             },
                             onNextDay = {
                                 coroutineScope.launch {

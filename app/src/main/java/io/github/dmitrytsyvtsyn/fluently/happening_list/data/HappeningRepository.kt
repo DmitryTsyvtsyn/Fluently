@@ -30,8 +30,8 @@ class HappeningRepository(
         database.fetch(id).toModel()
     }
 
-    suspend fun fetch() = withContext(Dispatchers.Default) {
-        database.fetch().map { it.toModel() }
+    suspend fun fetch(startDate: Long, endDate: Long) = withContext(Dispatchers.Default) {
+        database.fetch(startDate, endDate).map { it.toModel() }
     }
 
 }

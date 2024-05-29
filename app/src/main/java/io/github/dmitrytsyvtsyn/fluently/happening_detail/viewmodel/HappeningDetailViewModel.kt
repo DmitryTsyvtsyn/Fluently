@@ -12,8 +12,8 @@ import kotlinx.coroutines.launch
 class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, HappeningDetailState, HappeningDetailSideEffect>(
     HappeningDetailState(
         title = "",
-        startDate = System.currentTimeMillis() + CalendarRepository.minutesInMillis(5L),
-        endDate = System.currentTimeMillis() + CalendarRepository.minutesInMillis(65L)
+        startDate = CalendarRepository.nowDate() + CalendarRepository.minutesInMillis(5L),
+        endDate = CalendarRepository.nowDate() + CalendarRepository.minutesInMillis(65L)
     )
 ) {
 
@@ -102,21 +102,20 @@ class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, HappeningDe
 
             val minimumInterval = CalendarRepository.plusMinutes((dateRange.last - dateRange.first), 10)
 
-            repository.fetch()
-                .filter { it.endDate > state.startDate && it.id != state.id }
-                .sortedBy { it.startDate }
-                .forEach { interview ->
-                    if (interview.startDate in dateRange || interview.endDate in dateRange) {
-                        alreadyScheduledEvents.add(interview)
+            repository.fetch(state.startDate, state.endDate)
+                .filter { it.id != state.id }
+                .forEach { item ->
+                    if (item.startDate in dateRange || item.endDate in dateRange) {
+                        alreadyScheduledEvents.add(item)
                     }
-                    if (currentDate < interview.startDate && suggestionRanges.size < 2) {
-                        val differenceBetweenEndAndStartDates = interview.startDate - currentDate
+                    if (currentDate < item.startDate && suggestionRanges.size < 2) {
+                        val differenceBetweenEndAndStartDates = item.startDate - currentDate
                         if (differenceBetweenEndAndStartDates > minimumInterval) {
                             val startSuggestionDate = CalendarRepository.plusMinutes(currentDate, 5)
                             suggestionRanges.add(startSuggestionDate..startSuggestionDate + minimumInterval)
                         }
                     }
-                    currentDate = interview.endDate
+                    currentDate = item.endDate
                 }
 
             while (suggestionRanges.size < 2) {

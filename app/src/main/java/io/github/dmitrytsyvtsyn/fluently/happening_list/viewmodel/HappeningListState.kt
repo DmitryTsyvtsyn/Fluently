@@ -1,19 +1,37 @@
 package io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel
 
+import androidx.compose.runtime.Immutable
+import io.github.dmitrytsyvtsyn.fluently.happening_list.components.TimeFactorForToday
 import io.github.dmitrytsyvtsyn.fluently.happening_list.model.HappeningModel
 import kotlinx.collections.immutable.PersistentList
 
 data class HappeningListState(
-    val date: Long,
-    val totalItems: PersistentList<HappeningModel>,
+    val nowDate: Long,
+    val currentDate: Long,
     val currentPage: Int,
-    val pages: PersistentList<InterviewListPagingState>
+    val pages: PersistentList<HappeningListPagingState>
 )
 
-data class InterviewListPagingState(
+@Immutable
+class HappeningListPagingState(
+    val timeFactorForToday: TimeFactorForToday,
     val date: Long,
     val items: PersistentList<HappeningListItemState>
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (other == null) return false
+        if (this === other) return true
+        if (other !is HappeningListPagingState) return false
+
+        return date == other.date && items == other.items
+    }
+
+    override fun hashCode(): Int {
+        var result = date.hashCode()
+        result = 31 * result + items.hashCode()
+        return result
+    }
+}
 
 sealed interface HappeningListItemState {
 
