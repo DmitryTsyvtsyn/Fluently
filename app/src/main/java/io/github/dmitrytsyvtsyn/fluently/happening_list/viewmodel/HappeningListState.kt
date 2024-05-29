@@ -39,7 +39,8 @@ sealed interface HappeningListItemState {
 
     data class Content(
         val model: HappeningModel,
-        val status: HappeningTimingStatus
+        val timingStatus: HappeningTimingStatus,
+        val dayStatus: HappeningDayStatus
     ) : HappeningListItemState
 
     data class Timeline(val startDate: Long, val endDate: Long) : HappeningListItemState
@@ -47,4 +48,8 @@ sealed interface HappeningListItemState {
 
 enum class HappeningTimingStatus {
     PASSED, ACTUAL
+}
+
+enum class HappeningDayStatus {
+    ONLY_TODAY, TOMORROW, YESTERDAY
 }

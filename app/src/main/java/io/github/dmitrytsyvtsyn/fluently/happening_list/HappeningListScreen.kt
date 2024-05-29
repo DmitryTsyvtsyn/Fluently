@@ -216,12 +216,12 @@ fun HappeningListScreen() {
                             onView = { eventId ->
                                 viewModel.handleEvent(HappeningListEvent.ShowCalendarEvent(eventId))
                             },
-                            onPrevDay = {
+                            goToYesterday = {
                                 coroutineScope.launch {
-                                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                                    pagerState.animateScrollToPage(pagerState.currentPage - 1)
                                 }
                             },
-                            onNextDay = {
+                            goToTomorrow = {
                                 coroutineScope.launch {
                                     pagerState.animateScrollToPage(pagerState.currentPage + 1)
                                 }

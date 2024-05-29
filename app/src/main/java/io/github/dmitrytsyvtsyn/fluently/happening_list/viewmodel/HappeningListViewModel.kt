@@ -186,7 +186,19 @@ class HappeningListViewModel : BaseViewModel<HappeningListEvent, HappeningListSt
                     }
                 }
 
-                listItems.add(HappeningListItemState.Content(item, if (item.endDate < nowDate) HappeningTimingStatus.PASSED else HappeningTimingStatus.ACTUAL))
+                val timingStatus = if (item.endDate < nowDate) HappeningTimingStatus.PASSED else HappeningTimingStatus.ACTUAL
+                val dayStatus = when {
+                    item.startDate in dateRange && item.endDate > dateRange.last -> HappeningDayStatus.TOMORROW
+                    item.endDate in dateRange && item.startDate < dateRange.first -> HappeningDayStatus.YESTERDAY
+                    else -> HappeningDayStatus.ONLY_TODAY
+                }
+                listItems.add(
+                    HappeningListItemState.Content(
+                        model = item,
+                        timingStatus = timingStatus,
+                        dayStatus = dayStatus
+                    )
+                )
 
                 val nextPageIndex = pageIndex + 1
                 val nextIndex = itemIndex + 1

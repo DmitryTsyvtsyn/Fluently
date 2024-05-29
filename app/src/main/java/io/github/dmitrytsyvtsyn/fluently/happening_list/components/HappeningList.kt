@@ -2,6 +2,7 @@ package io.github.dmitrytsyvtsyn.fluently.happening_list.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -38,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import io.github.dmitrytsyvtsyn.fluently.R
 import io.github.dmitrytsyvtsyn.fluently.happening_list.CalendarRepository
 import io.github.dmitrytsyvtsyn.fluently.happening_list.formatFloatingHours
+import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningDayStatus
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningListItemState
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningTimingStatus
 import kotlinx.collections.immutable.PersistentList
@@ -48,8 +50,8 @@ fun HappeningList(
     onClick: (id: Long) -> Unit,
     onRemove: (id: Long, eventId: Long, reminderId: Long) -> Unit,
     onView: (eventId: Long) -> Unit,
-    onPrevDay: () -> Unit,
-    onNextDay: () -> Unit,
+    goToYesterday: () -> Unit,
+    goToTomorrow: () -> Unit,
     titleStyle: TextStyle = TextStyle(
         fontSize = 18.sp,
         fontWeight = FontWeight.Medium,
@@ -71,8 +73,8 @@ fun HappeningList(
                         onClick = onClick,
                         onRemove = onRemove,
                         onView = onView,
-                        onPrevDay = onPrevDay,
-                        onNextDay = onNextDay
+                        goToYesterday = goToYesterday,
+                        goToTomorrow = goToTomorrow
                     )
                 }
                 is HappeningListItemState.Title -> {
@@ -96,8 +98,8 @@ private fun HappeningContentListItem(
     onClick: (id: Long) -> Unit,
     onRemove: (id: Long, eventId: Long, reminderId: Long) -> Unit,
     onView: (eventId: Long) -> Unit,
-    onPrevDay: () -> Unit,
-    onNextDay: () -> Unit
+    goToYesterday: () -> Unit,
+    goToTomorrow: () -> Unit
 ) {
     val dropdownExpanded = remember { mutableStateOf(false) }
 
@@ -105,7 +107,7 @@ private fun HappeningContentListItem(
     Box(
         modifier = Modifier
             .alpha(
-                when (item.status) {
+                when (item.timingStatus) {
                     HappeningTimingStatus.ACTUAL -> 1f
                     HappeningTimingStatus.PASSED -> 0.5f
                 }
@@ -132,13 +134,37 @@ private fun HappeningContentListItem(
 
             Spacer(modifier = Modifier.size(8.dp))
 
-            Text(
-                text = "${CalendarRepository.formatHoursMinutes(model.startDate)} - ${CalendarRepository.formatHoursMinutes(model.endDate)}",
-                fontSize = 26.sp,
-                textDecoration = if (item.status != HappeningTimingStatus.ACTUAL) TextDecoration.LineThrough else null,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
+            Row(verticalAlignment = Alignment.Bottom) {
+                if (item.dayStatus == HappeningDayStatus.YESTERDAY) {
+                    Text(
+                        modifier = Modifier.clickable(onClick = goToYesterday),
+                        text = stringResource(id = R.string.yesterday),
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Spacer(modifier = Modifier.size(4.dp))
+                }
+                
+                Text(
+                    text = "${CalendarRepository.formatHoursMinutes(model.startDate)} - ${CalendarRepository.formatHoursMinutes(model.endDate)}",
+                    fontSize = 26.sp,
+                    textDecoration = if (item.timingStatus != HappeningTimingStatus.ACTUAL) TextDecoration.LineThrough else null,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                
+                if (item.dayStatus == HappeningDayStatus.TOMORROW) {
+                    Spacer(modifier = Modifier.size(4.dp))
+                    Text(
+                        modifier = Modifier.clickable(onClick = goToTomorrow),
+                        text = stringResource(id = R.string.tomorrow),
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
 
             if (dropdownExpanded.value) {
                 DropdownMenu(
