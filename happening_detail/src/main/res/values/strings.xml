@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="new_interview">Новое событие</string>
+    <string name="editing_interview">Изменение события</string>
+    <string name="interview_company_name">Название события</string>
+    <string name="save">Сохранить</string>
+    <string name="title_must_not_be_less_three_symbols">Название не должно быть меньше 3-х символов</string>
+    <string name="date">Дата:</string>
+    <string name="time">Время:</string>
+    <string name="already_scheduled_events">У вас уже есть запланированные события на это время</string>
+    <string name="try_folowing_ranges">Попробуйте следующие диапазоны:</string>
+    <string name="turn_alarm_or_not">Включить будильник</string>
+    <string name="at_dates">на даты %1$s - %2$s</string>
+    <string name="at_date">на дату %1$s</string>
+    <string name="at_today">на сегодня</string>
+</resources>

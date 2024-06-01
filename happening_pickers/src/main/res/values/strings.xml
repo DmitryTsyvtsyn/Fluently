@@ -1,0 +1,4 @@
+<resources>
+    <string name="start_time">Время начала события:</string>
+    <string name="end_time">Время завершения события:</string>
+</resources>

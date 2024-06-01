@@ -21,3 +21,8 @@ dependencyResolutionManagement {
 
 rootProject.name = "Fluently"
 include(":app")
+include(":core")
+include(":happening_pickers")
+include(":happening_data")
+include(":happening_list")
+include(":happening_detail")

@@ -1,44 +1,5 @@
 <resources>
     <string name="app_name">Fluently</string>
-    <string name="loading">Loading...</string>
-    <string name="back_day">День</string>
-    <string name="today_day">Сегодня</string>
-    <string name="forward_day">День</string>
-    <string name="new_interview">Новое событие</string>
-    <string name="editing_interview">Изменение события</string>
-    <string name="ok">Ок</string>
-    <string name="cancel">Отмена</string>
-    <string name="interviews">События</string>
-    <string name="interview_company_name">Название события</string>
-    <string name="save">Сохранить</string>
-    <string name="title_must_not_be_less_three_symbols">Название не должно быть меньше 3-х символов</string>
-    <string name="start_time">Время начала события:</string>
-    <string name="date">Дата:</string>
-    <string name="time">Время:</string>
-    <string name="end_time">Время завершения события:</string>
-    <string name="reschedule">Перенести</string>
-    <string name="already_scheduled_events">У вас уже есть запланированные события на это время</string>
-    <string name="try_folowing_ranges">Попробуйте следующие диапазоны:</string>
-    <string name="remove_event">Удалить событие</string>
-    <string name="show_event">Посмотреть в календаре</string>    <string name="calendar_permission_denied">Вы запретили доступ к календарю(</string>
+    <string name="calendar_permission_denied">Вы запретили доступ к календарю(</string>
     <string name="request_access_again">Запросить снова</string>
-    <string name="hour_suffix">%1$s ч.</string>
-    <string name="minute_suffix">%1$s мин.</string>
-    <string name="theme_settings">Настройка темы</string>
-    <string name="dynamic">Динамический</string>
-    <string name="light">Лёгкий</string>
-    <string name="medium">Средний</string>
-    <string name="high">Высокий</string>
-    <string name="choose_contrast">Выберите контраст:</string>
-    <string name="today_not_interviews">Сегодня у вас выходной, можете купить себе шампанское)</string>
-    <string name="turn_alarm_or_not">Включить будильник</string>
-    <string name="dynamic_contrast_description">Подбирает цвет под обои вашего телефона</string>
-    <string name="light_contrast_description">Слегка насыщенные цвета подчёркивают дизайн</string>
-    <string name="medium_contrast_description">Казалось бы золотая середина, но нет</string>
-    <string name="high_contrast_description">Слишком красочно, даже для карамельной Вселенной</string>
-    <string name="at_dates">на даты %1$s - %2$s</string>
-    <string name="at_date">на дату %1$s</string>
-    <string name="at_today">на сегодня</string>
-    <string name="tomorrow">завтра</string>
-    <string name="yesterday">вчера</string>
 </resources>

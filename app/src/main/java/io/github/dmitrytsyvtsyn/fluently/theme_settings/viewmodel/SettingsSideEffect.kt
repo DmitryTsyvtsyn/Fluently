@@ -1,3 +1,0 @@
-package io.github.dmitrytsyvtsyn.fluently.theme_settings.viewmodel
-
-sealed interface SettingsSideEffect

@@ -1,0 +1,15 @@
+<resources>
+    <string name="ok">Ок</string>
+    <string name="cancel">Отмена</string>
+
+    <string name="theme_settings">Настройка темы</string>
+    <string name="dynamic">Динамический</string>
+    <string name="light">Лёгкий</string>
+    <string name="medium">Средний</string>
+    <string name="high">Высокий</string>
+    <string name="choose_contrast">Выберите контраст:</string>
+    <string name="dynamic_contrast_description">Подбирает цвет под обои вашего телефона</string>
+    <string name="light_contrast_description">Слегка насыщенные цвета подчёркивают дизайн</string>
+    <string name="medium_contrast_description">Казалось бы золотая середина, но нет</string>
+    <string name="high_contrast_description">Слишком красочно, даже для карамельной Вселенной</string>
+</resources>

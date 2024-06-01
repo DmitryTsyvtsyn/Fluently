@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="today_day">Сегодня</string>
+    <string name="interviews">События</string>
+    <string name="remove_event">Удалить событие</string>
+    <string name="show_event">Посмотреть в календаре</string>
+    <string name="hour_suffix">%1$s ч.</string>
+    <string name="minute_suffix">%1$s мин.</string>
+    <string name="today_not_interviews">Сегодня у вас выходной, можете купить себе шампанское)</string>
+    <string name="tomorrow">завтра</string>
+    <string name="yesterday">вчера</string>
+</resources>
