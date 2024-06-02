@@ -13,15 +13,19 @@ immutable-collections = "0.3.7"
 splashscreen = "1.0.0"
 collection-jvm = "1.4.0"
 koin = "3.5.6"
+compose-compiler-extension = "1.5.2"
+
+# Android SDK versions
+compileSdk = "34"
+minSdk = "24"
+targetSdk = "34"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
-androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle-ktx" }
 androidx-lifecycle-viewmodel-compose-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle-ktx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
 androidx-ui = { group = "androidx.compose.ui", name = "ui" }
-androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-compose-navigation = { group = "androidx.navigation", name = "navigation-compose", version.ref = "compose-navigation" }
 androidx-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashscreen" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "compose-material3" }
@@ -32,9 +36,10 @@ room-compiler = { group = "androidx.room", name = "room-compiler", version.ref =
 androidx-collection-jvm = { group = "androidx.collection", name = "collection-jvm", version.ref = "collection-jvm" }
 koin = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
 
+# plugins for buildSrc
+android = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
+kotlin-android = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+
 [plugins]
-android-application = { id = "com.android.application", version.ref = "agp" }
-android-library = { id = "com.android.library", version.ref = "agp" }
-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 room = { id = "androidx.room", version.ref = "room" }

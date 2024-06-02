@@ -20,6 +20,7 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "Fluently"
+
 include(":app")
 include(":core")
 include(":happening_pickers")

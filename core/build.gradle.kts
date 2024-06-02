@@ -1,33 +1,15 @@
 plugins {
-    alias(libs.plugins.android.library)
-    alias(libs.plugins.jetbrains.kotlin.android)
-}
-
-kotlin {
-    jvmToolchain(17)
+    id("android-library-convention")
 }
 
 android {
     namespace = "io.github.dmitrytsyvtsyn.fluently.core"
-    compileSdk = 34
 
-    defaultConfig {
-        minSdk = 24
-        targetSdk = 34
-
-        vectorDrawables {
-            useSupportLibrary = true
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
     buildFeatures {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.2"
+        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.extension.get()
     }
 }
 
