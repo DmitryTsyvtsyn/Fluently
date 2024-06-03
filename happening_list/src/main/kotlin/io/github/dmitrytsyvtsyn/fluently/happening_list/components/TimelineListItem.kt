@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import io.github.dmitrytsyvtsyn.fluently.happening_list.formatFloatingHours
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningListItemState
@@ -43,16 +44,18 @@ internal fun TimelineListItem(
     val hourFactor = (timeline.endDate - timeline.startDate) / ONE_HOUR_IN_MILLIS
     val hourString = formatFloatingHours(timeline.startDate, timeline.endDate)
     val textLayoutResult = remember { textMeasurer.measure(hourString, textStyle) }
+    val minHeight = (textLayoutResult.size.height / density).dp
 
     val shortPathEffect = remember { PathEffect.dashPathEffect(floatArrayOf(6f, 6f), 0f) }
     val longPathEffect = remember { PathEffect.dashPathEffect(floatArrayOf(16f, 16f), 0f) }
 
     val normalColor = MaterialTheme.colorScheme.primary
     val errorColor = MaterialTheme.colorScheme.error
+    val canvasHeight = max(minHeight, (hourFactor * TIMELINE_SIZE_FACTOR).dp)
     Canvas(
         Modifier
             .fillMaxWidth()
-            .height((hourFactor * TIMELINE_SIZE_FACTOR).dp)
+            .height(canvasHeight)
     ) {
         val color = when {
             hourFactor < 2f -> errorColor
