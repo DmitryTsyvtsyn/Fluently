@@ -11,6 +11,7 @@ kotlin {
 
 android {
     val libs = the<LibrariesForLibs>()
+
     compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
@@ -21,9 +22,11 @@ android {
             useSupportLibrary = true
         }
     }
+
     testOptions {
         targetSdk = libs.versions.targetSdk.get().toInt()
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

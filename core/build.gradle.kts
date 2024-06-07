@@ -1,16 +1,9 @@
 plugins {
-    id("android-library-convention")
+    id("compose-library-convention")
 }
 
 android {
     namespace = "io.github.dmitrytsyvtsyn.fluently.core"
-
-    buildFeatures {
-        compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.extension.get()
-    }
 }
 
 dependencies {
