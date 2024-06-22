@@ -4,7 +4,7 @@ import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.NavigationDestination
 
-object HappeningListDestination : NavigationDestination<HappeningListDestination.Params, Unit>() {
+data object HappeningListDestination : NavigationDestination<HappeningListDestination.Params, Unit>() {
 
     private const val NAME = "happening_list_screen"
 

@@ -8,7 +8,6 @@ import io.github.dmitrytsyvtsyn.fluently.data.HappeningModel
 import io.github.dmitrytsyvtsyn.fluently.data.HappeningRepository
 import io.github.dmitrytsyvtsyn.fluently.happening_list.components.TimeFactorForToday
 import kotlinx.collections.immutable.PersistentList
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -17,9 +16,7 @@ import kotlinx.coroutines.launch
 internal class HappeningListViewModel : BaseViewModel<HappeningListEvent, HappeningListState, HappeningListSideEffect>(
     HappeningListState(
         nowDate = CalendarRepository.nowDate(),
-        currentDate = CalendarRepository.nowDate(),
-        currentPage = 0,
-        pages = persistentListOf()
+        currentDate = CalendarRepository.nowDate()
     )
 ) {
 

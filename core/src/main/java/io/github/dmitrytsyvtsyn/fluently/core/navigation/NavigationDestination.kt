@@ -3,7 +3,6 @@ package io.github.dmitrytsyvtsyn.fluently.core.navigation
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
-import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.StateFlow
 
 abstract class NavigationDestination<T : NavigationDestination.NavigationParams, R> {
@@ -31,14 +30,6 @@ abstract class NavigationDestination<T : NavigationDestination.NavigationParams,
 
     interface NavigationParams {
         val route: String
-    }
-
-    object EmptyStateFlow : StateFlow<Unit> {
-        override val value: Unit = Unit
-        override val replayCache: List<Unit> = emptyList()
-        override suspend fun collect(collector: FlowCollector<Unit>): Nothing {
-            error("EmptyStateFlow can not collect data")
-        }
     }
 
 }

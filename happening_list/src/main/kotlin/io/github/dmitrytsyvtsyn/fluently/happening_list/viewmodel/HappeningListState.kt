@@ -4,12 +4,13 @@ import androidx.compose.runtime.Immutable
 import io.github.dmitrytsyvtsyn.fluently.happening_list.components.TimeFactorForToday
 import io.github.dmitrytsyvtsyn.fluently.data.HappeningModel
 import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
 
 internal data class HappeningListState(
     val nowDate: Long,
     val currentDate: Long,
-    val currentPage: Int,
-    val pages: PersistentList<HappeningListPagingState>
+    val currentPage: Int = 0,
+    val pages: PersistentList<HappeningListPagingState> = persistentListOf()
 )
 
 @Immutable

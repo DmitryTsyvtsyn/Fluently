@@ -1,5 +1,6 @@
 package io.github.dmitrytsyvtsyn.fluently.happening_pickers
 
+import androidx.compose.runtime.Immutable
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavType
@@ -35,7 +36,8 @@ data object HappeningDatePickerDestination : NavigationDestination<HappeningDate
         )
     }
 
-    data class Params(
+    @Immutable
+    class Params(
         val initialDate: Long,
         val minDate: Long = Long.MIN_VALUE,
         val maxDate: Long = Long.MAX_VALUE

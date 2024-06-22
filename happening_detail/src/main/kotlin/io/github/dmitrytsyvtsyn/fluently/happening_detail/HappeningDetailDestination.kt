@@ -1,5 +1,6 @@
 package io.github.dmitrytsyvtsyn.fluently.happening_detail
 
+import androidx.compose.runtime.Immutable
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavType
@@ -7,7 +8,7 @@ import androidx.navigation.navArgument
 import io.github.dmitrytsyvtsyn.fluently.core.data.CalendarRepository
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.NavigationDestination
 
-object HappeningDetailDestination : NavigationDestination<HappeningDetailDestination.Params, Unit>() {
+data object HappeningDetailDestination : NavigationDestination<HappeningDetailDestination.Params, Unit>() {
 
     private const val NAME = "happening_detail_screen"
 
@@ -31,7 +32,8 @@ object HappeningDetailDestination : NavigationDestination<HappeningDetailDestina
         )
     }
 
-    data class Params(
+    @Immutable
+    class Params(
         val id: Long,
         val initialDate: Long
     ) : NavigationParams {

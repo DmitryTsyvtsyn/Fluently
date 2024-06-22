@@ -4,13 +4,13 @@ import androidx.lifecycle.viewModelScope
 import io.github.dmitrytsyvtsyn.fluently.core.data.CalendarRepository
 import io.github.dmitrytsyvtsyn.fluently.core.di.DI
 import io.github.dmitrytsyvtsyn.fluently.core.viewmodel.BaseViewModel
+import io.github.dmitrytsyvtsyn.fluently.data.HappeningModel
 import io.github.dmitrytsyvtsyn.fluently.data.HappeningRepository
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 
 internal class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, HappeningDetailState, HappeningDetailSideEffect>(
     HappeningDetailState(
-        title = "",
         startDate = CalendarRepository.nowDate() + CalendarRepository.minutesInMillis(5L),
         endDate = CalendarRepository.nowDate() + CalendarRepository.minutesInMillis(65L)
     )
@@ -135,7 +135,7 @@ internal class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, Ha
                 }
             } else {
                 repository.insert(
-                    model = io.github.dmitrytsyvtsyn.fluently.data.HappeningModel(
+                    model = HappeningModel(
                         id = state.id,
                         eventId = state.eventId,
                         reminderId = state.reminderId,

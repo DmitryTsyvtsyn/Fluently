@@ -2,6 +2,7 @@ package io.github.dmitrytsyvtsyn.fluently.happening_pickers
 
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.compose.runtime.Immutable
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavType
@@ -41,7 +42,8 @@ data object HappeningTimePickerDestination : NavigationDestination<HappeningTime
         )
     }
 
-    data class Params(
+    @Immutable
+    class Params(
         val startHours: Int,
         val startMinutes: Int,
         val endHours: Int,
@@ -52,7 +54,8 @@ data object HappeningTimePickerDestination : NavigationDestination<HappeningTime
 
     }
 
-    data class Result(
+    @Immutable
+    class Result(
         val startHours: Int = -1,
         val startMinutes: Int = -1,
         val endHours: Int = -1,

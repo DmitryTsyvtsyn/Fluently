@@ -2,18 +2,18 @@ package io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel
 
 internal sealed interface HappeningDetailEvent {
 
-    data class TitleChanged(val title: String) : HappeningDetailEvent
+    class TitleChanged(val title: String) : HappeningDetailEvent
 
-    data class DateChanged(val date: Long) : HappeningDetailEvent
+    class DateChanged(val date: Long) : HappeningDetailEvent
 
-    data class TimeChanged(
+    class TimeChanged(
         val startHours: Int,
         val startMinutes: Int,
         val endHours: Int,
         val endMinutes: Int
     ) : HappeningDetailEvent
 
-    data class ChangeHasReminder(val hasReminder: Boolean) : HappeningDetailEvent
+    class ChangeHasReminder(val hasReminder: Boolean) : HappeningDetailEvent
 
     data object SaveHappening : HappeningDetailEvent
 
