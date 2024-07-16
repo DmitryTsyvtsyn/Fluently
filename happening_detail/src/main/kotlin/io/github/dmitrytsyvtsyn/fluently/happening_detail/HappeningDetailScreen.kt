@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Button
@@ -40,18 +39,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.dmitrytsyvtsyn.fluently.core.data.CalendarRepository
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.LocalNavController
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.navigate
-import io.github.dmitrytsyvtsyn.fluently.core.theme.components.DebounceIconButton
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.DebounceIconButton
+import io.github.dmitrytsyvtsyn.fluently.happening_detail.composables.Suggestions
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel.HappeningDetailEvent
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel.HappeningDetailViewModel
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel.HappeningDetailSideEffect
@@ -70,7 +67,7 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
     val navController = LocalNavController.current
 
     LaunchedEffect(key1 = Unit) {
-        viewModel.init(params.id, params.initialDate)
+        viewModel.handleEvent(HappeningDetailEvent.Init(params.id, params.initialDate))
     }
 
     Scaffold(
@@ -80,7 +77,7 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
                 title = {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = if (params.id >= 0) stringResource(id = R.string.editing_interview) else stringResource(id = R.string.new_interview),
+                        text = if (params.id.isNotEmpty) stringResource(id = R.string.editing_interview) else stringResource(id = R.string.new_interview),
                         textAlign = TextAlign.Center
                     )
                 },
@@ -121,6 +118,10 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
             }
         }
 
+        val calendarPermissionsRequester = rememberCalendarPermissionsRequester { isAllowed ->
+            viewModel.handleEvent(HappeningDetailEvent.ChangeCalendarPermissionsStatus(isAllowed))
+        }
+
         LaunchedEffect(key1 = "side_effects") {
             viewModel.effect.onEach { sideEffect ->
                 when (sideEffect) {
@@ -140,6 +141,9 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
                     }
                     is HappeningDetailSideEffect.Back -> {
                         navController.popBackStack()
+                    }
+                    is HappeningDetailSideEffect.CheckCalendarPermission -> {
+                        calendarPermissionsRequester.requestPermissions()
                     }
                 }
             }.collect()
@@ -253,79 +257,26 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
 
                             Spacer(Modifier.size(8.dp))
 
-                            val annotatedString = buildAnnotatedString {
-                                append(stringResource(id = R.string.try_folowing_ranges))
-                                append(" ")
-
-                                val suggestionRanges = busyState.suggestionRanges
-                                suggestionRanges.forEachIndexed { index, range ->
-                                    pushStringAnnotation("range", "${range.first}/${range.last}")
-
-                                    withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                                        val trailingSymbol = if (index != suggestionRanges.lastIndex) "\n" else ""
-
-                                        val now = System.currentTimeMillis()
-                                        val startDate = range.first
-                                        val endDate = range.last
-
-                                        val startDateString = CalendarRepository.formatDateMonthYearBrief(startDate)
-                                        val nowDateString = CalendarRepository.formatDateMonthYearBrief(now)
-                                        val endDateString = CalendarRepository.formatDateMonthYearBrief(endDate)
-
-                                        val dates = if (startDateString == endDateString) {
-                                            if (startDateString == nowDateString) {
-                                                stringResource(id = R.string.at_today)
-                                            } else {
-                                                stringResource(id = R.string.at_date, nowDateString)
-                                            }
-                                        } else {
-                                            stringResource(id = R.string.at_dates, startDateString, endDateString)
-                                        }
-
-                                        stringResource(id = R.string.at_date, )
-                                        stringResource(id = R.string.at_date)
-
-                                        append("${index + 1}. ${CalendarRepository.formatHoursMinutes(startDate)} - ${CalendarRepository.formatHoursMinutes(endDate)} $dates $trailingSymbol")
-                                    }
-
-                                    pop()
-                                }
-                            }
-
-                            ClickableText(
-                                text = annotatedString,
-                                style = LocalTextStyle.current.copy(
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = MaterialTheme.colorScheme.onBackground,
-                                    lineHeight = 28.sp
-                                ),
-                            ) { offset ->
-                                annotatedString.getStringAnnotations(tag = "range", start = offset, end = offset).firstOrNull()?.let {
-                                    val some = it.item.split("/")
-                                    val startDate = CalendarRepository.formatHoursMinutes(some.first().toLong())
-                                    val endDate = CalendarRepository.formatHoursMinutes(some.last().toLong())
-
-                                    val startHoursAndMinutes = startDate.split(":")
-                                    val endHoursAndMinutes = endDate.split(":")
-
+                            Suggestions(
+                                suggestionRanges = busyState.suggestionRanges,
+                                onSuggestionClick = { startHours, startMinutes, endHours, endMinutes ->
                                     viewModel.handleEvent(
                                         HappeningDetailEvent.TimeChanged(
-                                            startHoursAndMinutes.first().toInt(),
-                                            startHoursAndMinutes.last().toInt(),
-                                            endHoursAndMinutes.first().toInt(),
-                                            endHoursAndMinutes.last().toInt()
+                                            startHours = startHours,
+                                            startMinutes = startMinutes,
+                                            endHours = endHours,
+                                            endMinutes = endMinutes
                                         )
                                     )
                                 }
-                            }
+                            )
                         }
                     }
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                if (state.startDate > System.currentTimeMillis()) {
+                if (state.startDate > CalendarRepository.nowDate()) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {

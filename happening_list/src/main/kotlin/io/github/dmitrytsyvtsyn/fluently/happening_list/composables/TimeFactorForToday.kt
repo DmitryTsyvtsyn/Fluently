@@ -1,4 +1,4 @@
-package io.github.dmitrytsyvtsyn.fluently.happening_list.components
+package io.github.dmitrytsyvtsyn.fluently.happening_list.composables
 
 @JvmInline
 internal value class TimeFactorForToday(val value: Float) {

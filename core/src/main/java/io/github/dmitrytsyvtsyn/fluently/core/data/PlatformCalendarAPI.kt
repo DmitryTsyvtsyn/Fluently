@@ -2,23 +2,26 @@ package io.github.dmitrytsyvtsyn.fluently.core.data
 
 interface PlatformCalendarAPI {
 
-    suspend fun insertEvent(
+    suspend fun insertEventWithReminder(
         title: String,
         startDate: Long,
-        endDate: Long,
-        hasReminder: Boolean = false
-    ): Pair<Long, Long>
+        endDate: Long
+    ): InsertEventResult
 
-    suspend fun updateEvent(
-        eventId: Long,
-        reminderId: Long,
+    suspend fun updateEventWithReminder(
+        eventId: IdLong,
+        reminderId: IdLong,
         title: String,
         startDate: Long,
-        endDate: Long,
-        hasReminder: Boolean = false
-    ): Long
+        endDate: Long
+    ): Boolean
 
-    suspend fun removeEvent(eventId: Long, reminderId: Long): Boolean
+    suspend fun removeEventWithReminder(eventId: IdLong, reminderId: IdLong): Boolean
 
+}
+
+class InsertEventResult(val eventId: IdLong, val reminderId: IdLong) {
+    operator fun component1() = eventId
+    operator fun component2() = reminderId
 }
 

@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.sp
 import io.github.dmitrytsyvtsyn.fluently.core.R
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.LocalNavController
 import io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.viewmodel.SettingsEvent
-import io.github.dmitrytsyvtsyn.fluently.core.theme.components.DebounceIconButton
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.DebounceIconButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

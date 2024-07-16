@@ -1,6 +1,5 @@
 package io.github.dmitrytsyvtsyn.fluently.core.data
 
-import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
@@ -13,123 +12,85 @@ internal class PlatformCalendarAPIImpl(context: Context): PlatformCalendarAPI {
 
     private val contentResolver = context.contentResolver
 
-    override suspend fun insertEvent(
+    override suspend fun insertEventWithReminder(
         title: String,
         startDate: Long,
-        endDate: Long,
-        hasReminder: Boolean
+        endDate: Long
     ) = withContext(Dispatchers.Default) {
-
-        val values = ContentValues().apply {
+        val values = ContentValues()
+        with(values) {
             put(CalendarContract.Events.DTSTART, startDate)
             put(CalendarContract.Events.DTEND, endDate)
             put(CalendarContract.Events.TITLE, title)
             put(CalendarContract.Events.DESCRIPTION, "")
-            put(CalendarContract.Events.CALENDAR_ID, fetchCalendarPrimaryId())
+            put(CalendarContract.Events.CALENDAR_ID, fetchCalendarPrimaryId().value)
             put(CalendarContract.Events.EVENT_TIMEZONE, TimeZone.getDefault().id)
         }
+        val eventId = contentResolver.insert(
+            CalendarContract.Events.CONTENT_URI,
+            values
+        )?.lastPathSegment.toIdLong()
 
-        val uri = contentResolver.insert(CalendarContract.Events.CONTENT_URI, values)
-        val eventId = uri?.lastPathSegment?.toLong() ?: -1
-
-        if (hasReminder) {
-            values.clear()
-            with(values) {
-                put(CalendarContract.Reminders.MINUTES, 1)
-                put(CalendarContract.Reminders.EVENT_ID, eventId)
-                put(CalendarContract.Reminders.METHOD, CalendarContract.Reminders.METHOD_ALERT)
-            }
-            val reminderId = contentResolver.insert(
-                CalendarContract.Reminders.CONTENT_URI,
-                values
-            )?.lastPathSegment?.toLong() ?: -1
-            eventId to reminderId
-        } else {
-            eventId to -1L
+        with(values) {
+            clear()
+            put(CalendarContract.Reminders.MINUTES, 1)
+            put(CalendarContract.Reminders.EVENT_ID, eventId.value)
+            put(CalendarContract.Reminders.METHOD, CalendarContract.Reminders.METHOD_ALERT)
         }
+        val reminderId = contentResolver.insert(
+            CalendarContract.Reminders.CONTENT_URI,
+            values
+        )?.lastPathSegment.toIdLong()
+
+        InsertEventResult(eventId, reminderId)
     }
 
-    override suspend fun updateEvent(
-        eventId: Long,
-        reminderId: Long,
+    override suspend fun updateEventWithReminder(
+        eventId: IdLong,
+        reminderId: IdLong,
         title: String,
         startDate: Long,
-        endDate: Long,
-        hasReminder: Boolean
+        endDate: Long
     ) = withContext(Dispatchers.Default) {
-        val values = ContentValues().apply {
+        val values = ContentValues()
+        with(values) {
             put(CalendarContract.Events.TITLE, title)
             put(CalendarContract.Events.DTSTART, startDate)
             put(CalendarContract.Events.DTEND, endDate)
         }
-
-        contentResolver.update(
-            ContentUris.withAppendedId(
-                CalendarContract.Events.CONTENT_URI,
-                eventId
-            ), values, null, null
-        )
-
-        when {
-            reminderId >= 0 && !hasReminder -> {
-                contentResolver.delete(
-                    ContentUris.withAppendedId(
-                        CalendarContract.Events.CONTENT_URI,
-                        reminderId
-                    ), null, null
-                )
-                -1
-            }
-
-            reminderId < 0 && hasReminder -> {
-                values.clear()
-                with(values) {
-                    put(CalendarContract.Reminders.MINUTES, 1)
-                    put(CalendarContract.Reminders.EVENT_ID, eventId)
-                    put(CalendarContract.Reminders.METHOD, CalendarContract.Reminders.METHOD_ALERT)
-                }
-                val reminderResult =
-                    contentResolver.insert(CalendarContract.Reminders.CONTENT_URI, values)
-
-                reminderResult?.lastPathSegment?.toLong() ?: -1
-            }
-
-            else -> reminderId
-        }
+        val updatedRowCount = contentResolver.update(eventId.toEventsContentUri(), values, null, null)
+        updatedRowCount > 0
     }
 
-    override suspend fun removeEvent(eventId: Long, reminderId: Long) =
+    override suspend fun removeEventWithReminder(eventId: IdLong, reminderId: IdLong) =
         withContext(Dispatchers.Default) {
-            val eventRows = contentResolver.delete(
-                ContentUris.withAppendedId(
-                    CalendarContract.Events.CONTENT_URI,
-                    eventId
-                ), null, null
-            )
-            val reminderRows = if (reminderId >= 0) {
-                contentResolver.delete(
-                    ContentUris.withAppendedId(
-                        CalendarContract.Events.CONTENT_URI,
-                        reminderId
-                    ), null, null
-                )
+            val eventRows = if (eventId.isNotEmpty) {
+                contentResolver.delete(eventId.toEventsContentUri(), null, null)
             } else {
                 0
             }
+
+            val reminderRows = if (reminderId.isNotEmpty) {
+                contentResolver.delete(reminderId.toRemindersContentUri(), null, null)
+            } else {
+                0
+            }
+
             eventRows > 0 || reminderRows > 0
         }
 
-    @SuppressLint("Range")
-    private fun fetchCalendarPrimaryId() : Long {
+    private fun fetchCalendarPrimaryId() : IdLong {
         var cursor = contentResolver.query(
             CalendarContract.Calendars.CONTENT_URI,
             arrayOf(CalendarContract.Calendars._ID),
-            CalendarContract.Calendars.VISIBLE + " = 1 AND " + CalendarContract.Calendars.IS_PRIMARY + "=1",
+            CalendarContract.Calendars.VISIBLE + " = 1 AND " + CalendarContract.Calendars.IS_PRIMARY + " = 1",
             null,
             CalendarContract.Calendars._ID + " ASC"
         )
 
-        if (cursor != null && cursor.count <= 0) {
+        if (cursor == null) return IdLong.Empty
+
+        if (cursor.count <= 0) {
             cursor = contentResolver.query(
                 CalendarContract.Calendars.CONTENT_URI,
                 arrayOf(CalendarContract.Calendars._ID),
@@ -139,17 +100,32 @@ internal class PlatformCalendarAPIImpl(context: Context): PlatformCalendarAPI {
             )
         }
 
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                val id = cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars._ID))
+        if (cursor == null) return IdLong.Empty
 
-                cursor.close()
+        if (cursor.moveToFirst()) {
+            val calendarIdColumnIndex = cursor.getColumnIndex(CalendarContract.Calendars._ID)
+            if (calendarIdColumnIndex < 0) return IdLong.Empty
 
-                return id.toLongOrNull() ?: -1
-            }
+            val id = cursor.getString(calendarIdColumnIndex)
+
+            cursor.close()
+
+            return id.toIdLong()
         }
 
-        return -1
+        return IdLong.Empty
     }
+
+    private fun IdLong.toEventsContentUri() =
+        ContentUris.withAppendedId(
+            CalendarContract.Events.CONTENT_URI,
+            value
+        )
+
+    private fun IdLong.toRemindersContentUri() =
+        ContentUris.withAppendedId(
+            CalendarContract.Events.CONTENT_URI,
+            value
+        )
 
 }

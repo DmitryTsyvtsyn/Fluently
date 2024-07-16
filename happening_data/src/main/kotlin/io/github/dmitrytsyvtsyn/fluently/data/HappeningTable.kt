@@ -5,9 +5,9 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "happening_table")
-data class HappeningTable(
-    @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
+class HappeningTable(
+    @PrimaryKey
+    val id: Long,
     @ColumnInfo("calendar_event_id")
     val calendarEventId: Long,
     @ColumnInfo("calendar_reminder_id")

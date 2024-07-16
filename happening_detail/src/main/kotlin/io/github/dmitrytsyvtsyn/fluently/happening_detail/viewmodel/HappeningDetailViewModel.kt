@@ -20,6 +20,7 @@ internal class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, Ha
 
     override fun handleEvent(event: HappeningDetailEvent) {
         when (event) {
+            is HappeningDetailEvent.Init -> handleEvent(event)
             is HappeningDetailEvent.TitleChanged -> handleEvent(event)
             is HappeningDetailEvent.DateChanged -> handleEvent(event)
             is HappeningDetailEvent.TimeChanged -> handleEvent(event)
@@ -28,6 +29,35 @@ internal class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, Ha
             is HappeningDetailEvent.ShowTimePicker -> handleEvent(event)
             is HappeningDetailEvent.ShowDatePicker -> handleEvent(event)
             is HappeningDetailEvent.Back -> handleEvent(event)
+            is HappeningDetailEvent.ChangeCalendarPermissionsStatus -> handleEvent(event)
+        }
+    }
+
+    private fun handleEvent(event: HappeningDetailEvent.Init) {
+        val happeningId = event.id
+        if (happeningId.isNotEmpty) {
+            viewModelScope.launch {
+                val happening = repository.fetch(happeningId)
+                setState {
+                    copy(
+                        happening = happening,
+                        title = happening.title,
+                        startDate = happening.startDate,
+                        endDate = happening.endDate,
+                        titleError = false,
+                        timeError = false,
+                        hasReminder = happening.reminderId.isNotEmpty
+                    )
+                }
+            }
+        } else {
+            val actualDate = CalendarRepository.matchDateWithTime(event.initialDate, CalendarRepository.nowDate())
+            setState {
+                copy(
+                    startDate = CalendarRepository.plusMinutes(actualDate, 5L),
+                    endDate = CalendarRepository.plusMinutes(actualDate, 65L)
+                )
+            }
         }
     }
 
@@ -77,71 +107,56 @@ internal class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, Ha
     }
 
     private fun handleEvent(event: HappeningDetailEvent.ChangeHasReminder) {
+        val state = viewState.value
+        if (!state.hasPermissionCalendarAllowed) {
+            setEffect(HappeningDetailSideEffect.CheckCalendarPermission)
+        }
         setState {
             copy(hasReminder = event.hasReminder)
         }
     }
 
+    private fun handleEvent(event: HappeningDetailEvent.ChangeCalendarPermissionsStatus) {
+        if (event.allowed) {
+            setState {
+                copy(hasPermissionCalendarAllowed = true)
+            }
+        } else {
+            setState {
+                copy(hasReminder = false)
+            }
+        }
+    }
+
     private fun handleEvent(event: HappeningDetailEvent.SaveHappening) {
+        val minimumTitleSize = 3
+
         val state = viewState.value
-        if (state.title.length < 3) {
+        if (state.title.length < minimumTitleSize) {
             setState {
                 copy(titleError = true)
             }
-
             return
         }
 
         viewModelScope.launch {
-            val dateRange = state.startDate..state.endDate
-
-            val alreadyScheduledEvents = mutableListOf<io.github.dmitrytsyvtsyn.fluently.data.HappeningModel>()
-            val suggestionRanges = mutableListOf<LongRange>()
-            var currentDate = state.startDate
-
-            val minimumInterval = CalendarRepository.plusMinutes((dateRange.last - dateRange.first), 10)
-
-            repository.fetch(state.startDate, state.endDate)
-                .filter { it.id != state.id }
-                .forEach { item ->
-                    if (item.startDate in dateRange || item.endDate in dateRange) {
-                        alreadyScheduledEvents.add(item)
-                    }
-                    if (currentDate < item.startDate && suggestionRanges.size < 2) {
-                        val differenceBetweenEndAndStartDates = item.startDate - currentDate
-                        if (differenceBetweenEndAndStartDates > minimumInterval) {
-                            val startSuggestionDate = CalendarRepository.plusMinutes(currentDate, 5)
-                            suggestionRanges.add(startSuggestionDate..startSuggestionDate + minimumInterval)
-                        }
-                    }
-                    currentDate = item.endDate
-                }
-
-            while (suggestionRanges.size < 2) {
-                suggestionRanges.add(currentDate..currentDate + minimumInterval)
-                currentDate += 2 * minimumInterval
-            }
-
-            if (alreadyScheduledEvents.isNotEmpty()) {
+            val result = checkAlreadyScheduledEvents(state.startDate, state.endDate)
+            if (result is CheckAlreadyScheduledEventsResult.SuggestionRanges) {
                 setState {
                     copy(
                         busyState = InterviewEventBusyState.BusyWithSuggestions(
                             startDate = startDate,
                             endDate = endDate,
-                            scheduledStates = alreadyScheduledEvents.toPersistentList(),
-                            suggestionRanges = suggestionRanges.toPersistentList()
+                            suggestionRanges = result.ranges.toPersistentList()
                         )
                     )
                 }
             } else {
                 repository.insert(
-                    model = HappeningModel(
-                        id = state.id,
-                        eventId = state.eventId,
-                        reminderId = state.reminderId,
+                    model = state.happening.copy(
                         title = state.title,
                         startDate = state.startDate,
-                        endDate = state.endDate,
+                        endDate = state.endDate
                     ),
                     hasReminder = state.hasReminder
                 )
@@ -174,33 +189,59 @@ internal class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, Ha
         setEffect(HappeningDetailSideEffect.Back)
     }
 
-    fun init(id: Long, initialDate: Long) {
-        if (id >= 0) {
-            viewModelScope.launch {
-                val event = repository.fetch(id)
-                setState {
-                    copy(
-                        id = event.id,
-                        eventId = event.eventId,
-                        reminderId = event.reminderId,
-                        title = event.title,
-                        startDate = event.startDate,
-                        endDate = event.endDate,
-                        titleError = false,
-                        timeError = false,
-                        hasReminder = event.reminderId >= 0
-                    )
+    private suspend fun checkAlreadyScheduledEvents(startDate: Long, endDate: Long): CheckAlreadyScheduledEventsResult {
+        val alreadyScheduledEvents = mutableListOf<HappeningModel>()
+        val suggestionRanges = mutableListOf<LongRange>()
+        var currentDate = startDate
+
+        val minimumSuggestionRangesCount = 2
+        val minimumInterval = CalendarRepository.plusMinutes((endDate - startDate), 10)
+
+        val currentHappeningId = viewState.value.happening.id
+        val dateRange = startDate..endDate
+
+        val happeningsByStartDateEndDateRange = repository.fetch(startDate, endDate)
+        val happeningsByStartDateEndDateRangeSize = happeningsByStartDateEndDateRange.size
+        var index = 0
+        while (index < happeningsByStartDateEndDateRangeSize) {
+            val happening = happeningsByStartDateEndDateRange[index]
+
+            val isCurrentHappening = happening.id == currentHappeningId
+            if (isCurrentHappening) {
+                index++
+                continue
+            }
+
+            if (happening.startDate in dateRange || happening.endDate in dateRange) {
+                alreadyScheduledEvents.add(happening)
+            }
+
+            if (currentDate < happening.startDate && suggestionRanges.size < minimumSuggestionRangesCount) {
+                val differenceBetweenEndAndStartDates = happening.startDate - currentDate
+                if (differenceBetweenEndAndStartDates > minimumInterval) {
+                    val startSuggestionDate = CalendarRepository.plusMinutes(currentDate, 5)
+                    suggestionRanges.add(startSuggestionDate..startSuggestionDate + minimumInterval)
                 }
             }
-        } else {
-            val actualDate = CalendarRepository.matchDateWithTime(initialDate, CalendarRepository.nowDate())
-            setState {
-                copy(
-                    startDate = CalendarRepository.plusMinutes(actualDate, 5L),
-                    endDate = CalendarRepository.plusMinutes(actualDate, 65L)
-                )
-            }
+            currentDate = happening.endDate
+
+            index++
         }
+
+        if (alreadyScheduledEvents.isEmpty()) {
+            return CheckAlreadyScheduledEventsResult.NoScheduledEvents
+        }
+
+        while (suggestionRanges.size < 2) {
+            suggestionRanges.add(currentDate..currentDate + minimumInterval)
+            currentDate += 2 * minimumInterval
+        }
+        return CheckAlreadyScheduledEventsResult.SuggestionRanges(suggestionRanges)
+    }
+
+    private sealed interface CheckAlreadyScheduledEventsResult {
+        data object NoScheduledEvents : CheckAlreadyScheduledEventsResult
+        class SuggestionRanges(val ranges: List<LongRange>) : CheckAlreadyScheduledEventsResult
     }
 
 }

@@ -1,5 +1,6 @@
 package io.github.dmitrytsyvtsyn.fluently.data
 
+import io.github.dmitrytsyvtsyn.fluently.core.data.IdLong
 import io.github.dmitrytsyvtsyn.fluently.core.data.PlatformCalendarAPI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -11,35 +12,42 @@ internal class HappeningRepositoryImpl(
 
     override suspend fun insert(model: HappeningModel, hasReminder: Boolean) =
         withContext(Dispatchers.Default) {
-            if (model.id > 0) {
-                val reminderId = calendarAPI.updateEvent(
-                    model.eventId,
-                    model.reminderId,
-                    model.title,
-                    model.startDate,
-                    model.endDate,
-                    hasReminder
-                )
-                database.insert(model.copy(reminderId = reminderId).toDatabase())
-            } else {
-                val (eventId, reminderId) = calendarAPI.insertEvent(
-                    model.title,
-                    model.startDate,
-                    model.endDate,
-                    hasReminder
-                )
-                database.insert(model.copy(eventId = eventId, reminderId = reminderId).toDatabase())
+            val happeningId = model.id
+            val updatedHappening = when {
+                happeningId.isEmpty && hasReminder -> {
+                    val (eventId, reminderId) = calendarAPI.insertEventWithReminder(
+                        model.title,
+                        model.startDate,
+                        model.endDate
+                    )
+                    model.copy(eventId = eventId, reminderId = reminderId)
+                }
+                happeningId.isNotEmpty && hasReminder -> {
+                    calendarAPI.updateEventWithReminder(
+                        model.eventId,
+                        model.reminderId,
+                        model.title,
+                        model.startDate,
+                        model.endDate
+                    )
+                    model
+                }
+                else -> {
+                    model
+                }
             }
+
+            database.insert(updatedHappening.toDatabase())
         }
 
-    override suspend fun delete(id: Long, eventId: Long, reminderId: Long) =
+    override suspend fun delete(model: HappeningModel) =
         withContext(Dispatchers.Default) {
-            calendarAPI.removeEvent(eventId, reminderId)
-            database.delete(id)
+            calendarAPI.removeEventWithReminder(model.eventId, model.reminderId)
+            database.delete(model.id.value)
         }
 
-    override suspend fun fetch(id: Long) = withContext(Dispatchers.Default) {
-        database.fetch(id).toModel()
+    override suspend fun fetch(id: IdLong) = withContext(Dispatchers.Default) {
+        database.fetch(id.value).toModel()
     }
 
     override suspend fun fetch(startDate: Long, endDate: Long) = withContext(Dispatchers.Default) {

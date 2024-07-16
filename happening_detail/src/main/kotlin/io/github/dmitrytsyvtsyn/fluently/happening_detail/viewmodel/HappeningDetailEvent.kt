@@ -1,6 +1,10 @@
 package io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel
 
+import io.github.dmitrytsyvtsyn.fluently.core.data.IdLong
+
 internal sealed interface HappeningDetailEvent {
+
+    class Init(val id: IdLong, val initialDate: Long) : HappeningDetailEvent
 
     class TitleChanged(val title: String) : HappeningDetailEvent
 
@@ -14,6 +18,8 @@ internal sealed interface HappeningDetailEvent {
     ) : HappeningDetailEvent
 
     class ChangeHasReminder(val hasReminder: Boolean) : HappeningDetailEvent
+
+    class ChangeCalendarPermissionsStatus(val allowed: Boolean) : HappeningDetailEvent
 
     data object SaveHappening : HappeningDetailEvent
 

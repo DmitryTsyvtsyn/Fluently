@@ -2,11 +2,12 @@ package io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import io.github.dmitrytsyvtsyn.fluently.core.data.CalendarRepository
+import io.github.dmitrytsyvtsyn.fluently.core.data.IdLong
 import io.github.dmitrytsyvtsyn.fluently.core.di.DI
 import io.github.dmitrytsyvtsyn.fluently.core.viewmodel.BaseViewModel
 import io.github.dmitrytsyvtsyn.fluently.data.HappeningModel
 import io.github.dmitrytsyvtsyn.fluently.data.HappeningRepository
-import io.github.dmitrytsyvtsyn.fluently.happening_list.components.TimeFactorForToday
+import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.TimeFactorForToday
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.Job
@@ -31,8 +32,8 @@ internal class HappeningListViewModel : BaseViewModel<HappeningListEvent, Happen
             is HappeningListEvent.ChangeDateByPageIndex -> handleEvent(event)
             is HappeningListEvent.ChangePagesByPageIndex -> handleEvent(event)
             is HappeningListEvent.RemoveHappening -> handleEvent(event)
-            is HappeningListEvent.ShowCalendarEvent -> handleEvent(event)
-            is HappeningListEvent.ShowHappeningEditing -> handleEvent(event)
+            is HappeningListEvent.ShowCalendar -> handleEvent(event)
+            is HappeningListEvent.EditHappening -> handleEvent(event)
             is HappeningListEvent.ShowHappeningAdding -> handleEvent(event)
             is HappeningListEvent.ShowDatePicker -> handleEvent(event)
             is HappeningListEvent.SubscribeTimeUpdates -> handleEvent(event)
@@ -107,20 +108,20 @@ internal class HappeningListViewModel : BaseViewModel<HappeningListEvent, Happen
     }
 
     private fun handleEvent(event: HappeningListEvent.RemoveHappening) = viewModelScope.launch {
-        repository.delete(event.id, event.eventId, event.reminderId)
+        repository.delete(event.happening)
         handleEvent(HappeningListEvent.FetchHappenings(viewState.value.currentDate))
     }
 
-    private fun handleEvent(event: HappeningListEvent.ShowCalendarEvent) {
-        setEffect(HappeningListSideEffect.ShowCalendarEvent(event.id))
+    private fun handleEvent(event: HappeningListEvent.ShowCalendar) {
+        setEffect(HappeningListSideEffect.ShowCalendar(event.happening.id))
     }
 
-    private fun handleEvent(event: HappeningListEvent.ShowHappeningEditing) {
-        setEffect(HappeningListSideEffect.ShowDetail(event.id, viewState.value.currentDate))
+    private fun handleEvent(event: HappeningListEvent.EditHappening) {
+        setEffect(HappeningListSideEffect.ShowDetail(event.happening.id, viewState.value.currentDate))
     }
 
     private fun handleEvent(event: HappeningListEvent.ShowHappeningAdding) {
-        setEffect(HappeningListSideEffect.ShowDetail(-1, viewState.value.currentDate))
+        setEffect(HappeningListSideEffect.ShowDetail(IdLong.Empty, viewState.value.currentDate))
     }
 
     private fun handleEvent(event: HappeningListEvent.ShowDatePicker) {

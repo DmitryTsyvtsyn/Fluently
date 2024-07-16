@@ -1,4 +1,4 @@
-package io.github.dmitrytsyvtsyn.fluently.happening_list.components
+package io.github.dmitrytsyvtsyn.fluently.happening_list.composables
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -37,17 +37,19 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.dmitrytsyvtsyn.fluently.core.data.CalendarRepository
+import io.github.dmitrytsyvtsyn.fluently.data.HappeningModel
 import io.github.dmitrytsyvtsyn.fluently.happening_list.R
 import io.github.dmitrytsyvtsyn.fluently.happening_list.formatFloatingHours
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningListItemState
+import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningTimingStatus
 import kotlinx.collections.immutable.PersistentList
 
 @Composable
 internal fun HappeningList(
     listItemStates: PersistentList<HappeningListItemState>,
-    onClick: (id: Long) -> Unit,
-    onRemove: (id: Long, eventId: Long, reminderId: Long) -> Unit,
-    onView: (eventId: Long) -> Unit,
+    onClick: (HappeningModel) -> Unit,
+    onRemove: (HappeningModel) -> Unit,
+    onView: (HappeningModel) -> Unit,
     goToYesterday: () -> Unit,
     goToTomorrow: () -> Unit,
     titleStyle: TextStyle = TextStyle(
@@ -70,7 +72,7 @@ internal fun HappeningList(
                         item = listItemState,
                         onClick = onClick,
                         onRemove = onRemove,
-                        onView = onView,
+                        onCalendarView = onView,
                         goToYesterday = goToYesterday,
                         goToTomorrow = goToTomorrow
                     )
@@ -93,9 +95,9 @@ internal fun HappeningList(
 @Composable
 private fun HappeningContentListItem(
     item: HappeningListItemState.Content,
-    onClick: (id: Long) -> Unit,
-    onRemove: (id: Long, eventId: Long, reminderId: Long) -> Unit,
-    onView: (eventId: Long) -> Unit,
+    onClick: (HappeningModel) -> Unit,
+    onRemove: (HappeningModel) -> Unit,
+    onCalendarView: (HappeningModel) -> Unit,
     goToYesterday: () -> Unit,
     goToTomorrow: () -> Unit
 ) {
@@ -106,8 +108,8 @@ private fun HappeningContentListItem(
         modifier = Modifier
             .alpha(
                 when (item.timingStatus) {
-                    io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningTimingStatus.ACTUAL -> 1f
-                    io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningTimingStatus.PASSED -> 0.5f
+                    HappeningTimingStatus.ACTUAL -> 1f
+                    HappeningTimingStatus.PASSED -> 0.5f
                 }
             )
             .fillMaxWidth()
@@ -118,7 +120,7 @@ private fun HappeningContentListItem(
             .combinedClickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = rememberRipple(bounded = true),
-                onClick = { onClick.invoke(model.id) },
+                onClick = { onClick.invoke(model) },
                 onLongClick = { dropdownExpanded.value = true }
             )
             .padding(16.dp)
@@ -147,7 +149,7 @@ private fun HappeningContentListItem(
                 Text(
                     text = "${CalendarRepository.formatHoursMinutes(model.startDate)} - ${CalendarRepository.formatHoursMinutes(model.endDate)}",
                     fontSize = 26.sp,
-                    textDecoration = if (item.timingStatus != io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningTimingStatus.ACTUAL) TextDecoration.LineThrough else null,
+                    textDecoration = if (item.timingStatus != HappeningTimingStatus.ACTUAL) TextDecoration.LineThrough else null,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
@@ -172,22 +174,24 @@ private fun HappeningContentListItem(
                     DropdownMenuItem(
                         text = {  Text(stringResource(id = R.string.remove_event)) },
                         onClick = {
-                            onRemove.invoke(model.id, model.eventId, model.reminderId)
+                            onRemove.invoke(model)
                             dropdownExpanded.value = false
                         }
                     )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(id = R.string.show_event)) },
-                        onClick = {
-                            onView.invoke(model.eventId)
-                            dropdownExpanded.value = false
-                        }
-                    )
+                    if (model.eventId.isNotEmpty) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(id = R.string.show_event)) },
+                            onClick = {
+                                onCalendarView.invoke(model)
+                                dropdownExpanded.value = false
+                            }
+                        )
+                    }
                 }
             }
         }
         Row(modifier = Modifier.align(Alignment.TopEnd), verticalAlignment = Alignment.CenterVertically) {
-            if (model.reminderId >= 0) {
+            if (model.reminderId.isNotEmpty) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_notification),
                     contentDescription = ""

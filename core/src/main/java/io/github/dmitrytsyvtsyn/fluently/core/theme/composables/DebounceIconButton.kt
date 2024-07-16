@@ -1,4 +1,4 @@
-package io.github.dmitrytsyvtsyn.fluently.core.theme.components
+package io.github.dmitrytsyvtsyn.fluently.core.theme.composables
 
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable

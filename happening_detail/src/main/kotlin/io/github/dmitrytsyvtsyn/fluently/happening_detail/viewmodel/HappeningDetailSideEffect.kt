@@ -13,4 +13,6 @@ internal sealed interface HappeningDetailSideEffect {
 
     data object Back : HappeningDetailSideEffect
 
+    data object CheckCalendarPermission : HappeningDetailSideEffect
+
 }

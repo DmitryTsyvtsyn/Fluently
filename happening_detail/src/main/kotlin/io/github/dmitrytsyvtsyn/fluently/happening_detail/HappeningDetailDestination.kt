@@ -6,6 +6,8 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import io.github.dmitrytsyvtsyn.fluently.core.data.CalendarRepository
+import io.github.dmitrytsyvtsyn.fluently.core.data.IdLong
+import io.github.dmitrytsyvtsyn.fluently.core.data.toIdLong
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.NavigationDestination
 
 data object HappeningDetailDestination : NavigationDestination<HappeningDetailDestination.Params, Unit>() {
@@ -27,16 +29,16 @@ data object HappeningDetailDestination : NavigationDestination<HappeningDetailDe
         val arguments = backStackEntry.arguments ?: error("NavBackStackEntry.arguments is empty!")
 
         return Params(
-            id = arguments.getLong(ID, -1),
+            id = arguments.getLong(ID, IdLong.Empty.value).toIdLong(),
             initialDate = arguments.getLong(INITIAL_DATE, CalendarRepository.nowDate())
         )
     }
 
     @Immutable
     class Params(
-        val id: Long,
+        val id: IdLong,
         val initialDate: Long
     ) : NavigationParams {
-        override val route: String = "${NAME}?$ID=$id&$INITIAL_DATE=$initialDate"
+        override val route: String = "${NAME}?$ID=${id.value}&$INITIAL_DATE=$initialDate"
     }
 }

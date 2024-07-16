@@ -40,10 +40,10 @@ import io.github.dmitrytsyvtsyn.fluently.core.navigation.LocalNavController
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.ThemeSettingsDestination
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.navigate
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.HappeningDetailDestination
-import io.github.dmitrytsyvtsyn.fluently.happening_list.components.HappeningEmptyList
-import io.github.dmitrytsyvtsyn.fluently.happening_list.components.HappeningList
-import io.github.dmitrytsyvtsyn.fluently.happening_list.components.HappeningTabModel
-import io.github.dmitrytsyvtsyn.fluently.happening_list.components.HappeningTabs
+import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningEmptyList
+import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningList
+import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningTabModel
+import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningTabs
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningListEvent
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningListViewModel
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningListSideEffect
@@ -74,8 +74,8 @@ internal fun HappeningListScreen() {
     LaunchedEffect(key1 = "side_effects") {
         viewModel.effect.onEach { sideEffect ->
             when (sideEffect) {
-                is HappeningListSideEffect.ShowCalendarEvent -> {
-                    val uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, sideEffect.id)
+                is HappeningListSideEffect.ShowCalendar -> {
+                    val uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, sideEffect.id.value)
                     context.startActivity(Intent(Intent.ACTION_VIEW).setData(uri))
                 }
                 is HappeningListSideEffect.ShowDetail -> {
@@ -206,14 +206,14 @@ internal fun HappeningListScreen() {
                     } else {
                         HappeningList(
                             listItemStates = items,
-                            onClick = { id ->
-                                viewModel.handleEvent(HappeningListEvent.ShowHappeningEditing(id))
+                            onClick = { happening ->
+                                viewModel.handleEvent(HappeningListEvent.EditHappening(happening))
                             },
-                            onRemove = { id, eventId, reminderId ->
-                                viewModel.handleEvent(HappeningListEvent.RemoveHappening(id, eventId, reminderId))
+                            onRemove = { happening ->
+                                viewModel.handleEvent(HappeningListEvent.RemoveHappening(happening))
                             },
-                            onView = { eventId ->
-                                viewModel.handleEvent(HappeningListEvent.ShowCalendarEvent(eventId))
+                            onView = { happening ->
+                                viewModel.handleEvent(HappeningListEvent.ShowCalendar(happening))
                             },
                             goToYesterday = {
                                 coroutineScope.launch {
