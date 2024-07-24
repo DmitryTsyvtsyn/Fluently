@@ -1,20 +1,20 @@
 package io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel
 
 import io.github.dmitrytsyvtsyn.fluently.core.data.IdLong
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
 
 internal sealed interface HappeningDetailEvent {
 
-    class Init(val id: IdLong, val initialDate: Long) : HappeningDetailEvent
+    class Init(val id: IdLong, val initialDateTime: LocalDateTime) : HappeningDetailEvent
 
     class TitleChanged(val title: String) : HappeningDetailEvent
 
-    class DateChanged(val date: Long) : HappeningDetailEvent
+    class DateChanged(val dateTime: LocalDateTime) : HappeningDetailEvent
 
     class TimeChanged(
-        val startHours: Int,
-        val startMinutes: Int,
-        val endHours: Int,
-        val endMinutes: Int
+        val startTime: LocalTime,
+        val endTime: LocalTime
     ) : HappeningDetailEvent
 
     class ChangeHasReminder(val hasReminder: Boolean) : HappeningDetailEvent

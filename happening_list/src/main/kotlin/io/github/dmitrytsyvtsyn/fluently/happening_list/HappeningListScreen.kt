@@ -35,7 +35,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
-import io.github.dmitrytsyvtsyn.fluently.core.data.CalendarRepository
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.minus
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.plus
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.toEpochMillis
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.toLocalDateTime
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.LocalNavController
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.ThemeSettingsDestination
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.navigate
@@ -52,6 +55,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.datetime.DateTimeUnit
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -67,7 +71,7 @@ internal fun HappeningListScreen() {
     LaunchedEffect(key1 = newSelectedDate.value) {
         val date = newSelectedDate.value
         if (date > 0) {
-            viewModel.handleEvent(HappeningListEvent.ChangeDate(date))
+            viewModel.handleEvent(HappeningListEvent.ChangeDate(date.toLocalDateTime()))
         }
     }
 
@@ -79,17 +83,22 @@ internal fun HappeningListScreen() {
                     context.startActivity(Intent(Intent.ACTION_VIEW).setData(uri))
                 }
                 is HappeningListSideEffect.ShowDetail -> {
-                    navController.navigate(HappeningDetailDestination.Params(sideEffect.id, sideEffect.date))
+                    navController.navigate(HappeningDetailDestination.Params(
+                        id = sideEffect.id,
+                        initialDate = sideEffect.dateTime.toEpochMillis()
+                    ))
                 }
                 is HappeningListSideEffect.ShowDatePicker -> {
-                    navController.navigate(HappeningDatePickerDestination.Params(sideEffect.date))
+                    navController.navigate(HappeningDatePickerDestination.Params(
+                        initialDate = sideEffect.dateTime.toEpochMillis()
+                    ))
                 }
             }
         }.collect()
     }
 
     LaunchedEffect(key1 = navController.currentBackStackEntry) {
-        viewModel.handleEvent(HappeningListEvent.FetchHappenings(state.currentDate))
+        viewModel.handleEvent(HappeningListEvent.FetchHappenings(state.currentDateTime))
     }
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -173,7 +182,7 @@ internal fun HappeningListScreen() {
                 HappeningTabs(
                     tabs = persistentListOf(
                         HappeningTabModel(
-                            title = formatDate(date = CalendarRepository.minusDays(state.currentDate, 1), nowDate = state.nowDate),
+                            title = state.currentDateTime.minus(1, DateTimeUnit.DAY).toDateMonthString(nowDateTime = state.nowDateTime),
                             onClick = {
                                 coroutineScope.launch {
                                     pagerState.animateScrollToPage(pagerState.currentPage - 1)
@@ -181,13 +190,13 @@ internal fun HappeningListScreen() {
                             }
                         ),
                         HappeningTabModel(
-                            title = formatDate(date = state.currentDate, nowDate = state.nowDate),
+                            title = state.currentDateTime.toDateMonthString(nowDateTime = state.nowDateTime),
                             onClick = {
                                 viewModel.handleEvent(HappeningListEvent.ShowDatePicker)
                             }
                         ),
                         HappeningTabModel(
-                            title = formatDate(date = CalendarRepository.plusDays(state.currentDate, 1), nowDate = state.nowDate),
+                            title = state.currentDateTime.plus(1, DateTimeUnit.DAY).toDateMonthString(nowDateTime = state.nowDateTime),
                             onClick = {
                                 coroutineScope.launch {
                                     pagerState.animateScrollToPage(pagerState.currentPage + 1)

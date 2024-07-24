@@ -1,14 +1,15 @@
 package io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel
 
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
+
 internal sealed interface HappeningDetailSideEffect {
 
-    class DatePicker(val date: Long) : HappeningDetailSideEffect
+    class DatePicker(val dateTime: LocalDateTime) : HappeningDetailSideEffect
 
     class TimePicker(
-        val startHours: Int,
-        val startMinutes: Int,
-        val endHours: Int,
-        val endMinutes: Int
+        val startTime: LocalTime,
+        val endTime: LocalTime
     ) : HappeningDetailSideEffect
 
     data object Back : HappeningDetailSideEffect

@@ -21,7 +21,6 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -45,6 +44,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.dmitrytsyvtsyn.fluently.core.data.CalendarRepository
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.toEpochMillis
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.toHoursMinutesString
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.toLocalDateTime
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.LocalNavController
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.navigate
 import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.DebounceIconButton
@@ -57,6 +59,8 @@ import io.github.dmitrytsyvtsyn.fluently.happening_pickers.HappeningDatePickerDe
 import io.github.dmitrytsyvtsyn.fluently.happening_pickers.HappeningTimePickerDestination
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.format
 import io.github.dmitrytsyvtsyn.fluently.core.R as CoreRes
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,7 +71,7 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
     val navController = LocalNavController.current
 
     LaunchedEffect(key1 = Unit) {
-        viewModel.handleEvent(HappeningDetailEvent.Init(params.id, params.initialDate))
+        viewModel.handleEvent(HappeningDetailEvent.Init(params.id, params.initialDate.toLocalDateTime()))
     }
 
     Scaffold(
@@ -91,9 +95,11 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
                     }
                 },
                 actions = {
-                    IconButton(onClick = {
-                        viewModel.handleEvent(HappeningDetailEvent.SaveHappening)
-                    }) {
+                    DebounceIconButton(
+                        onClick = {
+                            viewModel.handleEvent(HappeningDetailEvent.SaveHappening)
+                        }
+                    ) {
                         Icon(painter = painterResource(id = R.drawable.ic_check), contentDescription = "")
                     }
                 }
@@ -106,7 +112,7 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
         LaunchedEffect(key1 = newSelectedDate.value) {
             val date = newSelectedDate.value
             if (date > 0) {
-                viewModel.handleEvent(HappeningDetailEvent.DateChanged(date))
+                viewModel.handleEvent(HappeningDetailEvent.DateChanged(date.toLocalDateTime()))
             }
         }
 
@@ -114,7 +120,10 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
         LaunchedEffect(key1 = newSelectedTime.value) {
             val time = newSelectedTime.value
             if (time.isNotEmpty) {
-                viewModel.handleEvent(HappeningDetailEvent.TimeChanged(time.startHours, time.startMinutes, time.endHours, time.endMinutes))
+                viewModel.handleEvent(HappeningDetailEvent.TimeChanged(
+                    startTime = LocalTime(hour = time.startHours, minute = time.startMinutes),
+                    endTime = LocalTime(hour = time.endHours, minute = time.endMinutes)
+                ))
             }
         }
 
@@ -127,16 +136,16 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
                 when (sideEffect) {
                     is HappeningDetailSideEffect.DatePicker -> {
                         navController.navigate(HappeningDatePickerDestination.Params(
-                            initialDate = sideEffect.date,
+                            initialDate = sideEffect.dateTime.toEpochMillis(),
                             minDate = CalendarRepository.dateMonthYearMillis()
                         ))
                     }
                     is HappeningDetailSideEffect.TimePicker -> {
                         navController.navigate(HappeningTimePickerDestination.Params(
-                            startHours = sideEffect.startHours,
-                            startMinutes = sideEffect.startMinutes,
-                            endHours = sideEffect.endHours,
-                            endMinutes = sideEffect.endMinutes
+                            startHours = sideEffect.startTime.hour,
+                            startMinutes = sideEffect.startTime.minute,
+                            endHours = sideEffect.endTime.hour,
+                            endMinutes = sideEffect.endTime.minute
                         ))
                     }
                     is HappeningDetailSideEffect.Back -> {
@@ -177,7 +186,8 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
                         value = state.title,
                         onValueChange = { title ->
                             viewModel.handleEvent(HappeningDetailEvent.TitleChanged(title))
-                        })
+                        }
+                    )
 
                     if (state.titleError) {
                         Spacer(modifier = Modifier.size(8.dp))
@@ -210,7 +220,7 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
 
                     ) {
                         Text(
-                            text = CalendarRepository.formatDateMonthYear(state.startDate),
+                            text = state.startDateTime.toDayMonthYearString(),
                             fontSize = 26.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -237,8 +247,10 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
                             .padding(8.dp)
 
                     ) {
+                        val startTimeString = state.startDateTime.time.toHoursMinutesString()
+                        val endTimeString = state.endDateTime.time.toHoursMinutesString()
                         Text(
-                            text = "${CalendarRepository.formatHoursMinutes(state.startDate)} - ${CalendarRepository.formatHoursMinutes(state.endDate)}",
+                            text = "$startTimeString - $endTimeString",
                             fontSize = 31.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -248,6 +260,7 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
                         is InterviewEventBusyState.NotBusy -> {}
                         is InterviewEventBusyState.BusyWithSuggestions -> {
                             Spacer(Modifier.size(8.dp))
+
                             Text(
                                 text = stringResource(id = R.string.already_scheduled_events),
                                 color = MaterialTheme.colorScheme.error,
@@ -262,10 +275,8 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
                                 onSuggestionClick = { startHours, startMinutes, endHours, endMinutes ->
                                     viewModel.handleEvent(
                                         HappeningDetailEvent.TimeChanged(
-                                            startHours = startHours,
-                                            startMinutes = startMinutes,
-                                            endHours = endHours,
-                                            endMinutes = endMinutes
+                                            startTime = LocalTime(hour = startHours, minute = startMinutes),
+                                            endTime = LocalTime(hour = endHours, minute = endMinutes)
                                         )
                                     )
                                 }
@@ -276,7 +287,7 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                if (state.startDate > CalendarRepository.nowDate()) {
+                if (state.startDateTime > CalendarRepository.nowDateTime()) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {

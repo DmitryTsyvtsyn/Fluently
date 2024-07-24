@@ -1,12 +1,14 @@
 package io.github.dmitrytsyvtsyn.fluently.data
 
+import io.github.dmitrytsyvtsyn.fluently.core.data.CalendarRepository
 import io.github.dmitrytsyvtsyn.fluently.core.data.IdLong
+import kotlinx.datetime.LocalDateTime
 
 data class HappeningModel(
     val id: IdLong = IdLong.Empty,
     val eventId: IdLong = IdLong.Empty,
     val reminderId: IdLong = IdLong.Empty,
     val title: String = "",
-    val startDate: Long = 0L,
-    val endDate: Long = 0L
+    val startDateTime: LocalDateTime = CalendarRepository.nowDateTime(),
+    val endDateTime: LocalDateTime = CalendarRepository.nowDateTime()
 )

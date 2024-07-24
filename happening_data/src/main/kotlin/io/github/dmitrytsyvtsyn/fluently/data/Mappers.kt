@@ -1,6 +1,8 @@
 package io.github.dmitrytsyvtsyn.fluently.data
 
 import io.github.dmitrytsyvtsyn.fluently.core.data.toIdLong
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.toEpochMillis
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.toLocalDateTime
 import java.util.UUID
 
 fun HappeningTable.toModel(): HappeningModel =
@@ -9,8 +11,8 @@ fun HappeningTable.toModel(): HappeningModel =
         eventId = calendarEventId.toIdLong(),
         reminderId = calendarReminderId.toIdLong(),
         title = title,
-        startDate = startDate,
-        endDate = endDate
+        startDateTime = startDate.toLocalDateTime(),
+        endDateTime = endDate.toLocalDateTime()
     )
 
 fun HappeningModel.toDatabase(): HappeningTable =
@@ -20,8 +22,8 @@ fun HappeningModel.toDatabase(): HappeningTable =
             calendarEventId = eventId.value,
             calendarReminderId = reminderId.value,
             title = title,
-            startDate = startDate,
-            endDate = endDate
+            startDate = startDateTime.toEpochMillis(),
+            endDate = endDateTime.toEpochMillis()
         )
     } else {
         val uuid = UUID.randomUUID()
@@ -32,7 +34,7 @@ fun HappeningModel.toDatabase(): HappeningTable =
             calendarEventId = eventId.value,
             calendarReminderId = reminderId.value,
             title = title,
-            startDate = startDate,
-            endDate = endDate
+            startDate = startDateTime.toEpochMillis(),
+            endDate = endDateTime.toEpochMillis()
         )
     }

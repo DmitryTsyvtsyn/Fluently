@@ -13,6 +13,10 @@ immutable-collections = "0.3.7"
 splashscreen = "1.0.0"
 collection-jvm = "1.4.0"
 koin = "3.5.6"
+kotlinx-datetime = "0.6.0"
+junit = "4.13.2"
+
+# Compose compiler version
 compose-compiler-extension = "1.5.2"
 
 # Android SDK versions
@@ -35,6 +39,8 @@ room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 androidx-collection-jvm = { group = "androidx.collection", name = "collection-jvm", version.ref = "collection-jvm" }
 koin = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
+kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinx-datetime" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
 
 # plugins for buildSrc
 android = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }

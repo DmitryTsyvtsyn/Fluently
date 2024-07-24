@@ -2,36 +2,48 @@ package io.github.dmitrytsyvtsyn.fluently.happening_list
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import io.github.dmitrytsyvtsyn.fluently.core.data.CalendarRepository
-import kotlin.math.roundToInt
+import kotlinx.datetime.DateTimePeriod
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.format
+import kotlinx.datetime.format.DateTimeFormat
+import kotlinx.datetime.format.DateTimeFormatBuilder
+import kotlinx.datetime.format.MonthNames
+import kotlinx.datetime.format.byUnicodePattern
+import kotlinx.datetime.format.char
 
 @Composable
-fun formatFloatingHours(startDate: Long, endDate: Long): String {
-    val hours = (endDate - startDate) / 3_600_000f
-
+fun DateTimePeriod.toHoursMinutesString(): String {
+    val period = this
+    val hours = period.hours
     if (hours < 1) {
-        return stringResource(id = R.string.minute_suffix, (hours * 60).toInt())
+        return stringResource(id = R.string.minute_suffix, period.minutes)
     }
 
-    val divider = (hours * 10).toInt() % 10
-    if (divider == 0) {
-        return stringResource(id = R.string.hour_suffix, hours.toInt())
+    val minutes = period.minutes
+    if (minutes == 30) { // half an hour
+        return stringResource(id = R.string.hour_suffix, "$hours.5")
     }
 
-    if (divider == 5) {
-        return stringResource(id = R.string.hour_suffix, "${hours.toInt()}.5")
-    }
-
-    return stringResource(id = R.string.hour_suffix, hours.roundToInt())
+    return stringResource(id = R.string.hour_suffix, hours)
 }
 
 @Composable
-fun formatDate(date: Long, nowDate: Long): String {
-    val formattedDate = CalendarRepository.formatDateMonth(date)
-    val formattedNowDate = CalendarRepository.formatDateMonth(nowDate)
-    return if (formattedNowDate == formattedDate) {
-        stringResource(id = R.string.today_day)
-    } else {
-        formattedDate
+fun LocalDateTime.toDateMonthString(nowDateTime: LocalDateTime): String {
+    val currentDateTime = this
+    if (currentDateTime.date == nowDateTime.date) {
+        return stringResource(id = R.string.today_day)
     }
+
+    return currentDateTime.date.format(format2)
+}
+
+//private val format = LocalDate.Format {
+//    byUnicodePattern("dd MMMM")
+//}
+
+private val format2 = LocalDate.Format {
+    dayOfMonth()
+    char(' ')
+    monthName(MonthNames.ENGLISH_FULL)
 }

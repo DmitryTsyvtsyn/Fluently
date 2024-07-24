@@ -18,11 +18,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
-import io.github.dmitrytsyvtsyn.fluently.happening_list.formatFloatingHours
+import io.github.dmitrytsyvtsyn.fluently.happening_list.toHoursMinutesString
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningListItemState
 
 private const val TIMELINE_SIZE_FACTOR = 24f
-private const val ONE_HOUR_IN_MILLIS = 3_600f * 1_000
 
 @Composable
 internal fun TimelineListItem(
@@ -41,8 +40,11 @@ internal fun TimelineListItem(
 
     val textMeasurer = rememberTextMeasurer()
 
-    val hourFactor = (timeline.endDate - timeline.startDate) / ONE_HOUR_IN_MILLIS
-    val hourString = formatFloatingHours(timeline.startDate, timeline.endDate)
+    val period = timeline.period
+
+    val hourFactor = period.hours + period.minutes / 60f
+    val hourString = period.toHoursMinutesString()
+
     val textLayoutResult = remember { textMeasurer.measure(hourString, textStyle) }
     val minHeight = (textLayoutResult.size.height / density).dp
 
