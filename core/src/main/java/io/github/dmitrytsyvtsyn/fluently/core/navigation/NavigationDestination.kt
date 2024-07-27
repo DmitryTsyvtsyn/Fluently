@@ -7,13 +7,22 @@ import kotlinx.coroutines.flow.StateFlow
 
 abstract class NavigationDestination<T : NavigationDestination.NavigationParams, R> {
 
-    abstract val route: String
-
-    abstract val resultKey: String
-
+    abstract val name: String
     abstract val defaultResult: R
+    open val navArguments: List<NamedNavArgument> = emptyList()
 
-    abstract val navArguments: List<NamedNavArgument>
+    val route: String
+        get() {
+            if (navArguments.isEmpty()) return name
+            val navArgumentsString = navArguments.joinToString("&") { navArgument ->
+                val name = navArgument.name
+                "$name={$name}"
+            }
+            return "$name?$navArgumentsString"
+        }
+
+    private val resultKey: String
+        get() = "${name}_result_key"
 
     abstract fun params(backStackEntry: NavBackStackEntry): T
 

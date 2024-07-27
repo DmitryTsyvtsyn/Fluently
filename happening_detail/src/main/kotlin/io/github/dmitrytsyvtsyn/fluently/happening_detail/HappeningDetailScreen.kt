@@ -54,13 +54,12 @@ import io.github.dmitrytsyvtsyn.fluently.happening_detail.composables.Suggestion
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel.HappeningDetailEvent
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel.HappeningDetailViewModel
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel.HappeningDetailSideEffect
-import io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel.InterviewEventBusyState
+import io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel.HappeningSuggestionsState
 import io.github.dmitrytsyvtsyn.fluently.happening_pickers.HappeningDatePickerDestination
 import io.github.dmitrytsyvtsyn.fluently.happening_pickers.HappeningTimePickerDestination
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.datetime.LocalTime
-import kotlinx.datetime.format
 import io.github.dmitrytsyvtsyn.fluently.core.R as CoreRes
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -215,12 +214,12 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
                                 indication = rememberRipple(bounded = true),
                             ) {
                                 viewModel.handleEvent(HappeningDetailEvent.ShowDatePicker)
-                             }
+                            }
                             .padding(8.dp)
 
                     ) {
                         Text(
-                            text = state.startDateTime.toDayMonthYearString(),
+                            text = state.startDateTime.date.toDayMonthYearAbbreviatedString(),
                             fontSize = 26.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -256,33 +255,24 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
                         )
                     }
 
-                    when (val busyState = state.busyState) {
-                        is InterviewEventBusyState.NotBusy -> {}
-                        is InterviewEventBusyState.BusyWithSuggestions -> {
-                            Spacer(Modifier.size(8.dp))
-
-                            Text(
-                                text = stringResource(id = R.string.already_scheduled_events),
-                                color = MaterialTheme.colorScheme.error,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-
-                            Spacer(Modifier.size(8.dp))
-
+                    when (val suggestionsState = state.suggestionsState) {
+                        is HappeningSuggestionsState.NoSuggestions -> {}
+                        is HappeningSuggestionsState.Suggestions -> {
+                            Spacer(Modifier.size(12.dp))
                             Suggestions(
-                                suggestionRanges = busyState.suggestionRanges,
-                                onSuggestionClick = { startHours, startMinutes, endHours, endMinutes ->
+                                suggestionRanges = suggestionsState.ranges,
+                                onSuggestionClick = { startDateTime, endDateTime ->
                                     viewModel.handleEvent(
-                                        HappeningDetailEvent.TimeChanged(
-                                            startTime = LocalTime(hour = startHours, minute = startMinutes),
-                                            endTime = LocalTime(hour = endHours, minute = endMinutes)
+                                        HappeningDetailEvent.DateTimeChanged(
+                                            startDateTime = startDateTime,
+                                            endDateTime = endDateTime
                                         )
                                     )
                                 }
                             )
                         }
                     }
+
                 }
 
                 Spacer(modifier = Modifier.weight(1f))

@@ -17,8 +17,7 @@ data object HappeningDetailDestination : NavigationDestination<HappeningDetailDe
     private const val ID = "${NAME}_id"
     private const val INITIAL_DATE = "${NAME}_initial_date"
 
-    override val route: String = "${NAME}?$ID={$ID}&$INITIAL_DATE={$INITIAL_DATE}"
-    override val resultKey: String = "${NAME}_result_key"
+    override val name: String = NAME
     override val defaultResult: Unit = Unit
     override val navArguments: List<NamedNavArgument> = listOf(
         navArgument(ID) { type = NavType.LongType },

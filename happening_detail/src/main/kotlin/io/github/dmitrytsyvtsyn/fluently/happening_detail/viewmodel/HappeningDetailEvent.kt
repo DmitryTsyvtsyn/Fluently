@@ -17,6 +17,11 @@ internal sealed interface HappeningDetailEvent {
         val endTime: LocalTime
     ) : HappeningDetailEvent
 
+    class DateTimeChanged(
+        val startDateTime: LocalDateTime,
+        val endDateTime: LocalDateTime
+    ) : HappeningDetailEvent
+
     class ChangeHasReminder(val hasReminder: Boolean) : HappeningDetailEvent
 
     class ChangeCalendarPermissionsStatus(val allowed: Boolean) : HappeningDetailEvent

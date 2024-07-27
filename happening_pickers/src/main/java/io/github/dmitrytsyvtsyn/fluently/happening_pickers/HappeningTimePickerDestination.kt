@@ -19,10 +19,8 @@ data object HappeningTimePickerDestination : NavigationDestination<HappeningTime
     private const val END_HOURS = "${NAME}_end_hours"
     private const val END_MINUTES = "${NAME}_end_minutes"
 
-    override val route: String = "$NAME?$START_HOURS={$START_HOURS}&$START_MINUTES={$START_MINUTES}&$END_HOURS={$END_HOURS}&$END_MINUTES={$END_MINUTES}"
-    override val resultKey: String = "${NAME}_result_key"
+    override val name: String = NAME
     override val defaultResult: Result = Result()
-
     override val navArguments: List<NamedNavArgument>
         get() = listOf(
             navArgument(START_HOURS) { type = NavType.IntType },

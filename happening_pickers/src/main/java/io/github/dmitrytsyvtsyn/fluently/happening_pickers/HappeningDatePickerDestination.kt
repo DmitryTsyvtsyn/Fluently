@@ -15,10 +15,8 @@ data object HappeningDatePickerDestination : NavigationDestination<HappeningDate
     private const val MIN_DATE = "${NAME}_min_date"
     private const val MAX_DATE = "${NAME}_max_date"
 
-    override val route: String = "$NAME?$INITIAL_DATE={$INITIAL_DATE}&$MIN_DATE={$MIN_DATE}&$MAX_DATE={$MAX_DATE}"
-    override val resultKey: String = "${NAME}_result_key"
+    override val name: String = NAME
     override val defaultResult: Long = -1
-
     override val navArguments: List<NamedNavArgument>
         get() = listOf(
             navArgument(INITIAL_DATE) { type = NavType.LongType },

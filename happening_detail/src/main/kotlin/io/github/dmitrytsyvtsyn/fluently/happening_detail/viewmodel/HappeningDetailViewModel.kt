@@ -6,6 +6,9 @@ import io.github.dmitrytsyvtsyn.fluently.core.datetime.plus
 import io.github.dmitrytsyvtsyn.fluently.core.di.DI
 import io.github.dmitrytsyvtsyn.fluently.core.viewmodel.BaseViewModel
 import io.github.dmitrytsyvtsyn.fluently.data.HappeningRepository
+import io.github.dmitrytsyvtsyn.fluently.happening_detail.usecases.HappeningFetchSuggestionsUseCase
+import io.github.dmitrytsyvtsyn.fluently.happening_detail.usecases.HappeningFetchUseCase
+import io.github.dmitrytsyvtsyn.fluently.happening_detail.usecases.HappeningInsertUseCase
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DateTimeUnit
@@ -32,6 +35,7 @@ internal class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, Ha
             is HappeningDetailEvent.TitleChanged -> handleEvent(event)
             is HappeningDetailEvent.DateChanged -> handleEvent(event)
             is HappeningDetailEvent.TimeChanged -> handleEvent(event)
+            is HappeningDetailEvent.DateTimeChanged -> handleEvent(event)
             is HappeningDetailEvent.ChangeHasReminder -> handleEvent(event)
             is HappeningDetailEvent.SaveHappening -> handleEvent(event)
             is HappeningDetailEvent.ShowTimePicker -> handleEvent(event)
@@ -91,23 +95,34 @@ internal class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, Ha
     private fun handleEvent(event: HappeningDetailEvent.TimeChanged) {
         val state = viewState.value
 
-        val newStartDateTime = LocalDateTime(state.startDateTime.date, event.startTime)
-        val newEndDateTime = LocalDateTime(state.endDateTime.date, event.endTime)
+        val startDateTime = LocalDateTime(state.startDateTime.date, event.startTime)
+        val endDateTime = LocalDateTime(state.endDateTime.date, event.endTime)
 
+        setActualizedStartEndDates(startDateTime, endDateTime)
+    }
+
+    private fun handleEvent(event: HappeningDetailEvent.DateTimeChanged) {
+        setActualizedStartEndDates(event.startDateTime, event.endDateTime)
+    }
+
+    private fun setActualizedStartEndDates(startDateTime: LocalDateTime, endDateTime: LocalDateTime) {
         val (actualStartDateTime, actualEndDateTime) = when {
-            CalendarRepository.nowDateTime() > newStartDateTime -> {
-                newStartDateTime.plus(1, DateTimeUnit.DAY) to newEndDateTime.plus(1, DateTimeUnit.DAY)
+            CalendarRepository.nowDateTime() > startDateTime -> {
+                startDateTime.plus(1, DateTimeUnit.DAY) to endDateTime.plus(1, DateTimeUnit.DAY)
             }
-            newStartDateTime > newEndDateTime -> {
-                newStartDateTime to newEndDateTime.plus(1, DateTimeUnit.DAY)
+            startDateTime > endDateTime -> {
+                startDateTime to endDateTime.plus(1, DateTimeUnit.DAY)
             }
             else -> {
-                newStartDateTime to newEndDateTime
+                startDateTime to endDateTime
             }
         }
 
         setState {
-            copy(startDateTime = actualStartDateTime, endDateTime = actualEndDateTime)
+            copy(
+                startDateTime = actualStartDateTime,
+                endDateTime = actualEndDateTime
+            )
         }
     }
 
@@ -145,22 +160,27 @@ internal class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, Ha
         }
 
         viewModelScope.launch {
-            val result = diComponent.suggestionsUseCase.execute(
-                happening = viewState.value.happening,
+            val suggestionsResult = diComponent.suggestionsUseCase.execute(
                 startDateTime = state.startDateTime,
                 endDateTime = state.endDateTime
             )
-            if (result is HappeningFetchSuggestionsUseCase.FetchSuggestionsUseCaseResult.SuggestionRanges) {
-                setState {
-                    copy(
-                        busyState = InterviewEventBusyState.BusyWithSuggestions(
-                            startDateTime = startDateTime,
-                            endDateTime = endDateTime,
-                            suggestionRanges = result.ranges.toPersistentList()
+
+            var isFreeRange = true
+            if (suggestionsResult is HappeningFetchSuggestionsUseCase.FetchSuggestionsUseCaseResult.Suggestions) {
+                val plannedHappenings = suggestionsResult.plannedHappenings
+                if (plannedHappenings.size > 1 || plannedHappenings.first() != state.happening) {
+                    setState {
+                        copy(
+                            suggestionsState = HappeningSuggestionsState.Suggestions(
+                                ranges = suggestionsResult.ranges.toPersistentList()
+                            )
                         )
-                    )
+                    }
+                    isFreeRange = false
                 }
-            } else {
+            }
+
+            if (isFreeRange) {
                 diComponent.insertUseCase.execute(
                     model = state.happening.copy(
                         title = state.title,

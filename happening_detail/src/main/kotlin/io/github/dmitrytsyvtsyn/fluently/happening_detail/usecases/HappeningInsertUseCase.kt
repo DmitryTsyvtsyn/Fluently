@@ -1,4 +1,4 @@
-package io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel
+package io.github.dmitrytsyvtsyn.fluently.happening_detail.usecases
 
 import io.github.dmitrytsyvtsyn.fluently.data.HappeningModel
 import io.github.dmitrytsyvtsyn.fluently.data.HappeningRepository

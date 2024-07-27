@@ -1,8 +1,8 @@
 package io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel
 
+import io.github.dmitrytsyvtsyn.fluently.HappeningRepositoryTestImpl
 import io.github.dmitrytsyvtsyn.fluently.core.data.IdLong
 import io.github.dmitrytsyvtsyn.fluently.data.HappeningModel
-import io.github.dmitrytsyvtsyn.fluently.data.HappeningRepository
 import io.github.dmitrytsyvtsyn.fluently.happening_list.usecases.HappeningFetchPagesUseCase
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.DateTimePeriod
@@ -299,17 +299,6 @@ class HappeningFetchPagesUseCaseTest {
         )
 
         assertEquals(expected, actual)
-    }
-
-    private class HappeningRepositoryTestImpl(
-        private val mockHappenings: List<HappeningModel>
-    ) : HappeningRepository {
-
-        override suspend fun insert(model: HappeningModel, hasReminder: Boolean) {}
-        override suspend fun delete(model: HappeningModel) {}
-        override suspend fun fetch(id: IdLong): HappeningModel { error("no needed") }
-        override suspend fun fetch(startDateTime: LocalDateTime, endDateTime: LocalDateTime): List<HappeningModel> = mockHappenings
-
     }
 
 }
