@@ -1,8 +1,8 @@
 package io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel
 
 import androidx.lifecycle.viewModelScope
-import io.github.dmitrytsyvtsyn.fluently.core.data.CalendarRepository
 import io.github.dmitrytsyvtsyn.fluently.core.data.IdLong
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.DateTimeExtensions
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.minus
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.plus
 import io.github.dmitrytsyvtsyn.fluently.core.di.DI
@@ -19,8 +19,8 @@ import kotlinx.datetime.LocalDateTime
 
 internal class HappeningListViewModel : BaseViewModel<HappeningListEvent, HappeningListState, HappeningListSideEffect>(
     HappeningListState(
-        nowDateTime = CalendarRepository.nowDateTime(),
-        currentDateTime = CalendarRepository.nowDateTime()
+        nowDateTime = DateTimeExtensions.nowDateTime(),
+        currentDateTime = DateTimeExtensions.nowDateTime()
     )
 ) {
 
@@ -53,7 +53,7 @@ internal class HappeningListViewModel : BaseViewModel<HappeningListEvent, Happen
     private fun handleEvent(event: HappeningListEvent.FetchHappenings) {
         cachedInitJob?.cancel()
         cachedInitJob = viewModelScope.launch {
-            val initialDate = CalendarRepository.nowDateTime()
+            val initialDate = DateTimeExtensions.nowDateTime()
             val pages = calculatePages(event.date, initialDate)
             setState {
                 copy(
@@ -70,7 +70,7 @@ internal class HappeningListViewModel : BaseViewModel<HappeningListEvent, Happen
             while (true) {
                 delay(remainingMillisForNextMinute)
 
-                val nowDateTime = CalendarRepository.nowDateTime()
+                val nowDateTime = DateTimeExtensions.nowDateTime()
                 val updatedPages = calculatePages(currentDate, nowDateTime)
                 setState {
                     copy(
@@ -133,7 +133,7 @@ internal class HappeningListViewModel : BaseViewModel<HappeningListEvent, Happen
 
     private fun handleEvent(event: HappeningListEvent.SubscribeTimeUpdates) {
         if (cachedInitJob == null) {
-            handleEvent(HappeningListEvent.FetchHappenings(CalendarRepository.nowDateTime()))
+            handleEvent(HappeningListEvent.FetchHappenings(DateTimeExtensions.nowDateTime()))
         }
     }
 

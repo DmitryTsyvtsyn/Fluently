@@ -4,8 +4,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
-import io.github.dmitrytsyvtsyn.fluently.core.data.CalendarRepository
-import io.github.dmitrytsyvtsyn.fluently.core.datetime.toEpochMillis
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.DateTimeExtensions
 
 @Composable
 fun DebounceIconButton(
@@ -16,7 +15,7 @@ fun DebounceIconButton(
     val state = remember { mutableLongStateOf(0L) }
     IconButton(
         onClick = {
-            val currentDateTimeMillis = CalendarRepository.nowDateTime().toEpochMillis()
+            val currentDateTimeMillis = DateTimeExtensions.nowDateTimeMillis()
             val lastDateTimeMillis = state.longValue
             if (currentDateTimeMillis - lastDateTimeMillis >= intervalInMillis) {
                 state.longValue = currentDateTimeMillis

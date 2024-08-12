@@ -5,9 +5,9 @@ import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import io.github.dmitrytsyvtsyn.fluently.core.data.CalendarRepository
 import io.github.dmitrytsyvtsyn.fluently.core.data.IdLong
 import io.github.dmitrytsyvtsyn.fluently.core.data.toIdLong
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.DateTimeExtensions
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.NavigationDestination
 
 data object HappeningDetailDestination : NavigationDestination<HappeningDetailDestination.Params, Unit>() {
@@ -29,7 +29,7 @@ data object HappeningDetailDestination : NavigationDestination<HappeningDetailDe
 
         return Params(
             id = arguments.getLong(ID, IdLong.Empty.value).toIdLong(),
-            initialDate = arguments.getLong(INITIAL_DATE, CalendarRepository.nowDate())
+            initialDate = arguments.getLong(INITIAL_DATE, DateTimeExtensions.nowDateTimeMillis())
         )
     }
 

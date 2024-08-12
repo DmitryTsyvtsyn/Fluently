@@ -42,6 +42,7 @@ import io.github.dmitrytsyvtsyn.fluently.core.datetime.toLocalDateTime
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.LocalNavController
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.ThemeSettingsDestination
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.navigate
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.DebounceIconButton
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.HappeningDetailDestination
 import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningEmptyList
 import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningList
@@ -129,9 +130,11 @@ internal fun HappeningListScreen() {
                     Text(text = stringResource(id = R.string.interviews))
                 },
                 actions = {
-                    IconButton(onClick = {
-                        navController.navigate(ThemeSettingsDestination.Params())
-                    }) {
+                    DebounceIconButton(
+                        onClick = {
+                            navController.navigate(ThemeSettingsDestination.Params())
+                        }
+                    ) {
                         Icon(painter = painterResource(id = R.drawable.ic_settings), contentDescription = "")
                     }
                 }

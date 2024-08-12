@@ -1,6 +1,5 @@
 package io.github.dmitrytsyvtsyn.fluently.happening_pickers
 
-import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.dialog
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.LocalNavController

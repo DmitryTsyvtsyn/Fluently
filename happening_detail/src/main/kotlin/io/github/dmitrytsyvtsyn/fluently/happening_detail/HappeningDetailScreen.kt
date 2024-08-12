@@ -43,7 +43,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import io.github.dmitrytsyvtsyn.fluently.core.data.CalendarRepository
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.DateTimeExtensions
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.toEpochMillis
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.toHoursMinutesString
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.toLocalDateTime
@@ -135,8 +135,8 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
                 when (sideEffect) {
                     is HappeningDetailSideEffect.DatePicker -> {
                         navController.navigate(HappeningDatePickerDestination.Params(
-                            initialDate = sideEffect.dateTime.toEpochMillis(),
-                            minDate = CalendarRepository.dateMonthYearMillis()
+                            initialDate = sideEffect.initialDate.toEpochMillis(),
+                            minDate = sideEffect.minDate.toEpochMillis()
                         ))
                     }
                     is HappeningDetailSideEffect.TimePicker -> {
@@ -277,7 +277,7 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                if (state.startDateTime > CalendarRepository.nowDateTime()) {
+                if (state.startDateTime > DateTimeExtensions.nowDateTime()) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {

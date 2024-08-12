@@ -1,8 +1,10 @@
 package io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel
 
 import androidx.lifecycle.viewModelScope
-import io.github.dmitrytsyvtsyn.fluently.core.data.CalendarRepository
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.DateTimeExtensions
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.plus
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.withDate
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.withTime
 import io.github.dmitrytsyvtsyn.fluently.core.di.DI
 import io.github.dmitrytsyvtsyn.fluently.core.viewmodel.BaseViewModel
 import io.github.dmitrytsyvtsyn.fluently.data.HappeningRepository
@@ -16,8 +18,8 @@ import kotlinx.datetime.LocalDateTime
 
 internal class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, HappeningDetailState, HappeningDetailSideEffect>(
     HappeningDetailState(
-        startDateTime = CalendarRepository.nowDateTime().plus(5, DateTimeUnit.MINUTE),
-        endDateTime = CalendarRepository.nowDateTime().plus(65, DateTimeUnit.MINUTE)
+        startDateTime = DateTimeExtensions.nowDateTime().plus(5, DateTimeUnit.MINUTE),
+        endDateTime = DateTimeExtensions.nowDateTime().plus(65, DateTimeUnit.MINUTE)
     )
 ) {
 
@@ -86,8 +88,8 @@ internal class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, Ha
         setState {
             val newDate = event.dateTime.date
             copy(
-                startDateTime = LocalDateTime(newDate, startDateTime.time),
-                endDateTime = LocalDateTime(newDate, endDateTime.time)
+                startDateTime = startDateTime.withDate(newDate),
+                endDateTime = endDateTime.withDate(newDate)
             )
         }
     }
@@ -95,10 +97,10 @@ internal class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, Ha
     private fun handleEvent(event: HappeningDetailEvent.TimeChanged) {
         val state = viewState.value
 
-        val startDateTime = LocalDateTime(state.startDateTime.date, event.startTime)
-        val endDateTime = LocalDateTime(state.endDateTime.date, event.endTime)
-
-        setActualizedStartEndDates(startDateTime, endDateTime)
+        setActualizedStartEndDates(
+            startDateTime = state.startDateTime.withTime(event.startTime),
+            endDateTime = state.endDateTime.withTime(event.endTime)
+        )
     }
 
     private fun handleEvent(event: HappeningDetailEvent.DateTimeChanged) {
@@ -107,7 +109,7 @@ internal class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, Ha
 
     private fun setActualizedStartEndDates(startDateTime: LocalDateTime, endDateTime: LocalDateTime) {
         val (actualStartDateTime, actualEndDateTime) = when {
-            CalendarRepository.nowDateTime() > startDateTime -> {
+            DateTimeExtensions.nowDateTime() > startDateTime -> {
                 startDateTime.plus(1, DateTimeUnit.DAY) to endDateTime.plus(1, DateTimeUnit.DAY)
             }
             startDateTime > endDateTime -> {
@@ -206,7 +208,10 @@ internal class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, Ha
     }
 
     private fun handleEvent(event: HappeningDetailEvent.ShowDatePicker) {
-        setEffect(HappeningDetailSideEffect.DatePicker(viewState.value.startDateTime))
+        setEffect(HappeningDetailSideEffect.DatePicker(
+            initialDate = viewState.value.startDateTime.date,
+            minDate = DateTimeExtensions.nowDateTime().date
+        ))
     }
 
     private fun handleEvent(event: HappeningDetailEvent.Back) {

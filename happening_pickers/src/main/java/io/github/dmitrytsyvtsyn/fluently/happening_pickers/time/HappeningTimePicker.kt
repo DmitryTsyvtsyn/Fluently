@@ -10,6 +10,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimeInput
+import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,7 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.dmitrytsyvtsyn.fluently.core.data.CalendarRepository
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.DateTimeExtensions
 import io.github.dmitrytsyvtsyn.fluently.happening_pickers.HappeningTimePickerDestination
 import io.github.dmitrytsyvtsyn.fluently.happening_pickers.R
 import io.github.dmitrytsyvtsyn.fluently.core.R as CoreRes
@@ -47,9 +48,10 @@ internal fun HappeningTimePicker(
     )
     val confirmEnabled = remember {
         derivedStateOf {
-            val startTime = startTimeState.hour * 60 + startTimeState.minute
-            val endTime = endTimeState.hour * 60 + endTimeState.minute
-            val currentTime = CalendarRepository.currentTime()
+            val startTime = startTimeState.toMillis()
+            val endTime = endTimeState.toMillis()
+
+            val currentTime = DateTimeExtensions.nowTimeMillis()
 
             when {
                 startTime < currentTime && endTime < currentTime && startTime > endTime -> false
@@ -121,4 +123,10 @@ internal fun HappeningTimePicker(
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+private fun TimePickerState.toMillis(): Int {
+    val minutes = 60 * hour + minute
+    return minutes * 60_000
 }
