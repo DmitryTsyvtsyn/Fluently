@@ -14,7 +14,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.dmitrytsyvtsyn.fluently.data.HappeningModel
+import io.github.dmitrytsyvtsyn.fluently.data.model.HappeningModel
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningListItemState
 import kotlinx.collections.immutable.PersistentList
 

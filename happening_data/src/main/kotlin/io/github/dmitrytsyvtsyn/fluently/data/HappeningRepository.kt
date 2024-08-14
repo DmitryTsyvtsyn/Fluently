@@ -1,6 +1,7 @@
 package io.github.dmitrytsyvtsyn.fluently.data
 
 import io.github.dmitrytsyvtsyn.fluently.core.data.IdLong
+import io.github.dmitrytsyvtsyn.fluently.data.model.HappeningModel
 import kotlinx.datetime.LocalDateTime
 
 interface HappeningRepository {

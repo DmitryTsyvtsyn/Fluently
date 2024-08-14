@@ -1,6 +1,6 @@
 package io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel
 
-import io.github.dmitrytsyvtsyn.fluently.data.HappeningModel
+import io.github.dmitrytsyvtsyn.fluently.data.model.HappeningModel
 import kotlinx.datetime.LocalDateTime
 
 internal data class HappeningDetailState(

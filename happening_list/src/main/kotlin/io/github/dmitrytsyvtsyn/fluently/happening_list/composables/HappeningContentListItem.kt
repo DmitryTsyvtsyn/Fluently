@@ -33,14 +33,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.minus
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.toHoursMinutesString
-import io.github.dmitrytsyvtsyn.fluently.data.HappeningModel
+import io.github.dmitrytsyvtsyn.fluently.data.model.HappeningModel
 import io.github.dmitrytsyvtsyn.fluently.happening_list.R
-import io.github.dmitrytsyvtsyn.fluently.happening_list.toHoursMinutesString
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningDayStatus
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningListItemState
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningRunningStatus
-import kotlinx.datetime.LocalTime
-import kotlinx.datetime.format
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

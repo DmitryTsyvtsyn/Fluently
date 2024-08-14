@@ -3,6 +3,8 @@ package io.github.dmitrytsyvtsyn.fluently.data
 import io.github.dmitrytsyvtsyn.fluently.core.data.IdLong
 import io.github.dmitrytsyvtsyn.fluently.core.data.PlatformCalendarAPI
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.toEpochMillis
+import io.github.dmitrytsyvtsyn.fluently.data.database.HappeningDao
+import io.github.dmitrytsyvtsyn.fluently.data.model.HappeningModel
 import kotlinx.datetime.LocalDateTime
 
 internal class HappeningRepositoryImpl(

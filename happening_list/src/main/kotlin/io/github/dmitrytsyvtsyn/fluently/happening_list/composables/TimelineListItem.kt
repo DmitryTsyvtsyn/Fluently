@@ -18,7 +18,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
-import io.github.dmitrytsyvtsyn.fluently.happening_list.toHoursMinutesString
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningListItemState
 
 private const val TIMELINE_SIZE_FACTOR = 24f

@@ -1,7 +1,7 @@
 package io.github.dmitrytsyvtsyn.fluently.happening_detail.usecases
 
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.plus
-import io.github.dmitrytsyvtsyn.fluently.data.HappeningModel
+import io.github.dmitrytsyvtsyn.fluently.data.model.HappeningModel
 import io.github.dmitrytsyvtsyn.fluently.data.HappeningRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

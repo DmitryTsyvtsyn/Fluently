@@ -1,7 +1,7 @@
 package io.github.dmitrytsyvtsyn.fluently
 
 import io.github.dmitrytsyvtsyn.fluently.core.data.IdLong
-import io.github.dmitrytsyvtsyn.fluently.data.HappeningModel
+import io.github.dmitrytsyvtsyn.fluently.data.model.HappeningModel
 import io.github.dmitrytsyvtsyn.fluently.data.HappeningRepository
 import kotlinx.datetime.LocalDateTime
 

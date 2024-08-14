@@ -2,7 +2,7 @@ package io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel
 
 import io.github.dmitrytsyvtsyn.fluently.HappeningRepositoryTestImpl
 import io.github.dmitrytsyvtsyn.fluently.core.data.IdLong
-import io.github.dmitrytsyvtsyn.fluently.data.HappeningModel
+import io.github.dmitrytsyvtsyn.fluently.data.model.HappeningModel
 import io.github.dmitrytsyvtsyn.fluently.happening_list.usecases.HappeningFetchPagesUseCase
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.DateTimePeriod

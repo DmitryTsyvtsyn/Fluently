@@ -3,6 +3,8 @@ package io.github.dmitrytsyvtsyn.fluently.data
 import io.github.dmitrytsyvtsyn.fluently.core.data.toIdLong
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.toEpochMillis
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.toLocalDateTime
+import io.github.dmitrytsyvtsyn.fluently.data.database.HappeningTable
+import io.github.dmitrytsyvtsyn.fluently.data.model.HappeningModel
 import java.util.UUID
 
 fun HappeningTable.toModel(): HappeningModel =

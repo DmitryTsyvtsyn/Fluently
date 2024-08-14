@@ -1,6 +1,6 @@
 package io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel
 
-import io.github.dmitrytsyvtsyn.fluently.data.HappeningModel
+import io.github.dmitrytsyvtsyn.fluently.data.model.HappeningModel
 import kotlinx.datetime.LocalDateTime
 
 internal sealed interface HappeningListEvent {

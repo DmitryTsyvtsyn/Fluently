@@ -14,7 +14,6 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -43,15 +42,16 @@ import io.github.dmitrytsyvtsyn.fluently.core.navigation.LocalNavController
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.ThemeSettingsDestination
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.navigate
 import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.DebounceIconButton
-import io.github.dmitrytsyvtsyn.fluently.happening_detail.HappeningDetailDestination
+import io.github.dmitrytsyvtsyn.fluently.happening_detail.navigation.HappeningDetailDestination
 import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningEmptyList
 import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningList
 import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningTabModel
 import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningTabs
+import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.toDateMonthString
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningListEvent
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningListViewModel
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningListSideEffect
-import io.github.dmitrytsyvtsyn.fluently.happening_pickers.HappeningDatePickerDestination
+import io.github.dmitrytsyvtsyn.fluently.happening_pickers.navigation.HappeningDatePickerDestination
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -84,13 +84,15 @@ internal fun HappeningListScreen() {
                     context.startActivity(Intent(Intent.ACTION_VIEW).setData(uri))
                 }
                 is HappeningListSideEffect.ShowDetail -> {
-                    navController.navigate(HappeningDetailDestination.Params(
+                    navController.navigate(
+                        HappeningDetailDestination.Params(
                         id = sideEffect.id,
                         initialDate = sideEffect.dateTime.toEpochMillis()
                     ))
                 }
                 is HappeningListSideEffect.ShowDatePicker -> {
-                    navController.navigate(HappeningDatePickerDestination.Params(
+                    navController.navigate(
+                        HappeningDatePickerDestination.Params(
                         initialDate = sideEffect.dateTime.toEpochMillis()
                     ))
                 }

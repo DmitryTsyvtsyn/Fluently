@@ -51,12 +51,14 @@ import io.github.dmitrytsyvtsyn.fluently.core.navigation.LocalNavController
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.navigate
 import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.DebounceIconButton
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.composables.Suggestions
+import io.github.dmitrytsyvtsyn.fluently.happening_detail.composables.rememberCalendarPermissionsRequester
+import io.github.dmitrytsyvtsyn.fluently.happening_detail.navigation.HappeningDetailDestination
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel.HappeningDetailEvent
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel.HappeningDetailViewModel
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel.HappeningDetailSideEffect
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel.HappeningSuggestionsState
-import io.github.dmitrytsyvtsyn.fluently.happening_pickers.HappeningDatePickerDestination
-import io.github.dmitrytsyvtsyn.fluently.happening_pickers.HappeningTimePickerDestination
+import io.github.dmitrytsyvtsyn.fluently.happening_pickers.navigation.HappeningDatePickerDestination
+import io.github.dmitrytsyvtsyn.fluently.happening_pickers.navigation.HappeningTimePickerDestination
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.datetime.LocalTime
@@ -134,13 +136,15 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
             viewModel.effect.onEach { sideEffect ->
                 when (sideEffect) {
                     is HappeningDetailSideEffect.DatePicker -> {
-                        navController.navigate(HappeningDatePickerDestination.Params(
+                        navController.navigate(
+                            HappeningDatePickerDestination.Params(
                             initialDate = sideEffect.initialDate.toEpochMillis(),
                             minDate = sideEffect.minDate.toEpochMillis()
                         ))
                     }
                     is HappeningDetailSideEffect.TimePicker -> {
-                        navController.navigate(HappeningTimePickerDestination.Params(
+                        navController.navigate(
+                            HappeningTimePickerDestination.Params(
                             startHours = sideEffect.startTime.hour,
                             startMinutes = sideEffect.startTime.minute,
                             endHours = sideEffect.endTime.hour,
