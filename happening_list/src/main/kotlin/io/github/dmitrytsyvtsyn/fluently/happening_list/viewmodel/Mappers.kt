@@ -5,7 +5,9 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.datetime.LocalDateTime
 
-internal fun List<HappeningFetchPagesUseCase.FetchPageUseCaseItems>.toHappeningListPagingState(nowDateTime: LocalDateTime): PersistentList<HappeningListPagingState> {
+internal fun List<HappeningFetchPagesUseCase.FetchPageUseCaseItems>.toHappeningListPagingState(
+    nowDateTime: LocalDateTime
+): PersistentList<HappeningListPagingState> {
     val pages = this
     return pages.mapIndexed { index, page ->
 

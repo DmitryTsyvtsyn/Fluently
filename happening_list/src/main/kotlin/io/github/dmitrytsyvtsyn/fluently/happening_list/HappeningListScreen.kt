@@ -45,7 +45,7 @@ import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.DebounceIconButt
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.navigation.HappeningDetailDestination
 import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningEmptyList
 import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningList
-import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningTabModel
+import io.github.dmitrytsyvtsyn.fluently.happening_list.models.HappeningTabModel
 import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningTabs
 import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.toDateMonthString
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningListEvent

@@ -82,7 +82,11 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
                 title = {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = if (params.id.isNotEmpty) stringResource(id = R.string.editing_interview) else stringResource(id = R.string.new_interview),
+                        text = if (params.id.isNotEmpty) {
+                            stringResource(id = R.string.editing_interview)
+                        } else {
+                            stringResource(id = R.string.new_interview)
+                        },
                         textAlign = TextAlign.Center
                     )
                 },
