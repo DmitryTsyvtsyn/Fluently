@@ -16,8 +16,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -27,12 +25,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.minus
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.toHoursMinutesString
+import io.github.dmitrytsyvtsyn.fluently.core.theme.FluentlyTheme
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyIcon
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyText
 import io.github.dmitrytsyvtsyn.fluently.data.model.HappeningModel
 import io.github.dmitrytsyvtsyn.fluently.happening_list.R
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningDayStatus
@@ -62,7 +61,7 @@ internal fun HappeningContentListItem(
             )
             .fillMaxWidth()
             .background(
-                color = MaterialTheme.colorScheme.primaryContainer,
+                color = FluentlyTheme.colors.primaryContainerColor,
                 shape = RoundedCornerShape(8.dp)
             )
             .combinedClickable(
@@ -74,44 +73,39 @@ internal fun HappeningContentListItem(
             .padding(16.dp)
     ) {
         Column {
-            Text(
+            FluentlyText(
                 text = model.title,
-                fontSize = 19.sp,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                style = FluentlyTheme.typography.body2
             )
 
             Spacer(modifier = Modifier.size(8.dp))
 
             Row(verticalAlignment = Alignment.Bottom) {
                 if (item.dayStatus == HappeningDayStatus.TODAY_AND_YESTERDAY) {
-                    Text(
+                    FluentlyText(
                         modifier = Modifier.clickable(onClick = goToYesterday),
                         text = stringResource(id = R.string.yesterday),
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        style = FluentlyTheme.typography.caption3,
+                        color = FluentlyTheme.colors.secondaryColor
                     )
                     Spacer(modifier = Modifier.size(4.dp))
                 }
 
                 val startDateTimeString = model.startDateTime.time.toHoursMinutesString()
                 val endDateTimeString = model.endDateTime.time.toHoursMinutesString()
-                Text(
+                FluentlyText(
                     text = "$startDateTimeString - $endDateTimeString",
-                    fontSize = 26.sp,
                     textDecoration = if (item.timingStatus != HappeningRunningStatus.ACTUAL) TextDecoration.LineThrough else null,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    style = FluentlyTheme.typography.body3
                 )
 
                 if (item.dayStatus == HappeningDayStatus.TODAY_AND_TOMORROW) {
                     Spacer(modifier = Modifier.size(4.dp))
-                    Text(
+                    FluentlyText(
                         modifier = Modifier.clickable(onClick = goToTomorrow),
                         text = stringResource(id = R.string.tomorrow),
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        style = FluentlyTheme.typography.caption3,
+                        color = FluentlyTheme.colors.secondaryColor
                     )
                 }
             }
@@ -142,7 +136,7 @@ internal fun HappeningContentListItem(
         }
         Row(modifier = Modifier.align(Alignment.TopEnd), verticalAlignment = Alignment.CenterVertically) {
             if (model.reminderId.isNotEmpty) {
-                Icon(
+                FluentlyIcon(
                     painter = painterResource(id = R.drawable.ic_notification),
                     contentDescription = ""
                 )
@@ -150,16 +144,16 @@ internal fun HappeningContentListItem(
             }
 
             val happeningDurationPeriod = model.endDateTime.minus(model.startDateTime)
-            Text(
+            FluentlyText(
                 text = happeningDurationPeriod.toHoursMinutesString(),
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 14.sp,
                 modifier = Modifier
                     .background(
-                        color = MaterialTheme.colorScheme.primary,
+                        color = FluentlyTheme.colors.primaryColor,
                         shape = RoundedCornerShape(12.dp)
                     )
                     .padding(horizontal = 8.dp, vertical = 2.dp),
+                color = FluentlyTheme.colors.onPrimaryColor,
+                style = FluentlyTheme.typography.caption4
             )
         }
     }

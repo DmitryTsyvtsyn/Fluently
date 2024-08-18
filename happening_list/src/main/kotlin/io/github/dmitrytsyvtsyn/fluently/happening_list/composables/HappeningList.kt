@@ -6,14 +6,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import io.github.dmitrytsyvtsyn.fluently.core.theme.FluentlyTheme
 import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyText
 import io.github.dmitrytsyvtsyn.fluently.data.model.HappeningModel
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningListItemState
@@ -26,12 +22,7 @@ internal fun HappeningList(
     onRemove: (HappeningModel) -> Unit,
     onView: (HappeningModel) -> Unit,
     goToYesterday: () -> Unit,
-    goToTomorrow: () -> Unit,
-    titleStyle: TextStyle = TextStyle(
-        fontSize = 18.sp,
-        fontWeight = FontWeight.Medium,
-        color = MaterialTheme.colorScheme.primary
-    )
+    goToTomorrow: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -55,7 +46,7 @@ internal fun HappeningList(
                 is HappeningListItemState.Title -> {
                     FluentlyText(
                         text = listItemState.value,
-                        style = titleStyle
+                        style = FluentlyTheme.typography.caption3
                     )
                 }
                 is HappeningListItemState.Timeline -> {

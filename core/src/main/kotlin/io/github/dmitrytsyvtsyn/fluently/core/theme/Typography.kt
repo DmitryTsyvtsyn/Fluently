@@ -13,6 +13,7 @@ class Typography(
     val body1: TextStyle,
     val body2: TextStyle,
     val body3: TextStyle,
+    val body4: TextStyle,
     val caption1: TextStyle,
     val caption2: TextStyle,
     val caption3: TextStyle,
@@ -49,6 +50,11 @@ val typography = Typography(
         fontSize = 27.sp,
         fontFamily = robotoFamily,
         fontWeight = FontWeight.Medium
+    ),
+    body4 = TextStyle(
+        fontSize = 15.sp,
+        fontFamily = robotoFamily,
+        fontWeight = FontWeight.Normal,
     ),
     caption1 = TextStyle(
         fontSize = 16.sp,

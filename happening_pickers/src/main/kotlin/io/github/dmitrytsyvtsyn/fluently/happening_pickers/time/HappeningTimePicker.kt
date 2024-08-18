@@ -8,8 +8,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimeInput
+import androidx.compose.material3.TimePickerColors
+import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
@@ -23,8 +24,10 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.DateTimeExtensions
+import io.github.dmitrytsyvtsyn.fluently.core.theme.FluentlyTheme
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyText
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyTextButton
 import io.github.dmitrytsyvtsyn.fluently.happening_pickers.navigation.HappeningTimePickerDestination
 import io.github.dmitrytsyvtsyn.fluently.happening_pickers.R
 import io.github.dmitrytsyvtsyn.fluently.core.R as CoreRes
@@ -64,7 +67,7 @@ internal fun HappeningTimePicker(
     DatePickerDialog(
         onDismissRequest = dismiss,
         confirmButton = {
-            TextButton(
+            FluentlyTextButton(
                 onClick = {
                     apply.invoke(
                         startTimeState.hour,
@@ -79,7 +82,7 @@ internal fun HappeningTimePicker(
             }
         },
         dismissButton = {
-            TextButton(onClick = dismiss) {
+            FluentlyTextButton(onClick = dismiss) {
                 Text(stringResource(id = CoreRes.string.cancel))
             }
         }
@@ -89,40 +92,57 @@ internal fun HappeningTimePicker(
         ) {
             val focusRequester = remember { FocusRequester() }
 
-            Text(
+            FluentlyText(
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 text = stringResource(id = R.string.start_time),
-                fontSize = 18.sp
+                style = FluentlyTheme.typography.body2
             )
 
             Spacer(modifier = Modifier.size(16.dp))
 
-            TimeInput(
+            FluentlyTimeInput(
                 state = startTimeState,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .focusRequester(focusRequester),
+                modifier = Modifier.align(Alignment.CenterHorizontally).focusRequester(focusRequester),
             )
 
             Spacer(modifier = Modifier.size(16.dp))
 
-            Text(
+            FluentlyText(
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 text = stringResource(id = R.string.end_time),
-                fontSize = 18.sp
+                style = FluentlyTheme.typography.body2
             )
 
             Spacer(modifier = Modifier.size(16.dp))
 
-            TimeInput(state = endTimeState,  modifier = Modifier.align(Alignment.CenterHorizontally))
+            FluentlyTimeInput(state = endTimeState,  modifier = Modifier.align(Alignment.CenterHorizontally))
 
             LaunchedEffect(key1 = Unit) {
                 focusRequester.requestFocus()
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FluentlyTimeInput(
+    state: TimePickerState,
+    modifier: Modifier = Modifier,
+    colors: TimePickerColors = TimePickerDefaults.colors(
+        timeSelectorSelectedContentColor = FluentlyTheme.colors.primaryTextColor,
+        timeSelectorSelectedContainerColor = FluentlyTheme.colors.inversePrimaryColor,
+        timeSelectorUnselectedContentColor = FluentlyTheme.colors.primaryTextColor,
+        timeSelectorUnselectedContainerColor = FluentlyTheme.colors.inversePrimaryColor
+    )
+) {
+    TimeInput(
+        state = state,
+        modifier = modifier,
+        colors = colors
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
