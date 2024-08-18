@@ -9,9 +9,6 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -19,9 +16,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import io.github.dmitrytsyvtsyn.fluently.core.theme.FluentlyTheme
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyIcon
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyText
 import io.github.dmitrytsyvtsyn.fluently.happening_list.R
 import io.github.dmitrytsyvtsyn.fluently.happening_list.models.HappeningTabModel
 import kotlinx.collections.immutable.PersistentList
@@ -62,16 +60,14 @@ private fun RowScope.StartTab(tabModel: HappeningTabModel) {
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(
+            FluentlyIcon(
                 modifier = Modifier.size(16.dp),
                 painter = painterResource(id = R.drawable.ic_back_day),
                 contentDescription = ""
             )
-            Text(
+            FluentlyText(
                 text = tabModel.title,
-                color = MaterialTheme.colorScheme.onBackground,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
+                style = FluentlyTheme.typography.caption1
             )
         }
     }
@@ -79,7 +75,7 @@ private fun RowScope.StartTab(tabModel: HappeningTabModel) {
 
 @Composable
 private fun RowScope.CenterTab(tabModel: HappeningTabModel) {
-    val primaryColor = MaterialTheme.colorScheme.primary
+    val primaryColor = FluentlyTheme.colors.primaryColor
     Box(
         modifier = Modifier
             .weight(1f)
@@ -99,10 +95,9 @@ private fun RowScope.CenterTab(tabModel: HappeningTabModel) {
             .padding(8.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(
+        FluentlyText(
             text = tabModel.title,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold,
+            style = FluentlyTheme.typography.caption1,
             color = primaryColor
         )
     }
@@ -126,13 +121,11 @@ private fun RowScope.EndTab(tabModel: HappeningTabModel) {
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            FluentlyText(
                 text = tabModel.title,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
+                style = FluentlyTheme.typography.caption1
             )
-            Icon(
+            FluentlyIcon(
                 modifier = Modifier.size(16.dp),
                 painter = painterResource(id = R.drawable.ic_forward_day),
                 contentDescription = ""

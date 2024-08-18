@@ -113,6 +113,16 @@ class HappeningFetchPagesUseCase(private val repository: HappeningRepository) {
         private val _items = mutableListOf<FetchPageUseCaseItem>()
         val items: List<FetchPageUseCaseItem> = _items
 
+        val isEmpty: Boolean
+            get() {
+                if (_items.size <= 0) return true
+                if (_items.size == 1) {
+                    return _items.first() is FetchPageUseCaseItem.TimeSpaceItem
+                }
+
+                return false
+            }
+
         fun add(item: FetchPageUseCaseItem) : FetchPageUseCaseItems {
             _items.add(item)
             return this

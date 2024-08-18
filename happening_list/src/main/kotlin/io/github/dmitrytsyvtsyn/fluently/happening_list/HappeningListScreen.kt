@@ -9,14 +9,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -30,7 +26,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -41,7 +36,10 @@ import io.github.dmitrytsyvtsyn.fluently.core.datetime.toLocalDateTime
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.LocalNavController
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.ThemeSettingsDestination
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.navigate
-import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.DebounceIconButton
+import io.github.dmitrytsyvtsyn.fluently.core.theme.FluentlyTheme
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyFloatingActionButton
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyIconButton
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyText
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.navigation.HappeningDetailDestination
 import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningEmptyList
 import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningList
@@ -84,8 +82,7 @@ internal fun HappeningListScreen() {
                     context.startActivity(Intent(Intent.ACTION_VIEW).setData(uri))
                 }
                 is HappeningListSideEffect.ShowDetail -> {
-                    navController.navigate(
-                        HappeningDetailDestination.Params(
+                    navController.navigate(HappeningDetailDestination.Params(
                         id = sideEffect.id,
                         initialDate = sideEffect.dateTime.toEpochMillis()
                     ))
@@ -129,10 +126,13 @@ internal fun HappeningListScreen() {
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    Text(text = stringResource(id = R.string.interviews))
+                    FluentlyText(
+                        text = stringResource(id = R.string.interviews),
+                        style = FluentlyTheme.typography.title1
+                    )
                 },
                 actions = {
-                    DebounceIconButton(
+                    FluentlyIconButton(
                         onClick = {
                             navController.navigate(ThemeSettingsDestination.Params())
                         }
@@ -143,10 +143,7 @@ internal fun HappeningListScreen() {
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                shape = RoundedCornerShape(24.dp),
-                containerColor = MaterialTheme.colorScheme.secondary,
-                contentColor = MaterialTheme.colorScheme.onSecondary,
+            FluentlyFloatingActionButton(
                 onClick = {
                     viewModel.handleEvent(HappeningListEvent.ShowHappeningAdding)
                 }
@@ -159,9 +156,7 @@ internal fun HappeningListScreen() {
         }
     ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
+            modifier = Modifier.fillMaxSize().padding(innerPadding),
             content = {
                 val pagerState = remember(key1 = state.pages) {
                     object : PagerState(state.currentPage) {
@@ -219,7 +214,7 @@ internal fun HappeningListScreen() {
                         HappeningEmptyList()
                     } else {
                         HappeningList(
-                            listItemStates = items,
+                            items = items,
                             onClick = { happening ->
                                 viewModel.handleEvent(HappeningListEvent.EditHappening(happening))
                             },

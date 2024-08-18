@@ -63,8 +63,9 @@ val inversePrimaryDark = Color(0xFF426833)
 
 data class Colors(
     val primaryColor: Color,
-    val secondaryColor: Color,
     val onPrimaryColor: Color,
+    val secondaryColor: Color,
+    val onSecondaryColor: Color,
     val backgroundColor: Color,
     val primaryTextColor: Color,
     val errorColor: Color
@@ -74,8 +75,9 @@ internal val LocalColors = staticCompositionLocalOf<Colors> { error("Colors is n
 
 val lightColors = Colors(
     primaryColor = primaryLight,
-    secondaryColor = secondaryLight,
     onPrimaryColor = onPrimaryLight,
+    secondaryColor = secondaryLight,
+    onSecondaryColor = onSecondaryLight,
     backgroundColor = backgroundLight,
     primaryTextColor = Color.Black,
     errorColor = errorLight
@@ -83,8 +85,9 @@ val lightColors = Colors(
 
 val darkColors = Colors(
     primaryColor = primaryDark,
-    secondaryColor = secondaryDark,
     onPrimaryColor = onPrimaryDark,
+    secondaryColor = secondaryDark,
+    onSecondaryColor = onSecondaryDark,
     backgroundColor = backgroundDark,
     primaryTextColor = Color.White,
     errorColor = errorDark

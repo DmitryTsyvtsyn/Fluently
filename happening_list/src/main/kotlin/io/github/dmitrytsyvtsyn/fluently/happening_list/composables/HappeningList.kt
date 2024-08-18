@@ -14,13 +14,14 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyText
 import io.github.dmitrytsyvtsyn.fluently.data.model.HappeningModel
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningListItemState
 import kotlinx.collections.immutable.PersistentList
 
 @Composable
 internal fun HappeningList(
-    listItemStates: PersistentList<HappeningListItemState>,
+    items: PersistentList<HappeningListItemState>,
     onClick: (HappeningModel) -> Unit,
     onRemove: (HappeningModel) -> Unit,
     onView: (HappeningModel) -> Unit,
@@ -39,7 +40,7 @@ internal fun HappeningList(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        listItemStates.forEach { listItemState ->
+        items.forEach { listItemState ->
             when (listItemState) {
                 is HappeningListItemState.Content -> {
                     HappeningContentListItem(
@@ -52,7 +53,7 @@ internal fun HappeningList(
                     )
                 }
                 is HappeningListItemState.Title -> {
-                    Text(
+                    FluentlyText(
                         text = listItemState.value,
                         style = titleStyle
                     )

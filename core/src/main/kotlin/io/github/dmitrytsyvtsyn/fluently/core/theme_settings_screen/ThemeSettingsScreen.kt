@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.sp
 import io.github.dmitrytsyvtsyn.fluently.core.R
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.LocalNavController
 import io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.viewmodel.SettingsEvent
-import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.DebounceIconButton
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyIconButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,7 +49,7 @@ fun ThemeSettingsScreen() {
                     )
                 },
                 navigationIcon = {
-                    DebounceIconButton(
+                    FluentlyIconButton(
                         onClick = {
                             navController.popBackStack()
                         }

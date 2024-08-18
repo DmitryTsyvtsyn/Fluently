@@ -21,6 +21,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.dmitrytsyvtsyn.fluently.core.theme.FluentlyTheme
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyText
 import io.github.dmitrytsyvtsyn.fluently.happening_list.R
 
 @Composable
@@ -43,15 +45,14 @@ internal fun HappeningEmptyList() {
 
         Spacer(modifier = Modifier.size(16.dp))
 
-        Text(
+        FluentlyText(
             text = stringResource(id = R.string.today_not_interviews),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 16.dp, end = 16.dp),
             textAlign = TextAlign.Center,
             lineHeight = 30.sp,
-            fontSize = 23.sp,
-            fontWeight = FontWeight.Medium
+            style = FluentlyTheme.typography.caption2
         )
     }
 }

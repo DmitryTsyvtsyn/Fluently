@@ -5,7 +5,6 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,9 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
@@ -49,7 +46,12 @@ import io.github.dmitrytsyvtsyn.fluently.core.datetime.toHoursMinutesString
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.toLocalDateTime
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.LocalNavController
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.navigate
-import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.DebounceIconButton
+import io.github.dmitrytsyvtsyn.fluently.core.theme.FluentlyTheme
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyButton
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyCheckbox
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyIconButton
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyText
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyTextField
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.composables.Suggestions
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.composables.rememberCalendarPermissionsRequester
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.navigation.HappeningDetailDestination
@@ -80,18 +82,19 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    Text(
+                    FluentlyText(
                         modifier = Modifier.fillMaxWidth(),
                         text = if (params.id.isNotEmpty) {
                             stringResource(id = R.string.editing_interview)
                         } else {
                             stringResource(id = R.string.new_interview)
                         },
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        style = FluentlyTheme.typography.title1
                     )
                 },
                 navigationIcon = {
-                    DebounceIconButton(
+                    FluentlyIconButton(
                         onClick = {
                             viewModel.handleEvent(HappeningDetailEvent.Back)
                         }
@@ -100,7 +103,7 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
                     }
                 },
                 actions = {
-                    DebounceIconButton(
+                    FluentlyIconButton(
                         onClick = {
                             viewModel.handleEvent(HappeningDetailEvent.SaveHappening)
                         }
@@ -172,22 +175,15 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
                     .padding(16.dp),
             ) {
                 Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                    TextField(
+                    FluentlyTextField(
                         modifier = Modifier
                             .fillMaxWidth()
                             .focusable(true),
-                        shape = RoundedCornerShape(16.dp),
-                        textStyle = LocalTextStyle.current.copy(
-                            fontSize = 21.sp,
-                        ),
                         placeholder = {
-                            Text(stringResource(id = R.string.interview_company_name))
+                            FluentlyText(
+                                text = stringResource(id = R.string.interview_company_name)
+                            )
                         },
-                        colors = TextFieldDefaults.colors(
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent
-                        ),
                         singleLine = true,
                         isError = state.titleError,
                         value = state.title,
@@ -198,18 +194,18 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
 
                     if (state.titleError) {
                         Spacer(modifier = Modifier.size(8.dp))
-                        Text(
+                        FluentlyText(
                             text = stringResource(id = R.string.title_must_not_be_less_three_symbols),
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.error
+                            style = FluentlyTheme.typography.caption4,
+                            color = FluentlyTheme.colors.errorColor
                         )
                     }
 
                     Spacer(modifier = Modifier.size(24.dp))
 
-                    Text(
+                    FluentlyText(
                         text = stringResource(id = R.string.date),
-                        fontSize = 18.sp
+                        style = FluentlyTheme.typography.body2
                     )
 
                     Spacer(modifier = Modifier.size(8.dp))
@@ -226,18 +222,17 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
                             .padding(8.dp)
 
                     ) {
-                        Text(
+                        FluentlyText(
                             text = state.startDateTime.date.toDayMonthYearAbbreviatedString(),
-                            fontSize = 26.sp,
-                            fontWeight = FontWeight.Medium
+                            style = FluentlyTheme.typography.body3
                         )
                     }
 
                     Spacer(modifier = Modifier.size(16.dp))
 
-                    Text(
+                    FluentlyText(
                         text = stringResource(id = R.string.time),
-                        fontSize = 18.sp
+                        style = FluentlyTheme.typography.body2
                     )
 
                     Spacer(modifier = Modifier.size(8.dp))
@@ -256,10 +251,9 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
                     ) {
                         val startTimeString = state.startDateTime.time.toHoursMinutesString()
                         val endTimeString = state.endDateTime.time.toHoursMinutesString()
-                        Text(
+                        FluentlyText(
                             text = "$startTimeString - $endTimeString",
-                            fontSize = 31.sp,
-                            fontWeight = FontWeight.Medium
+                            style = FluentlyTheme.typography.body3
                         )
                     }
 
@@ -289,32 +283,32 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Checkbox(
+                        FluentlyCheckbox(
                             checked = state.hasReminder,
                             onCheckedChange = {
                                 viewModel.handleEvent(HappeningDetailEvent.ChangeHasReminder(it))
                             }
                         )
                         Spacer(modifier = Modifier.size(8.dp))
-                        Text(
-                            stringResource(id = R.string.turn_alarm_or_not)
+                        FluentlyText(
+                            text = stringResource(id = R.string.turn_alarm_or_not),
+                            style = FluentlyTheme.typography.caption3
                         )
                     }
 
                     Spacer(modifier = Modifier.size(16.dp))
                 }
 
-                Button(
+                FluentlyButton(
                     modifier = Modifier.fillMaxWidth(),
-                    contentPadding = PaddingValues(12.dp),
                     onClick = {
                         viewModel.handleEvent(HappeningDetailEvent.SaveHappening)
                     }
                 ) {
-                    Text(
+                    FluentlyText(
                         text =  stringResource(id = R.string.save),
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 18.sp
+                        color = Color.Unspecified,
+                        style = FluentlyTheme.typography.caption3
                     )
                 }
             }
