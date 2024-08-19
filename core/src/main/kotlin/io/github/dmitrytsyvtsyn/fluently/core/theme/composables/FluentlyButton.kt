@@ -4,7 +4,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
@@ -21,7 +20,7 @@ fun FluentlyButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    shape: Shape = RoundedCornerShape(24.dp),
+    shape: Shape = FluentlyTheme.shapes.big,
     colors: ButtonColors = ButtonDefaults.buttonColors(
         containerColor = FluentlyTheme.colors.primaryColor,
         disabledContainerColor = FluentlyTheme.colors.primaryColor,

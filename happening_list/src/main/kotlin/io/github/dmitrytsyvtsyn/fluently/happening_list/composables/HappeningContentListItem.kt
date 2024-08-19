@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -23,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
@@ -62,7 +62,7 @@ internal fun HappeningContentListItem(
             .fillMaxWidth()
             .background(
                 color = FluentlyTheme.colors.primaryContainerColor,
-                shape = RoundedCornerShape(8.dp)
+                shape = FluentlyTheme.shapes.xsmall
             )
             .combinedClickable(
                 interactionSource = remember { MutableInteractionSource() },
@@ -83,10 +83,13 @@ internal fun HappeningContentListItem(
             Row(verticalAlignment = Alignment.Bottom) {
                 if (item.dayStatus == HappeningDayStatus.TODAY_AND_YESTERDAY) {
                     FluentlyText(
-                        modifier = Modifier.clickable(onClick = goToYesterday),
+                        modifier = Modifier
+                            .clip(FluentlyTheme.shapes.xsmall)
+                            .clickable(onClick = goToYesterday)
+                            .padding(horizontal = 4.dp),
                         text = stringResource(id = R.string.yesterday),
                         style = FluentlyTheme.typography.caption3,
-                        color = FluentlyTheme.colors.secondaryColor
+                        color = FluentlyTheme.colors.primaryColor
                     )
                     Spacer(modifier = Modifier.size(4.dp))
                 }
@@ -102,7 +105,10 @@ internal fun HappeningContentListItem(
                 if (item.dayStatus == HappeningDayStatus.TODAY_AND_TOMORROW) {
                     Spacer(modifier = Modifier.size(4.dp))
                     FluentlyText(
-                        modifier = Modifier.clickable(onClick = goToTomorrow),
+                        modifier = Modifier
+                            .clip(FluentlyTheme.shapes.xsmall)
+                            .clickable(onClick = goToTomorrow)
+                            .padding(horizontal = 4.dp),
                         text = stringResource(id = R.string.tomorrow),
                         style = FluentlyTheme.typography.caption3,
                         color = FluentlyTheme.colors.secondaryColor
@@ -138,7 +144,7 @@ internal fun HappeningContentListItem(
             if (model.reminderId.isNotEmpty) {
                 FluentlyIcon(
                     painter = painterResource(id = R.drawable.ic_notification),
-                    contentDescription = ""
+                    contentDescription = stringResource(id = R.string.alarm)
                 )
                 Spacer(modifier = Modifier.size(4.dp))
             }
@@ -149,7 +155,7 @@ internal fun HappeningContentListItem(
                 modifier = Modifier
                     .background(
                         color = FluentlyTheme.colors.primaryColor,
-                        shape = RoundedCornerShape(12.dp)
+                        shape = FluentlyTheme.shapes.small
                     )
                     .padding(horizontal = 8.dp, vertical = 2.dp),
                 color = FluentlyTheme.colors.onPrimaryColor,

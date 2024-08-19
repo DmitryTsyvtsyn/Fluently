@@ -19,7 +19,7 @@ fun FluentlyTextButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    shape: Shape = ButtonDefaults.textShape,
+    shape: Shape = FluentlyTheme.shapes.big,
     colors: ButtonColors = ButtonDefaults.textButtonColors(
         contentColor = FluentlyTheme.colors.primaryColor,
         disabledContentColor = FluentlyTheme.colors.primaryColor

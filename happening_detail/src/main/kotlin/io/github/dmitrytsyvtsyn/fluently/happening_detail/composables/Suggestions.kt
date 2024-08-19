@@ -8,16 +8,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.toHoursMinutesString
+import io.github.dmitrytsyvtsyn.fluently.core.theme.FluentlyTheme
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyText
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.R
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.toDayMonthYearAbbreviatedString
 import kotlinx.collections.immutable.PersistentList
@@ -30,11 +27,10 @@ fun Suggestions(
     maxSuggestionsShowed: Int = 3
 ) {
     Column {
-        Text(
+        FluentlyText(
             text = stringResource(id = R.string.you_have_already_scheduled_events),
-            color = MaterialTheme.colorScheme.error,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Medium
+            color = FluentlyTheme.colors.errorColor,
+            style = FluentlyTheme.typography.caption3
         )
 
         Spacer(Modifier.size(12.dp))
@@ -47,18 +43,17 @@ fun Suggestions(
                         onSuggestionClick.invoke(suggestionRange.start, suggestionRange.endInclusive)
                     }
                     .background(
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        shape = RoundedCornerShape(4.dp)
+                        color = FluentlyTheme.colors.primaryContainerColor,
+                        shape = FluentlyTheme.shapes.xxsmall
                     )
                     .padding(8.dp)
             ) {
                 val startDateTimeString = suggestionRange.start.toDayMonthYearHoursMinutesAbbreviatedString()
                 val endDateTimeString = suggestionRange.endInclusive.toDayMonthYearHoursMinutesAbbreviatedString()
-                Text(
+                FluentlyText(
                     text = "$startDateTimeString - $endDateTimeString",
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    fontSize = 17.sp,
-                    fontWeight = FontWeight.Medium
+                    color = FluentlyTheme.colors.onPrimaryColor,
+                    style = FluentlyTheme.typography.caption3
                 )
             }
             Spacer(Modifier.size(8.dp))

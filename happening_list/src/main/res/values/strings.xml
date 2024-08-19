@@ -9,4 +9,5 @@
     <string name="today_not_interviews">Сегодня у вас выходной, можете купить себе шампанское)</string>
     <string name="tomorrow">завтра</string>
     <string name="yesterday">вчера</string>
+    <string name="alarm">Будильник</string>
 </resources>
