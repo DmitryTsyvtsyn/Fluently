@@ -111,7 +111,7 @@ internal fun HappeningContentListItem(
                             .padding(horizontal = 4.dp),
                         text = stringResource(id = R.string.tomorrow),
                         style = FluentlyTheme.typography.caption3,
-                        color = FluentlyTheme.colors.secondaryColor
+                        color = FluentlyTheme.colors.primaryColor
                     )
                 }
             }

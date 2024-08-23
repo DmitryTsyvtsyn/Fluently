@@ -5,8 +5,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -31,8 +32,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val settingsViewModel = viewModel<SettingsViewModel>()
+            val settingsState by settingsViewModel.viewState.collectAsState()
 
-            FluentlyTheme {
+            FluentlyTheme(themeColorVariant = settingsState.themeColorVariant) {
                 val navController = rememberNavController()
 
                 CompositionLocalProvider(
@@ -42,7 +44,7 @@ class MainActivity : ComponentActivity() {
                     NavHost(
                         navController = navController,
                         startDestination = HappeningListDestination.route,
-                        modifier = Modifier.background(MaterialTheme.colorScheme.background)
+                        modifier = Modifier.background(FluentlyTheme.colors.backgroundColor)
                     ) {
                         coreDestinations()
                         dateTimePickerDestinations()

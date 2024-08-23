@@ -167,6 +167,10 @@ internal class HappeningListViewModel : BaseViewModel<HappeningListEvent, Happen
         operator fun component2() = endDate
     }
 
+    override fun onCleared() {
+        super.onCleared()
+    }
+
     companion object {
         private const val PAGE_SIZE = 15
         private const val MIN_PAGE = 0

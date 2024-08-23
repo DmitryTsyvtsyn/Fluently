@@ -133,9 +133,9 @@ private fun FluentlyTimeInput(
     modifier: Modifier = Modifier,
     colors: TimePickerColors = TimePickerDefaults.colors(
         timeSelectorSelectedContentColor = FluentlyTheme.colors.primaryTextColor,
-        timeSelectorSelectedContainerColor = FluentlyTheme.colors.inversePrimaryColor,
+        timeSelectorSelectedContainerColor = FluentlyTheme.colors.secondaryColor,
         timeSelectorUnselectedContentColor = FluentlyTheme.colors.primaryTextColor,
-        timeSelectorUnselectedContainerColor = FluentlyTheme.colors.inversePrimaryColor
+        timeSelectorUnselectedContainerColor = FluentlyTheme.colors.secondaryColor
     )
 ) {
     TimeInput(

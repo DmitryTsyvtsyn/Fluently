@@ -156,7 +156,9 @@ internal fun HappeningListScreen() {
         }
     ) { innerPadding ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(innerPadding),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
             content = {
                 val pagerState = remember(key1 = state.pages) {
                     object : PagerState(state.currentPage) {
@@ -164,7 +166,7 @@ internal fun HappeningListScreen() {
                     }
                 }
                 val coroutineScope = rememberCoroutineScope()
-
+                
                 LaunchedEffect(pagerState) {
                     snapshotFlow { pagerState.currentPage }.collect {
                         viewModel.handleEvent(HappeningListEvent.ChangeDateByPageIndex(it))
