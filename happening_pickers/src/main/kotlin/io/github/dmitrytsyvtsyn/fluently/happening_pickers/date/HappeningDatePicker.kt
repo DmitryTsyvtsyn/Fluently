@@ -47,7 +47,10 @@ internal fun HappeningDatePicker(
             FluentlyTextButton(onClick = dismiss) {
                 Text(stringResource(id = R.string.cancel))
             }
-        }
+        },
+        colors = DatePickerDefaults.colors(
+            containerColor = FluentlyTheme.colors.backgroundColor
+        )
     ) {
         DatePicker(
             state = datePickerState,
@@ -76,7 +79,7 @@ internal fun HappeningDatePicker(
                     errorIndicatorColor = FluentlyTheme.colors.errorColor,
                     errorPlaceholderColor = FluentlyTheme.colors.errorColor,
                     errorLabelColor = FluentlyTheme.colors.errorColor,
-                )
+                ),
             ),
         )
     }

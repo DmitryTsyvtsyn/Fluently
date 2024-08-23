@@ -40,12 +40,19 @@ fun FluentlyTextField(
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     shape: Shape = FluentlyTheme.shapes.medium,
     colors: TextFieldColors = TextFieldDefaults.colors(
+        focusedTextColor = FluentlyTheme.colors.primaryTextColor,
+        unfocusedTextColor = FluentlyTheme.colors.primaryTextColor,
+        errorTextColor = FluentlyTheme.colors.errorColor,
         focusedIndicatorColor = Color.Transparent,
         unfocusedIndicatorColor = Color.Transparent,
         disabledIndicatorColor = Color.Transparent,
-        errorIndicatorColor = FluentlyTheme.colors.errorColor,
+        errorIndicatorColor = Color.Transparent,
         cursorColor = FluentlyTheme.colors.primaryColor,
-        errorCursorColor = FluentlyTheme.colors.errorColor
+        errorCursorColor = FluentlyTheme.colors.errorColor,
+        unfocusedContainerColor = FluentlyTheme.colors.secondaryContainerColor,
+        focusedContainerColor = FluentlyTheme.colors.secondaryContainerColor,
+        errorContainerColor = FluentlyTheme.colors.secondaryContainerColor,
+        disabledContainerColor = FluentlyTheme.colors.secondaryContainerColor
     )
 ) {
     TextField(

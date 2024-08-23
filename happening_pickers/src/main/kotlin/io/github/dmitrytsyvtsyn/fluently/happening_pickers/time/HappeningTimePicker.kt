@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
@@ -85,7 +86,10 @@ internal fun HappeningTimePicker(
             FluentlyTextButton(onClick = dismiss) {
                 Text(stringResource(id = CoreRes.string.cancel))
             }
-        }
+        },
+        colors = DatePickerDefaults.colors(
+            containerColor = FluentlyTheme.colors.backgroundColor
+        )
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 24.dp),

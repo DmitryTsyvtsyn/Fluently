@@ -13,10 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -29,8 +27,10 @@ import androidx.compose.ui.unit.dp
 import io.github.dmitrytsyvtsyn.fluently.core.R
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.LocalNavController
 import io.github.dmitrytsyvtsyn.fluently.core.theme.FluentlyTheme
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyCenterAlignedTopAppBar
 import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyIcon
 import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyIconButton
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyScaffold
 import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyText
 import io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.viewmodel.SettingsEvent
 
@@ -40,10 +40,10 @@ fun ThemeSettingsScreen() {
     val navController = LocalNavController.current
     val viewModel = LocalSettingsViewModel.current
 
-    Scaffold(
+    FluentlyScaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            CenterAlignedTopAppBar(
+            FluentlyCenterAlignedTopAppBar(
                 title = {
                     FluentlyText(
                         text = stringResource(id = R.string.theme_settings),

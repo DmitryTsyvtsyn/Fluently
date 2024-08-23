@@ -9,10 +9,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -37,8 +35,10 @@ import io.github.dmitrytsyvtsyn.fluently.core.navigation.LocalNavController
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.ThemeSettingsDestination
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.navigate
 import io.github.dmitrytsyvtsyn.fluently.core.theme.FluentlyTheme
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyCenterAlignedTopAppBar
 import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyFloatingActionButton
 import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyIconButton
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyScaffold
 import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyText
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.navigation.HappeningDetailDestination
 import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningEmptyList
@@ -121,10 +121,11 @@ internal fun HappeningListScreen() {
         }
     }
 
-    Scaffold(
+    FluentlyScaffold(
         modifier = Modifier.fillMaxSize(),
+        containerColor = FluentlyTheme.colors.backgroundColor,
         topBar = {
-            CenterAlignedTopAppBar(
+            FluentlyCenterAlignedTopAppBar(
                 title = {
                     FluentlyText(
                         text = stringResource(id = R.string.interviews),
