@@ -25,6 +25,10 @@ compileSdk = "34"
 minSdk = "24"
 targetSdk = "34"
 
+# App versions
+versionCode = "1"
+versionName = "1.0.1"
+
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
 androidx-lifecycle-viewmodel-compose-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle-ktx" }
