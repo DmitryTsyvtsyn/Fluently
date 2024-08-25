@@ -1,7 +1,9 @@
 package io.github.dmitrytsyvtsyn.fluently
 
+import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
@@ -29,12 +31,17 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         installSplashScreen()
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT)
+        )
         setContent {
             val settingsViewModel = viewModel<SettingsViewModel>()
             val settingsState by settingsViewModel.viewState.collectAsState()
 
-            FluentlyTheme(themeColorVariant = settingsState.themeColorVariant) {
+            FluentlyTheme(
+                themeColorVariant = settingsState.themeColorVariant,
+                themeShapeCoefficient = settingsState.themeShapeCoefficient
+            ) {
                 val navController = rememberNavController()
 
                 CompositionLocalProvider(

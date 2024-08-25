@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.models.ThemeColorVariant
+import io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.models.ThemeShapeCoefficient
 
 object FluentlyTheme {
 
@@ -31,9 +32,11 @@ object FluentlyTheme {
 fun FluentlyTheme(
     isDark: Boolean = isSystemInDarkTheme(),
     themeColorVariant: ThemeColorVariant,
+    themeShapeCoefficient: ThemeShapeCoefficient,
     content: @Composable () -> Unit
 ) {
     val colors = if (isDark) themeColorVariant.darkColors else themeColorVariant.lightColors
+    val shapes = Shapes.createFrom(themeShapeCoefficient)
 
     CompositionLocalProvider(
         LocalColors provides colors,
