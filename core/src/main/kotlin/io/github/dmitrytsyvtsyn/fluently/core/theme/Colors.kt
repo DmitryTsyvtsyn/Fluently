@@ -25,7 +25,7 @@ data class Colors(
             errorColor = Color(0xFFFFB4AB)
         )
         val Dark = Colors(
-            primaryColor = Color(0xFFA8D293),
+            primaryColor = Color(0xFF426833),
             primaryContainerColor = Color(0xFF2B4F1E),
             secondaryColor = Color(0xFF426833),
             secondaryContainerColor = Color(0xFF303030),

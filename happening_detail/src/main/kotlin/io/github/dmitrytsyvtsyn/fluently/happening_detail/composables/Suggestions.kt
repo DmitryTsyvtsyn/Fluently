@@ -16,7 +16,6 @@ import io.github.dmitrytsyvtsyn.fluently.core.datetime.toHoursMinutesString
 import io.github.dmitrytsyvtsyn.fluently.core.theme.FluentlyTheme
 import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyText
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.R
-import io.github.dmitrytsyvtsyn.fluently.happening_detail.toDayMonthYearAbbreviatedString
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.datetime.LocalDateTime
 
@@ -61,6 +60,7 @@ fun Suggestions(
     }
 }
 
+@Composable
 private fun LocalDateTime.toDayMonthYearHoursMinutesAbbreviatedString(): String {
     val currentDateTime = this
     val currentDateString = currentDateTime.date.toDayMonthYearAbbreviatedString()

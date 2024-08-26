@@ -44,7 +44,9 @@ enum class ThemeColorVariant(val lightColors: Colors, val darkColors: Colors) {
             secondaryContainerColor = Color(0xFFDDDDDD)
         ),
         darkColors = Colors.Dark.copy(
-            primaryColor = Color(0xFF2E073F)
+            primaryColor = Color(0xFF560E75),
+            primaryContainerColor = Color(0xFFb921fc),
+            secondaryColor = Color(0xFFb921fc),
         )
     ),
 }

@@ -47,6 +47,7 @@ import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyText
 import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyTextField
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.composables.Suggestions
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.composables.rememberCalendarPermissionsRequester
+import io.github.dmitrytsyvtsyn.fluently.happening_detail.composables.toDayMonthYearAbbreviatedString
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.navigation.HappeningDetailDestination
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel.HappeningDetailEvent
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel.HappeningDetailViewModel

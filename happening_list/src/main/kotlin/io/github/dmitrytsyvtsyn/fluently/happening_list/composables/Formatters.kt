@@ -1,6 +1,7 @@
 package io.github.dmitrytsyvtsyn.fluently.happening_list.composables
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import io.github.dmitrytsyvtsyn.fluently.happening_list.R
 import kotlinx.datetime.DateTimePeriod
@@ -8,6 +9,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format
 import kotlinx.datetime.format.MonthNames
+import kotlinx.datetime.format.Padding
 import kotlinx.datetime.format.char
 
 @Composable
@@ -33,11 +35,20 @@ fun LocalDateTime.toDateMonthString(nowDateTime: LocalDateTime): String {
         return stringResource(id = R.string.today_day)
     }
 
-    return currentDateTime.date.format(format)
+    val newMonthNames = MonthNames(stringArrayResource(id = R.array.month_names_full).toList())
+    if (monthNames != newMonthNames) {
+        monthNames = newMonthNames
+        dateMonthFormat = createDateMonthFormat()
+    }
+
+    return currentDateTime.date.format(dateMonthFormat)
 }
 
-private val format = LocalDate.Format {
-    dayOfMonth()
+private var monthNames = MonthNames.ENGLISH_FULL
+private var dateMonthFormat = createDateMonthFormat()
+
+fun createDateMonthFormat() = LocalDate.Format {
+    dayOfMonth(Padding.NONE)
     char(' ')
-    monthName(MonthNames.ENGLISH_FULL)
+    monthName(monthNames)
 }

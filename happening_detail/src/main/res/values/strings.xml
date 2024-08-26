@@ -9,4 +9,18 @@
     <string name="time">Время:</string>
     <string name="you_have_already_scheduled_events">У вас уже есть запланированные события на это время, выберите свободное время:</string>
     <string name="turn_alarm_or_not">Включить будильник</string>
+    <string-array name="month_names_abbreviated">
+        <item>янв</item>
+        <item>февр</item>
+        <item>март</item>
+        <item>апр</item>
+        <item>май</item>
+        <item>июнь</item>
+        <item>июль</item>
+        <item>авг</item>
+        <item>сент</item>
+        <item>окт</item>
+        <item>нояб</item>
+        <item>дек</item>
+    </string-array>
 </resources>

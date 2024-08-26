@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.dmitrytsyvtsyn.fluently.core.theme.FluentlyTheme
 import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyIcon
@@ -67,7 +68,9 @@ private fun RowScope.StartTab(tabModel: HappeningTabModel) {
             )
             FluentlyText(
                 text = tabModel.title,
-                style = FluentlyTheme.typography.caption1
+                style = FluentlyTheme.typography.caption1,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }
@@ -123,12 +126,14 @@ private fun RowScope.EndTab(tabModel: HappeningTabModel) {
         ) {
             FluentlyText(
                 text = tabModel.title,
-                style = FluentlyTheme.typography.caption1
+                style = FluentlyTheme.typography.caption1,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             FluentlyIcon(
                 modifier = Modifier.size(16.dp),
                 painter = painterResource(id = R.drawable.ic_forward_day),
-                contentDescription = ""
+                contentDescription = "",
             )
         }
     }
