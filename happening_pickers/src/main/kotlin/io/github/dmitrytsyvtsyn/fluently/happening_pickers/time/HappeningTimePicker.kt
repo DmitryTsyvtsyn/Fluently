@@ -121,7 +121,10 @@ internal fun HappeningTimePicker(
 
             Spacer(modifier = Modifier.size(16.dp))
 
-            FluentlyTimeInput(state = endTimeState,  modifier = Modifier.align(Alignment.CenterHorizontally))
+            FluentlyTimeInput(
+                state = endTimeState,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
 
             LaunchedEffect(key1 = Unit) {
                 focusRequester.requestFocus()
@@ -139,7 +142,9 @@ private fun FluentlyTimeInput(
         timeSelectorSelectedContentColor = FluentlyTheme.colors.primaryTextColor,
         timeSelectorSelectedContainerColor = FluentlyTheme.colors.secondaryColor,
         timeSelectorUnselectedContentColor = FluentlyTheme.colors.primaryTextColor,
-        timeSelectorUnselectedContainerColor = FluentlyTheme.colors.secondaryColor
+        timeSelectorUnselectedContainerColor = FluentlyTheme.colors.secondaryColor,
+        periodSelectorBorderColor = FluentlyTheme.colors.primaryTextColor,
+        periodSelectorUnselectedContainerColor = FluentlyTheme.colors.primaryTextColor,
     )
 ) {
     TimeInput(

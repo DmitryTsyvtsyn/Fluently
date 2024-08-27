@@ -41,7 +41,7 @@ import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyIconButt
 import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyScaffold
 import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyText
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.navigation.HappeningDetailDestination
-import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningEmptyList
+import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningWeekend
 import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningList
 import io.github.dmitrytsyvtsyn.fluently.happening_list.models.HappeningTabModel
 import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningTabs
@@ -166,14 +166,11 @@ internal fun HappeningListScreen() {
                         override val pageCount: Int = state.pages.size
                     }
                 }
-                val coroutineScope = rememberCoroutineScope()
-                
                 LaunchedEffect(pagerState) {
                     snapshotFlow { pagerState.currentPage }.collect {
                         viewModel.handleEvent(HappeningListEvent.ChangeDateByPageIndex(it))
                     }
                 }
-
                 LaunchedEffect(pagerState) {
                     snapshotFlow { pagerState.isScrollInProgress }.collect {
                         if (!pagerState.isScrollInProgress) {
@@ -182,6 +179,7 @@ internal fun HappeningListScreen() {
                     }
                 }
 
+                val coroutineScope = rememberCoroutineScope()
                 HappeningTabs(
                     tabs = persistentListOf(
                         HappeningTabModel(
@@ -214,7 +212,7 @@ internal fun HappeningListScreen() {
                     val page = pages[index]
                     val items = page.items
                     if (items.isEmpty()) {
-                        HappeningEmptyList()
+                        HappeningWeekend()
                     } else {
                         HappeningList(
                             items = items,
