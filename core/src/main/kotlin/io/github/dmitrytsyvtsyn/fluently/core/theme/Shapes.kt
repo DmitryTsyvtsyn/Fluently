@@ -1,12 +1,14 @@
 package io.github.dmitrytsyvtsyn.fluently.core.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.models.ThemeShapeCoefficient
 
-data class Shapes(
+@Immutable
+class Shapes(
     val xxsmall: Shape,
     val xsmall: Shape,
     val small: Shape,

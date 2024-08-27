@@ -1,27 +1,38 @@
 package io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel
 
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.dmitrytsyvtsyn.fluently.core.coroutines.update
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.DateTimeExtensions
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.plus
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.withDate
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.withTime
 import io.github.dmitrytsyvtsyn.fluently.core.di.DI
-import io.github.dmitrytsyvtsyn.fluently.core.viewmodel.BaseViewModel
 import io.github.dmitrytsyvtsyn.fluently.data.HappeningRepository
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.usecases.HappeningFetchSuggestionsUseCase
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.usecases.HappeningFetchUseCase
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.usecases.HappeningInsertUseCase
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDateTime
 
-internal class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, HappeningDetailState, HappeningDetailSideEffect>(
-    HappeningDetailState(
-        startDateTime = DateTimeExtensions.nowDateTime().plus(5, DateTimeUnit.MINUTE),
-        endDateTime = DateTimeExtensions.nowDateTime().plus(65, DateTimeUnit.MINUTE)
+internal class HappeningDetailViewModel : ViewModel() {
+
+    private val _viewState = MutableStateFlow(
+        HappeningDetailState(
+            startDateTime = DateTimeExtensions.nowDateTime().plus(5, DateTimeUnit.MINUTE),
+            endDateTime = DateTimeExtensions.nowDateTime().plus(65, DateTimeUnit.MINUTE)
+        )
     )
-) {
+    val viewState = _viewState.asStateFlow()
+
+    private val _effect = MutableSharedFlow<HappeningDetailSideEffect>()
+    val effect = _effect.asSharedFlow()
 
     private val diComponent = object {
         private val repository = DI.get<HappeningRepository>()
@@ -31,7 +42,7 @@ internal class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, Ha
         val suggestionsUseCase = HappeningFetchSuggestionsUseCase(repository)
     }
 
-    override fun handleEvent(event: HappeningDetailEvent) {
+    fun handleEvent(event: HappeningDetailEvent) {
         when (event) {
             is HappeningDetailEvent.Init -> handleEvent(event)
             is HappeningDetailEvent.TitleChanged -> handleEvent(event)
@@ -52,7 +63,7 @@ internal class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, Ha
         if (happeningId.isNotEmpty) {
             viewModelScope.launch {
                 val happening = diComponent.fetchUseCase.execute(happeningId)
-                setState {
+                _viewState.update {
                     copy(
                         happening = happening,
                         title = happening.title,
@@ -66,7 +77,7 @@ internal class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, Ha
             }
         } else {
             val initialDate = event.initialDateTime
-            setState {
+            _viewState.update {
                 copy(
                     startDateTime = initialDate.plus(5, DateTimeUnit.MINUTE),
                     endDateTime = initialDate.plus(65, DateTimeUnit.MINUTE)
@@ -76,7 +87,7 @@ internal class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, Ha
     }
 
     private fun handleEvent(event: HappeningDetailEvent.TitleChanged) {
-        setState {
+        _viewState.update {
             copy(
                 title = event.title,
                 titleError = false
@@ -85,7 +96,7 @@ internal class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, Ha
     }
 
     private fun handleEvent(event: HappeningDetailEvent.DateChanged) {
-        setState {
+        _viewState.update {
             val newDate = event.dateTime.date
             copy(
                 startDateTime = startDateTime.withDate(newDate),
@@ -95,16 +106,18 @@ internal class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, Ha
     }
 
     private fun handleEvent(event: HappeningDetailEvent.TimeChanged) {
-        val state = viewState.value
-
+        val currentState = _viewState.value
         setActualizedStartEndDates(
-            startDateTime = state.startDateTime.withTime(event.startTime),
-            endDateTime = state.endDateTime.withTime(event.endTime)
+            startDateTime = currentState.startDateTime.withTime(event.startTime),
+            endDateTime = currentState.endDateTime.withTime(event.endTime)
         )
     }
 
     private fun handleEvent(event: HappeningDetailEvent.DateTimeChanged) {
-        setActualizedStartEndDates(event.startDateTime, event.endDateTime)
+        setActualizedStartEndDates(
+            startDateTime = event.startDateTime,
+            endDateTime = event.endDateTime
+        )
     }
 
     private fun setActualizedStartEndDates(startDateTime: LocalDateTime, endDateTime: LocalDateTime) {
@@ -120,7 +133,7 @@ internal class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, Ha
             }
         }
 
-        setState {
+        _viewState.update {
             copy(
                 startDateTime = actualStartDateTime,
                 endDateTime = actualEndDateTime
@@ -128,54 +141,44 @@ internal class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, Ha
         }
     }
 
-    private fun handleEvent(event: HappeningDetailEvent.ChangeHasReminder) {
-        val state = viewState.value
-        if (!state.hasPermissionCalendarAllowed) {
-            setEffect(HappeningDetailSideEffect.CheckCalendarPermission)
+    private fun handleEvent(event: HappeningDetailEvent.ChangeHasReminder) = viewModelScope.launch {
+        val currentState = _viewState.value
+        if (!currentState.hasPermissionCalendarAllowed) {
+            _effect.emit(HappeningDetailSideEffect.CheckCalendarPermission)
         }
-        setState {
-            copy(hasReminder = event.hasReminder)
-        }
+        _viewState.update { copy(hasReminder = event.hasReminder) }
     }
 
     private fun handleEvent(event: HappeningDetailEvent.ChangeCalendarPermissionsStatus) {
         if (event.allowed) {
-            setState {
-                copy(hasPermissionCalendarAllowed = true)
-            }
+            _viewState.update { copy(hasPermissionCalendarAllowed = true) }
         } else {
-            setState {
-                copy(hasReminder = false)
-            }
+            _viewState.update { copy(hasReminder = false) }
         }
     }
 
     private fun handleEvent(event: HappeningDetailEvent.SaveHappening) {
         val minimumTitleSize = 3
 
-        val state = viewState.value
-        if (state.title.length < minimumTitleSize) {
-            setState {
-                copy(titleError = true)
-            }
+        val currentState = _viewState.value
+        if (currentState.title.length < minimumTitleSize) {
+            _viewState.update { copy(titleError = true) }
             return
         }
 
         viewModelScope.launch {
             val suggestionsResult = diComponent.suggestionsUseCase.execute(
-                startDateTime = state.startDateTime,
-                endDateTime = state.endDateTime
+                startDateTime = currentState.startDateTime,
+                endDateTime = currentState.endDateTime
             )
 
             var isFreeRange = true
             if (suggestionsResult is HappeningFetchSuggestionsUseCase.FetchSuggestionsUseCaseResult.Suggestions) {
                 val plannedHappenings = suggestionsResult.plannedHappenings
-                if (plannedHappenings.size > 1 || plannedHappenings.first() != state.happening) {
-                    setState {
+                if (plannedHappenings.size > 1 || plannedHappenings.first() != currentState.happening) {
+                    _viewState.update {
                         copy(
-                            suggestionsState = HappeningSuggestionsState.Suggestions(
-                                ranges = suggestionsResult.ranges.toPersistentList()
-                            )
+                            suggestionsState = HappeningSuggestionsState.Suggestions(suggestionsResult.ranges.toPersistentList())
                         )
                     }
                     isFreeRange = false
@@ -184,38 +187,39 @@ internal class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, Ha
 
             if (isFreeRange) {
                 diComponent.insertUseCase.execute(
-                    model = state.happening.copy(
-                        title = state.title,
-                        startDateTime = state.startDateTime,
-                        endDateTime = state.endDateTime
+                    model = currentState.happening.copy(
+                        title = currentState.title,
+                        startDateTime = currentState.startDateTime,
+                        endDateTime = currentState.endDateTime
                     ),
-                    hasReminder = state.hasReminder
+                    hasReminder = currentState.hasReminder
                 )
-                setEffect(HappeningDetailSideEffect.Back)
+                _effect.emit(HappeningDetailSideEffect.Back)
             }
         }
     }
 
-    private fun handleEvent(event: HappeningDetailEvent.ShowTimePicker) {
-        val state = viewState.value
-
-        setEffect(
+    private fun handleEvent(event: HappeningDetailEvent.ShowTimePicker) = viewModelScope.launch {
+        val currentState = _viewState.value
+        _effect.emit(
             HappeningDetailSideEffect.TimePicker(
-                startTime = state.startDateTime.time,
-                endTime = state.endDateTime.time
+                startTime = currentState.startDateTime.time,
+                endTime = currentState.endDateTime.time
             )
         )
     }
 
-    private fun handleEvent(event: HappeningDetailEvent.ShowDatePicker) {
-        setEffect(HappeningDetailSideEffect.DatePicker(
-            initialDate = viewState.value.startDateTime.date,
-            minDate = DateTimeExtensions.nowDateTime().date
-        ))
+    private fun handleEvent(event: HappeningDetailEvent.ShowDatePicker) = viewModelScope.launch {
+        _effect.emit(
+            HappeningDetailSideEffect.DatePicker(
+                initialDate = _viewState.value.startDateTime.date,
+                minDate = DateTimeExtensions.nowDateTime().date
+            )
+        )
     }
 
-    private fun handleEvent(event: HappeningDetailEvent.Back) {
-        setEffect(HappeningDetailSideEffect.Back)
+    private fun handleEvent(event: HappeningDetailEvent.Back) = viewModelScope.launch {
+        _effect.emit(HappeningDetailSideEffect.Back)
     }
 
 }

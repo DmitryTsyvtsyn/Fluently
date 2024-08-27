@@ -140,7 +140,7 @@ complexity:
     ignoreDataClasses: true
     ignoreAnnotatedParameter: []
     ignoreAnnotated: [
-      'Composable'
+      'Composable', 'Immutable'
     ]
   MethodOverloading:
     active: false
@@ -357,6 +357,9 @@ naming:
   MatchingDeclarationName:
     active: true
     mustBeFirst: true
+    excludes: [
+      '**/core/**/Theme.kt'
+    ]
   MemberNameEqualsClassName:
     active: true
     ignoreOverridden: true

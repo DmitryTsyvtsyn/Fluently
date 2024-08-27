@@ -1,6 +1,8 @@
 package io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.viewmodel
 
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.dmitrytsyvtsyn.fluently.core.coroutines.update
 import io.github.dmitrytsyvtsyn.fluently.core.di.DI
 import io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.data.SettingsRepository
 import io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.models.ThemeColorVariant
@@ -9,17 +11,21 @@ import io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.usecases.Fet
 import io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.usecases.FetchThemeShapeCoefficientUseCase
 import io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.usecases.SaveThemeColorVariantUseCase
 import io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.usecases.SaveThemeShapeCoefficientUseCase
-import io.github.dmitrytsyvtsyn.fluently.core.viewmodel.BaseViewModel
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class SettingsViewModel : BaseViewModel<SettingsEvent, SettingsViewState, SettingsSideEffect>(
-    SettingsViewState(
-        themeColorVariant = ThemeColorVariant.DEFAULT,
-        themeColorVariants = ThemeColorVariant.entries.toPersistentList(),
-        themeShapeCoefficient = ThemeShapeCoefficient.Default
+class SettingsViewModel : ViewModel() {
+
+    private val _viewState = MutableStateFlow(
+        SettingsViewState(
+            themeColorVariant = ThemeColorVariant.DEFAULT,
+            themeColorVariants = ThemeColorVariant.entries.toPersistentList(),
+            themeShapeCoefficient = ThemeShapeCoefficient.Default
+        )
     )
-) {
+    val viewState: StateFlow<SettingsViewState> = _viewState
 
     private val diComponent = object {
         private val repository = DI.get<SettingsRepository>()
@@ -35,7 +41,7 @@ class SettingsViewModel : BaseViewModel<SettingsEvent, SettingsViewState, Settin
         handleEvent(SettingsEvent.Init)
     }
 
-    override fun handleEvent(event: SettingsEvent) {
+    fun handleEvent(event: SettingsEvent) {
         when(event) {
             is SettingsEvent.Init -> handleEvent(event)
             is SettingsEvent.ChangeThemeColorVariant -> handleEvent(event)
@@ -47,7 +53,7 @@ class SettingsViewModel : BaseViewModel<SettingsEvent, SettingsViewState, Settin
         viewModelScope.launch {
             val themeColorVariant = diComponent.fetchThemeColorVariantUseCase.execute()
             val themeShapeCoefficient = diComponent.fetchThemeShapeCoefficientUseCase.execute()
-            setState {
+            _viewState.update {
                 copy(
                     themeColorVariant = themeColorVariant,
                     themeShapeCoefficient = themeShapeCoefficient
@@ -62,9 +68,7 @@ class SettingsViewModel : BaseViewModel<SettingsEvent, SettingsViewState, Settin
 
         viewModelScope.launch {
             diComponent.saveThemeColorVariantUseCase.execute(themeColorVariant)
-            setState {
-                copy(themeColorVariant = themeColorVariant)
-            }
+            _viewState.update { copy(themeColorVariant = themeColorVariant) }
         }
     }
 
@@ -74,9 +78,7 @@ class SettingsViewModel : BaseViewModel<SettingsEvent, SettingsViewState, Settin
 
         viewModelScope.launch {
             diComponent.saveThemeShapeCoefficientUseCase.execute(themeShapeCoefficient)
-            setState {
-                copy(themeShapeCoefficient = themeShapeCoefficient)
-            }
+            _viewState.update { copy(themeShapeCoefficient = themeShapeCoefficient) }
         }
     }
 

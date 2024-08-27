@@ -1,5 +1,6 @@
 package io.github.dmitrytsyvtsyn.fluently
 
+import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -31,7 +32,7 @@ class MainActivity : ComponentActivity() {
 
         installSplashScreen()
         enableEdgeToEdge(
-            navigationBarStyle = SystemBarStyle.light(0, 0)
+            navigationBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
         )
         setContent {
             val settingsViewModel = viewModel<SettingsViewModel>()

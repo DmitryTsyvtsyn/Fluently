@@ -1,5 +1,6 @@
 package io.github.dmitrytsyvtsyn.fluently.core.theme
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -8,6 +9,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import io.github.dmitrytsyvtsyn.fluently.core.R
 
+@Immutable
 class Typography(
     val title1: TextStyle,
     val body1: TextStyle,

@@ -1,10 +1,6 @@
 package io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -34,13 +30,14 @@ import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyScaffold
 import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlySlider
 import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyText
 import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyTextButton
+import io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.composables.ThemeSelectionColorsRow
 import io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.models.ThemeShapeCoefficient
 import io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.models.toThemeShapeCoefficient
 import io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.viewmodel.SettingsEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ThemeSettingsScreen() {
+internal fun ThemeSettingsScreen() {
     val navController = LocalNavController.current
     val viewModel = LocalSettingsViewModel.current
 
@@ -88,38 +85,14 @@ fun ThemeSettingsScreen() {
             Spacer(modifier = Modifier.size(8.dp))
 
             val state by viewModel.viewState.collectAsState()
-            Row(
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                state.themeColorVariants.forEach { themeColorVariant ->
-                    val colors = if (isSystemInDarkTheme()) themeColorVariant.darkColors else themeColorVariant.lightColors
-                    Box(
-                        modifier = Modifier
-                            .clickable {
-                                viewModel.handleEvent(
-                                    SettingsEvent.ChangeThemeColorVariant(
-                                        themeColorVariant
-                                    )
-                                )
-                            }
-                            .size(56.dp)
-                            .background(
-                                color = colors.primaryColor,
-                                shape = FluentlyTheme.shapes.small
-                            )
-                    ) {
-                        if (state.themeColorVariant == themeColorVariant) {
-                            FluentlyIcon(
-                                painter = painterResource(id = R.drawable.ic_check),
-                                contentDescription = "",
-                                modifier = Modifier.align(Alignment.Center),
-                                tint = FluentlyTheme.colors.onPrimaryColor
-                            )
-                        }
-                    }
+
+            ThemeSelectionColorsRow(
+                themeColorVariant = state.themeColorVariant,
+                themeColorVariants = state.themeColorVariants,
+                onClick = { variant ->
+                    viewModel.handleEvent(SettingsEvent.ChangeThemeColorVariant(variant))
                 }
-            }
+            )
 
             Spacer(modifier = Modifier.size(12.dp))
 
