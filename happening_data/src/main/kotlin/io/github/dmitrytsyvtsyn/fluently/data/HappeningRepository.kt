@@ -1,9 +1,13 @@
 package io.github.dmitrytsyvtsyn.fluently.data
 
+import io.github.dmitrytsyvtsyn.fluently.core.data.IdLong
+import io.github.dmitrytsyvtsyn.fluently.data.model.HappeningModel
+import kotlinx.datetime.LocalDateTime
+
 interface HappeningRepository {
     suspend fun insert(model: HappeningModel, hasReminder: Boolean = false)
-    suspend fun delete(id: Long, eventId: Long, reminderId: Long)
-    suspend fun fetch(id: Long): HappeningModel
-    suspend fun fetch(startDate: Long, endDate: Long): List<HappeningModel>
+    suspend fun delete(model: HappeningModel)
+    suspend fun fetch(id: IdLong): HappeningModel
+    suspend fun fetch(startDateTime: LocalDateTime, endDateTime: LocalDateTime): List<HappeningModel>
 }
 

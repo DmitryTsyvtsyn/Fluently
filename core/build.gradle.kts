@@ -16,4 +16,5 @@ dependencies {
     api(libs.androidx.compose.navigation)
     api(libs.androidx.core.ktx)
     api(libs.koin)
+    api(libs.kotlinx.datetime)
 }

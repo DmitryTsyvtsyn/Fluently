@@ -1,5 +1,3 @@
 <resources>
     <string name="app_name">Fluently</string>
-    <string name="calendar_permission_denied">Вы запретили доступ к календарю(</string>
-    <string name="request_access_again">Запросить снова</string>
 </resources>

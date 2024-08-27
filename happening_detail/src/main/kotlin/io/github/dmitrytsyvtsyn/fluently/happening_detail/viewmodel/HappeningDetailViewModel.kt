@@ -1,38 +1,93 @@
 package io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel
 
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.github.dmitrytsyvtsyn.fluently.core.data.CalendarRepository
+import io.github.dmitrytsyvtsyn.fluently.core.coroutines.update
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.DateTimeExtensions
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.plus
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.withDate
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.withTime
 import io.github.dmitrytsyvtsyn.fluently.core.di.DI
-import io.github.dmitrytsyvtsyn.fluently.core.viewmodel.BaseViewModel
-import io.github.dmitrytsyvtsyn.fluently.data.HappeningModel
 import io.github.dmitrytsyvtsyn.fluently.data.HappeningRepository
+import io.github.dmitrytsyvtsyn.fluently.happening_detail.usecases.HappeningFetchSuggestionsUseCase
+import io.github.dmitrytsyvtsyn.fluently.happening_detail.usecases.HappeningFetchUseCase
+import io.github.dmitrytsyvtsyn.fluently.happening_detail.usecases.HappeningInsertUseCase
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDateTime
 
-internal class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, HappeningDetailState, HappeningDetailSideEffect>(
-    HappeningDetailState(
-        startDate = CalendarRepository.nowDate() + CalendarRepository.minutesInMillis(5L),
-        endDate = CalendarRepository.nowDate() + CalendarRepository.minutesInMillis(65L)
+internal class HappeningDetailViewModel : ViewModel() {
+
+    private val _viewState = MutableStateFlow(
+        HappeningDetailState(
+            startDateTime = DateTimeExtensions.nowDateTime().plus(5, DateTimeUnit.MINUTE),
+            endDateTime = DateTimeExtensions.nowDateTime().plus(65, DateTimeUnit.MINUTE)
+        )
     )
-) {
+    val viewState = _viewState.asStateFlow()
 
-    private val repository = DI.get<HappeningRepository>()
+    private val _effect = MutableSharedFlow<HappeningDetailSideEffect>()
+    val effect = _effect.asSharedFlow()
 
-    override fun handleEvent(event: HappeningDetailEvent) {
+    private val diComponent = object {
+        private val repository = DI.get<HappeningRepository>()
+
+        val fetchUseCase = HappeningFetchUseCase(repository)
+        val insertUseCase = HappeningInsertUseCase(repository)
+        val suggestionsUseCase = HappeningFetchSuggestionsUseCase(repository)
+    }
+
+    fun handleEvent(event: HappeningDetailEvent) {
         when (event) {
+            is HappeningDetailEvent.Init -> handleEvent(event)
             is HappeningDetailEvent.TitleChanged -> handleEvent(event)
             is HappeningDetailEvent.DateChanged -> handleEvent(event)
             is HappeningDetailEvent.TimeChanged -> handleEvent(event)
+            is HappeningDetailEvent.DateTimeChanged -> handleEvent(event)
             is HappeningDetailEvent.ChangeHasReminder -> handleEvent(event)
             is HappeningDetailEvent.SaveHappening -> handleEvent(event)
             is HappeningDetailEvent.ShowTimePicker -> handleEvent(event)
             is HappeningDetailEvent.ShowDatePicker -> handleEvent(event)
             is HappeningDetailEvent.Back -> handleEvent(event)
+            is HappeningDetailEvent.ChangeCalendarPermissionsStatus -> handleEvent(event)
+        }
+    }
+
+    private fun handleEvent(event: HappeningDetailEvent.Init) {
+        val happeningId = event.id
+        if (happeningId.isNotEmpty) {
+            viewModelScope.launch {
+                val happening = diComponent.fetchUseCase.execute(happeningId)
+                _viewState.update {
+                    copy(
+                        happening = happening,
+                        title = happening.title,
+                        startDateTime = happening.startDateTime,
+                        endDateTime = happening.endDateTime,
+                        titleError = false,
+                        timeError = false,
+                        hasReminder = happening.reminderId.isNotEmpty
+                    )
+                }
+            }
+        } else {
+            val initialDate = event.initialDateTime
+            _viewState.update {
+                copy(
+                    startDateTime = initialDate.plus(5, DateTimeUnit.MINUTE),
+                    endDateTime = initialDate.plus(65, DateTimeUnit.MINUTE)
+                )
+            }
         }
     }
 
     private fun handleEvent(event: HappeningDetailEvent.TitleChanged) {
-        setState {
+        _viewState.update {
             copy(
                 title = event.title,
                 titleError = false
@@ -41,166 +96,130 @@ internal class HappeningDetailViewModel : BaseViewModel<HappeningDetailEvent, Ha
     }
 
     private fun handleEvent(event: HappeningDetailEvent.DateChanged) {
-        setState {
+        _viewState.update {
+            val newDate = event.dateTime.date
             copy(
-                startDate = CalendarRepository.matchTimeWithDate(startDate, event.date),
-                endDate = CalendarRepository.matchTimeWithDate(endDate, event.date)
+                startDateTime = startDateTime.withDate(newDate),
+                endDateTime = endDateTime.withDate(newDate)
             )
         }
     }
 
     private fun handleEvent(event: HappeningDetailEvent.TimeChanged) {
-        val startDateTime = CalendarRepository.timeFromHoursAndMinutes(event.startHours, event.startMinutes)
-        val endDateTime = CalendarRepository.timeFromHoursAndMinutes(event.endHours, event.endMinutes)
+        val currentState = _viewState.value
+        setActualizedStartEndDates(
+            startDateTime = currentState.startDateTime.withTime(event.startTime),
+            endDateTime = currentState.endDateTime.withTime(event.endTime)
+        )
+    }
 
-        val startDate = CalendarRepository.matchDateWithHoursAndMinutes(
-            viewState.value.startDate,
-            event.startHours,
-            event.startMinutes
+    private fun handleEvent(event: HappeningDetailEvent.DateTimeChanged) {
+        setActualizedStartEndDates(
+            startDateTime = event.startDateTime,
+            endDateTime = event.endDateTime
         )
-        val endDate = CalendarRepository.matchDateWithHoursAndMinutes(
-            viewState.value.endDate,
-            event.endHours,
-            event.endMinutes
-        )
-        val (actualStartDate, actualEndDate) = if (CalendarRepository.nowDate() > startDate) {
-            CalendarRepository.plusDays(startDate, 1) to CalendarRepository.plusDays(endDate, 1)
-        } else if (startDateTime > endDateTime) {
-            startDate to CalendarRepository.plusDays(endDate, 1)
-        } else {
-            startDate to endDate
+    }
+
+    private fun setActualizedStartEndDates(startDateTime: LocalDateTime, endDateTime: LocalDateTime) {
+        val (actualStartDateTime, actualEndDateTime) = when {
+            DateTimeExtensions.nowDateTime() > startDateTime -> {
+                startDateTime.plus(1, DateTimeUnit.DAY) to endDateTime.plus(1, DateTimeUnit.DAY)
+            }
+            startDateTime > endDateTime -> {
+                startDateTime to endDateTime.plus(1, DateTimeUnit.DAY)
+            }
+            else -> {
+                startDateTime to endDateTime
+            }
         }
 
-        setState {
-            copy(startDate = actualStartDate, endDate = actualEndDate)
+        _viewState.update {
+            copy(
+                startDateTime = actualStartDateTime,
+                endDateTime = actualEndDateTime
+            )
         }
     }
 
-    private fun handleEvent(event: HappeningDetailEvent.ChangeHasReminder) {
-        setState {
-            copy(hasReminder = event.hasReminder)
+    private fun handleEvent(event: HappeningDetailEvent.ChangeHasReminder) = viewModelScope.launch {
+        val currentState = _viewState.value
+        if (!currentState.hasPermissionCalendarAllowed) {
+            _effect.emit(HappeningDetailSideEffect.CheckCalendarPermission)
+        }
+        _viewState.update { copy(hasReminder = event.hasReminder) }
+    }
+
+    private fun handleEvent(event: HappeningDetailEvent.ChangeCalendarPermissionsStatus) {
+        if (event.allowed) {
+            _viewState.update { copy(hasPermissionCalendarAllowed = true) }
+        } else {
+            _viewState.update { copy(hasReminder = false) }
         }
     }
 
     private fun handleEvent(event: HappeningDetailEvent.SaveHappening) {
-        val state = viewState.value
-        if (state.title.length < 3) {
-            setState {
-                copy(titleError = true)
-            }
+        val minimumTitleSize = 3
 
+        val currentState = _viewState.value
+        if (currentState.title.length < minimumTitleSize) {
+            _viewState.update { copy(titleError = true) }
             return
         }
 
         viewModelScope.launch {
-            val dateRange = state.startDate..state.endDate
+            val suggestionsResult = diComponent.suggestionsUseCase.execute(
+                startDateTime = currentState.startDateTime,
+                endDateTime = currentState.endDateTime
+            )
 
-            val alreadyScheduledEvents = mutableListOf<io.github.dmitrytsyvtsyn.fluently.data.HappeningModel>()
-            val suggestionRanges = mutableListOf<LongRange>()
-            var currentDate = state.startDate
-
-            val minimumInterval = CalendarRepository.plusMinutes((dateRange.last - dateRange.first), 10)
-
-            repository.fetch(state.startDate, state.endDate)
-                .filter { it.id != state.id }
-                .forEach { item ->
-                    if (item.startDate in dateRange || item.endDate in dateRange) {
-                        alreadyScheduledEvents.add(item)
+            var isFreeRange = true
+            if (suggestionsResult is HappeningFetchSuggestionsUseCase.FetchSuggestionsUseCaseResult.Suggestions) {
+                val plannedHappenings = suggestionsResult.plannedHappenings
+                if (plannedHappenings.size > 1 || plannedHappenings.first() != currentState.happening) {
+                    _viewState.update {
+                        copy(
+                            suggestionsState = HappeningSuggestionsState.Suggestions(suggestionsResult.ranges.toPersistentList())
+                        )
                     }
-                    if (currentDate < item.startDate && suggestionRanges.size < 2) {
-                        val differenceBetweenEndAndStartDates = item.startDate - currentDate
-                        if (differenceBetweenEndAndStartDates > minimumInterval) {
-                            val startSuggestionDate = CalendarRepository.plusMinutes(currentDate, 5)
-                            suggestionRanges.add(startSuggestionDate..startSuggestionDate + minimumInterval)
-                        }
-                    }
-                    currentDate = item.endDate
+                    isFreeRange = false
                 }
-
-            while (suggestionRanges.size < 2) {
-                suggestionRanges.add(currentDate..currentDate + minimumInterval)
-                currentDate += 2 * minimumInterval
             }
 
-            if (alreadyScheduledEvents.isNotEmpty()) {
-                setState {
-                    copy(
-                        busyState = InterviewEventBusyState.BusyWithSuggestions(
-                            startDate = startDate,
-                            endDate = endDate,
-                            scheduledStates = alreadyScheduledEvents.toPersistentList(),
-                            suggestionRanges = suggestionRanges.toPersistentList()
-                        )
-                    )
-                }
-            } else {
-                repository.insert(
-                    model = HappeningModel(
-                        id = state.id,
-                        eventId = state.eventId,
-                        reminderId = state.reminderId,
-                        title = state.title,
-                        startDate = state.startDate,
-                        endDate = state.endDate,
+            if (isFreeRange) {
+                diComponent.insertUseCase.execute(
+                    model = currentState.happening.copy(
+                        title = currentState.title,
+                        startDateTime = currentState.startDateTime,
+                        endDateTime = currentState.endDateTime
                     ),
-                    hasReminder = state.hasReminder
+                    hasReminder = currentState.hasReminder
                 )
-                setEffect(HappeningDetailSideEffect.Back)
+                _effect.emit(HappeningDetailSideEffect.Back)
             }
         }
     }
 
-    private fun handleEvent(event: HappeningDetailEvent.ShowTimePicker) {
-        val state = viewState.value
-
-        val (startHours, startMinutes) = CalendarRepository.hoursMinutes(state.startDate)
-        val (endHours, endMinutes) = CalendarRepository.hoursMinutes(state.endDate)
-
-        setEffect(
+    private fun handleEvent(event: HappeningDetailEvent.ShowTimePicker) = viewModelScope.launch {
+        val currentState = _viewState.value
+        _effect.emit(
             HappeningDetailSideEffect.TimePicker(
-                startHours = startHours,
-                startMinutes = startMinutes,
-                endHours = endHours,
-                endMinutes = endMinutes,
+                startTime = currentState.startDateTime.time,
+                endTime = currentState.endDateTime.time
             )
         )
     }
 
-    private fun handleEvent(event: HappeningDetailEvent.ShowDatePicker) {
-        setEffect(HappeningDetailSideEffect.DatePicker(viewState.value.startDate))
+    private fun handleEvent(event: HappeningDetailEvent.ShowDatePicker) = viewModelScope.launch {
+        _effect.emit(
+            HappeningDetailSideEffect.DatePicker(
+                initialDate = _viewState.value.startDateTime.date,
+                minDate = DateTimeExtensions.nowDateTime().date
+            )
+        )
     }
 
-    private fun handleEvent(event: HappeningDetailEvent.Back) {
-        setEffect(HappeningDetailSideEffect.Back)
-    }
-
-    fun init(id: Long, initialDate: Long) {
-        if (id >= 0) {
-            viewModelScope.launch {
-                val event = repository.fetch(id)
-                setState {
-                    copy(
-                        id = event.id,
-                        eventId = event.eventId,
-                        reminderId = event.reminderId,
-                        title = event.title,
-                        startDate = event.startDate,
-                        endDate = event.endDate,
-                        titleError = false,
-                        timeError = false,
-                        hasReminder = event.reminderId >= 0
-                    )
-                }
-            }
-        } else {
-            val actualDate = CalendarRepository.matchDateWithTime(initialDate, CalendarRepository.nowDate())
-            setState {
-                copy(
-                    startDate = CalendarRepository.plusMinutes(actualDate, 5L),
-                    endDate = CalendarRepository.plusMinutes(actualDate, 65L)
-                )
-            }
-        }
+    private fun handleEvent(event: HappeningDetailEvent.Back) = viewModelScope.launch {
+        _effect.emit(HappeningDetailSideEffect.Back)
     }
 
 }

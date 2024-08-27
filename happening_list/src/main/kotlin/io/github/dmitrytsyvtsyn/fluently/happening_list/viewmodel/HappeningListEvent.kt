@@ -1,20 +1,23 @@
 package io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel
 
+import io.github.dmitrytsyvtsyn.fluently.data.model.HappeningModel
+import kotlinx.datetime.LocalDateTime
+
 internal sealed interface HappeningListEvent {
 
-    class FetchHappenings(val date: Long) : HappeningListEvent
+    class FetchHappenings(val date: LocalDateTime) : HappeningListEvent
 
-    class ChangeDate(val date: Long) : HappeningListEvent
+    class ChangeDate(val date: LocalDateTime) : HappeningListEvent
 
     class ChangeDateByPageIndex(val index: Int) : HappeningListEvent
 
     class ChangePagesByPageIndex(val index: Int) : HappeningListEvent
 
-    class RemoveHappening(val id: Long, val eventId: Long, val reminderId: Long) : HappeningListEvent
+    class RemoveHappening(val happening: HappeningModel) : HappeningListEvent
 
-    class ShowCalendarEvent(val id: Long) : HappeningListEvent
+    class ShowCalendar(val happening: HappeningModel) : HappeningListEvent
 
-    class ShowHappeningEditing(val id: Long) : HappeningListEvent
+    class EditHappening(val happening: HappeningModel) : HappeningListEvent
 
     data object ShowHappeningAdding : HappeningListEvent
 

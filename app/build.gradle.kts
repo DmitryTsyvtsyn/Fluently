@@ -21,13 +21,10 @@ android {
         applicationId = "io.github.dmitrytsyvtsyn.fluently"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0.1"
-
-        vectorDrawables {
-            useSupportLibrary = true
-        }
+        versionCode = libs.versions.versionCode.get().toInt()
+        versionName = libs.versions.versionName.get()
     }
+
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -38,16 +35,20 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
     buildFeatures {
         compose = true
     }
+
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.compose.compiler.extension.get()
     }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"

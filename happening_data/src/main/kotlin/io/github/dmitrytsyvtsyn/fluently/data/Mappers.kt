@@ -1,21 +1,42 @@
 package io.github.dmitrytsyvtsyn.fluently.data
 
+import io.github.dmitrytsyvtsyn.fluently.core.data.toIdLong
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.toEpochMillis
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.toLocalDateTime
+import io.github.dmitrytsyvtsyn.fluently.data.database.HappeningTable
+import io.github.dmitrytsyvtsyn.fluently.data.model.HappeningModel
+import java.util.UUID
+
 fun HappeningTable.toModel(): HappeningModel =
     HappeningModel(
-        id = id,
-        eventId = calendarEventId,
-        reminderId = calendarReminderId,
+        id = id.toIdLong(),
+        eventId = calendarEventId.toIdLong(),
+        reminderId = calendarReminderId.toIdLong(),
         title = title,
-        startDate = startDate,
-        endDate = endDate
+        startDateTime = startDate.toLocalDateTime(),
+        endDateTime = endDate.toLocalDateTime()
     )
 
 fun HappeningModel.toDatabase(): HappeningTable =
-    HappeningTable(
-        id = id,
-        calendarEventId = eventId,
-        calendarReminderId = reminderId,
-        title = title,
-        startDate = startDate,
-        endDate = endDate
-    )
+    if (id.isNotEmpty) {
+        HappeningTable(
+            id = id.value,
+            calendarEventId = eventId.value,
+            calendarReminderId = reminderId.value,
+            title = title,
+            startDate = startDateTime.toEpochMillis(),
+            endDate = endDateTime.toEpochMillis()
+        )
+    } else {
+        val uuid = UUID.randomUUID()
+        val id = uuid.mostSignificantBits
+        val limitedId = id.and(Long.MAX_VALUE)
+        HappeningTable(
+            id = limitedId,
+            calendarEventId = eventId.value,
+            calendarReminderId = reminderId.value,
+            title = title,
+            startDate = startDateTime.toEpochMillis(),
+            endDate = endDateTime.toEpochMillis()
+        )
+    }

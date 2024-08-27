@@ -9,15 +9,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -31,27 +24,37 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
-import io.github.dmitrytsyvtsyn.fluently.core.data.CalendarRepository
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.minus
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.plus
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.toEpochMillis
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.toLocalDateTime
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.LocalNavController
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.ThemeSettingsDestination
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.navigate
-import io.github.dmitrytsyvtsyn.fluently.happening_detail.HappeningDetailDestination
-import io.github.dmitrytsyvtsyn.fluently.happening_list.components.HappeningEmptyList
-import io.github.dmitrytsyvtsyn.fluently.happening_list.components.HappeningList
-import io.github.dmitrytsyvtsyn.fluently.happening_list.components.HappeningTabModel
-import io.github.dmitrytsyvtsyn.fluently.happening_list.components.HappeningTabs
+import io.github.dmitrytsyvtsyn.fluently.core.theme.FluentlyTheme
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyCenterAlignedTopAppBar
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyFloatingActionButton
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyIconButton
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyScaffold
+import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyText
+import io.github.dmitrytsyvtsyn.fluently.happening_detail.navigation.HappeningDetailDestination
+import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningWeekend
+import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningList
+import io.github.dmitrytsyvtsyn.fluently.happening_list.models.HappeningTabModel
+import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningTabs
+import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.toDateMonthString
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningListEvent
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningListViewModel
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningListSideEffect
-import io.github.dmitrytsyvtsyn.fluently.happening_pickers.HappeningDatePickerDestination
+import io.github.dmitrytsyvtsyn.fluently.happening_pickers.navigation.HappeningDatePickerDestination
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.datetime.DateTimeUnit
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -67,29 +70,35 @@ internal fun HappeningListScreen() {
     LaunchedEffect(key1 = newSelectedDate.value) {
         val date = newSelectedDate.value
         if (date > 0) {
-            viewModel.handleEvent(HappeningListEvent.ChangeDate(date))
+            viewModel.handleEvent(HappeningListEvent.ChangeDate(date.toLocalDateTime()))
         }
     }
 
     LaunchedEffect(key1 = "side_effects") {
         viewModel.effect.onEach { sideEffect ->
             when (sideEffect) {
-                is HappeningListSideEffect.ShowCalendarEvent -> {
-                    val uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, sideEffect.id)
+                is HappeningListSideEffect.ShowCalendar -> {
+                    val uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, sideEffect.id.value)
                     context.startActivity(Intent(Intent.ACTION_VIEW).setData(uri))
                 }
                 is HappeningListSideEffect.ShowDetail -> {
-                    navController.navigate(HappeningDetailDestination.Params(sideEffect.id, sideEffect.date))
+                    navController.navigate(HappeningDetailDestination.Params(
+                        id = sideEffect.id,
+                        initialDate = sideEffect.dateTime.toEpochMillis()
+                    ))
                 }
                 is HappeningListSideEffect.ShowDatePicker -> {
-                    navController.navigate(HappeningDatePickerDestination.Params(sideEffect.date))
+                    navController.navigate(
+                        HappeningDatePickerDestination.Params(
+                        initialDate = sideEffect.dateTime.toEpochMillis()
+                    ))
                 }
             }
         }.collect()
     }
 
     LaunchedEffect(key1 = navController.currentBackStackEntry) {
-        viewModel.handleEvent(HappeningListEvent.FetchHappenings(state.currentDate))
+        viewModel.handleEvent(HappeningListEvent.FetchHappenings(state.currentDateTime))
     }
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -112,27 +121,30 @@ internal fun HappeningListScreen() {
         }
     }
 
-    Scaffold(
+    FluentlyScaffold(
         modifier = Modifier.fillMaxSize(),
+        containerColor = FluentlyTheme.colors.backgroundColor,
         topBar = {
-            CenterAlignedTopAppBar(
+            FluentlyCenterAlignedTopAppBar(
                 title = {
-                    Text(text = stringResource(id = R.string.interviews))
+                    FluentlyText(
+                        text = stringResource(id = R.string.interviews),
+                        style = FluentlyTheme.typography.title1
+                    )
                 },
                 actions = {
-                    IconButton(onClick = {
-                        navController.navigate(ThemeSettingsDestination.Params())
-                    }) {
+                    FluentlyIconButton(
+                        onClick = {
+                            navController.navigate(ThemeSettingsDestination.Params())
+                        }
+                    ) {
                         Icon(painter = painterResource(id = R.drawable.ic_settings), contentDescription = "")
                     }
                 }
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                shape = RoundedCornerShape(24.dp),
-                containerColor = MaterialTheme.colorScheme.secondary,
-                contentColor = MaterialTheme.colorScheme.onSecondary,
+            FluentlyFloatingActionButton(
                 onClick = {
                     viewModel.handleEvent(HappeningListEvent.ShowHappeningAdding)
                 }
@@ -154,14 +166,11 @@ internal fun HappeningListScreen() {
                         override val pageCount: Int = state.pages.size
                     }
                 }
-                val coroutineScope = rememberCoroutineScope()
-
                 LaunchedEffect(pagerState) {
                     snapshotFlow { pagerState.currentPage }.collect {
                         viewModel.handleEvent(HappeningListEvent.ChangeDateByPageIndex(it))
                     }
                 }
-
                 LaunchedEffect(pagerState) {
                     snapshotFlow { pagerState.isScrollInProgress }.collect {
                         if (!pagerState.isScrollInProgress) {
@@ -170,10 +179,11 @@ internal fun HappeningListScreen() {
                     }
                 }
 
+                val coroutineScope = rememberCoroutineScope()
                 HappeningTabs(
                     tabs = persistentListOf(
                         HappeningTabModel(
-                            title = formatDate(date = CalendarRepository.minusDays(state.currentDate, 1), nowDate = state.nowDate),
+                            title = state.currentDateTime.minus(1, DateTimeUnit.DAY).toDateMonthString(nowDateTime = state.nowDateTime),
                             onClick = {
                                 coroutineScope.launch {
                                     pagerState.animateScrollToPage(pagerState.currentPage - 1)
@@ -181,13 +191,13 @@ internal fun HappeningListScreen() {
                             }
                         ),
                         HappeningTabModel(
-                            title = formatDate(date = state.currentDate, nowDate = state.nowDate),
+                            title = state.currentDateTime.toDateMonthString(nowDateTime = state.nowDateTime),
                             onClick = {
                                 viewModel.handleEvent(HappeningListEvent.ShowDatePicker)
                             }
                         ),
                         HappeningTabModel(
-                            title = formatDate(date = CalendarRepository.plusDays(state.currentDate, 1), nowDate = state.nowDate),
+                            title = state.currentDateTime.plus(1, DateTimeUnit.DAY).toDateMonthString(nowDateTime = state.nowDateTime),
                             onClick = {
                                 coroutineScope.launch {
                                     pagerState.animateScrollToPage(pagerState.currentPage + 1)
@@ -202,18 +212,18 @@ internal fun HappeningListScreen() {
                     val page = pages[index]
                     val items = page.items
                     if (items.isEmpty()) {
-                        HappeningEmptyList()
+                        HappeningWeekend()
                     } else {
                         HappeningList(
-                            listItemStates = items,
-                            onClick = { id ->
-                                viewModel.handleEvent(HappeningListEvent.ShowHappeningEditing(id))
+                            items = items,
+                            onClick = { happening ->
+                                viewModel.handleEvent(HappeningListEvent.EditHappening(happening))
                             },
-                            onRemove = { id, eventId, reminderId ->
-                                viewModel.handleEvent(HappeningListEvent.RemoveHappening(id, eventId, reminderId))
+                            onRemove = { happening ->
+                                viewModel.handleEvent(HappeningListEvent.RemoveHappening(happening))
                             },
-                            onView = { eventId ->
-                                viewModel.handleEvent(HappeningListEvent.ShowCalendarEvent(eventId))
+                            onView = { happening ->
+                                viewModel.handleEvent(HappeningListEvent.ShowCalendar(happening))
                             },
                             goToYesterday = {
                                 coroutineScope.launch {

@@ -9,4 +9,19 @@
     <string name="today_not_interviews">Сегодня у вас выходной, можете купить себе шампанское)</string>
     <string name="tomorrow">завтра</string>
     <string name="yesterday">вчера</string>
+    <string name="alarm">Будильник</string>
+    <string-array name="month_names_full">
+        <item>января</item>
+        <item>февраля</item>
+        <item>марта</item>
+        <item>апреля</item>
+        <item>мая</item>
+        <item>июня</item>
+        <item>июля</item>
+        <item>августа</item>
+        <item>сентября</item>
+        <item>октября</item>
+        <item>ноября</item>
+        <item>декабря</item>
+    </string-array>
 </resources>

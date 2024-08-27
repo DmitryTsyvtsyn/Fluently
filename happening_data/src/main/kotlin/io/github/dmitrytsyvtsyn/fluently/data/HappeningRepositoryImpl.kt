@@ -1,49 +1,57 @@
 package io.github.dmitrytsyvtsyn.fluently.data
 
+import io.github.dmitrytsyvtsyn.fluently.core.data.IdLong
 import io.github.dmitrytsyvtsyn.fluently.core.data.PlatformCalendarAPI
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.toEpochMillis
+import io.github.dmitrytsyvtsyn.fluently.data.database.HappeningDao
+import io.github.dmitrytsyvtsyn.fluently.data.model.HappeningModel
+import kotlinx.datetime.LocalDateTime
 
 internal class HappeningRepositoryImpl(
     private val database: HappeningDao,
     private val calendarAPI: PlatformCalendarAPI
 ) : HappeningRepository {
 
-    override suspend fun insert(model: HappeningModel, hasReminder: Boolean) =
-        withContext(Dispatchers.Default) {
-            if (model.id > 0) {
-                val reminderId = calendarAPI.updateEvent(
+    override suspend fun insert(model: HappeningModel, hasReminder: Boolean) {
+        val happeningId = model.id
+        val updatedHappening = when {
+            happeningId.isEmpty && hasReminder -> {
+                val (eventId, reminderId) = calendarAPI.insertEventWithReminder(
+                    model.title,
+                    model.startDateTime.toEpochMillis(),
+                    model.endDateTime.toEpochMillis()
+                )
+                model.copy(eventId = eventId, reminderId = reminderId)
+            }
+            happeningId.isNotEmpty && hasReminder -> {
+                calendarAPI.updateEventWithReminder(
                     model.eventId,
                     model.reminderId,
                     model.title,
-                    model.startDate,
-                    model.endDate,
-                    hasReminder
+                    model.startDateTime.toEpochMillis(),
+                    model.endDateTime.toEpochMillis()
                 )
-                database.insert(model.copy(reminderId = reminderId).toDatabase())
-            } else {
-                val (eventId, reminderId) = calendarAPI.insertEvent(
-                    model.title,
-                    model.startDate,
-                    model.endDate,
-                    hasReminder
-                )
-                database.insert(model.copy(eventId = eventId, reminderId = reminderId).toDatabase())
+                model
+            }
+            else -> {
+                model
             }
         }
 
-    override suspend fun delete(id: Long, eventId: Long, reminderId: Long) =
-        withContext(Dispatchers.Default) {
-            calendarAPI.removeEvent(eventId, reminderId)
-            database.delete(id)
-        }
-
-    override suspend fun fetch(id: Long) = withContext(Dispatchers.Default) {
-        database.fetch(id).toModel()
+        database.insert(updatedHappening.toDatabase())
     }
 
-    override suspend fun fetch(startDate: Long, endDate: Long) = withContext(Dispatchers.Default) {
-        database.fetch(startDate, endDate).map { it.toModel() }
+    override suspend fun delete(model: HappeningModel) {
+        calendarAPI.removeEventWithReminder(model.eventId, model.reminderId)
+        database.delete(model.id.value)
+    }
+
+    override suspend fun fetch(id: IdLong): HappeningModel {
+        return database.fetch(id.value).toModel()
+    }
+
+    override suspend fun fetch(startDateTime: LocalDateTime, endDateTime: LocalDateTime): List<HappeningModel> {
+        return database.fetch(startDateTime.toEpochMillis(), endDateTime.toEpochMillis()).map { it.toModel() }
     }
 
 }

@@ -16,7 +16,6 @@ android {
 
     defaultConfig {
         minSdk = libs.versions.minSdk.get().toInt()
-        targetSdk = libs.versions.targetSdk.get().toInt()
 
         vectorDrawables {
             useSupportLibrary = true
@@ -25,6 +24,12 @@ android {
 
     testOptions {
         targetSdk = libs.versions.targetSdk.get().toInt()
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+        }
     }
 
     compileOptions {

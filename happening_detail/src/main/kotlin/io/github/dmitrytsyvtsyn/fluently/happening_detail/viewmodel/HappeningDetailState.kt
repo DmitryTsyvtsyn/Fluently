@@ -1,29 +1,17 @@
 package io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel
 
-import io.github.dmitrytsyvtsyn.fluently.data.HappeningModel
-import kotlinx.collections.immutable.PersistentList
+import io.github.dmitrytsyvtsyn.fluently.data.model.HappeningModel
+import kotlinx.datetime.LocalDateTime
 
 internal data class HappeningDetailState(
-    val id: Long = 0,
-    val eventId: Long = -1,
-    val reminderId: Long = -1,
+    val happening: HappeningModel = HappeningModel(),
     val title: String = "",
-    val startDate: Long,
-    val endDate: Long,
+    val startDateTime: LocalDateTime,
+    val endDateTime: LocalDateTime,
     val titleError: Boolean = false,
     val timeError: Boolean = false,
-    val busyState: InterviewEventBusyState = InterviewEventBusyState.NotBusy,
+    val suggestionsState: HappeningSuggestionsState = HappeningSuggestionsState.NoSuggestions,
     val hasReminder: Boolean = false,
+    val hasPermissionCalendarAllowed: Boolean = false,
 )
 
-internal sealed interface InterviewEventBusyState {
-
-    class BusyWithSuggestions(
-        val startDate: Long,
-        val endDate: Long,
-        val scheduledStates: PersistentList<HappeningModel>,
-        val suggestionRanges: PersistentList<LongRange>
-    ) : InterviewEventBusyState
-
-    data object NotBusy : InterviewEventBusyState
-}
