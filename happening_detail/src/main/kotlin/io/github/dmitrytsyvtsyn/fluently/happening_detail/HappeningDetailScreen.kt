@@ -146,11 +146,13 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
                     is HappeningDetailSideEffect.TimePicker -> {
                         navController.navigate(
                             HappeningTimePickerDestination.Params(
-                            startHours = sideEffect.startTime.hour,
-                            startMinutes = sideEffect.startTime.minute,
-                            endHours = sideEffect.endTime.hour,
-                            endMinutes = sideEffect.endTime.minute
-                        ))
+                                startHours = sideEffect.startTime.hour,
+                                startMinutes = sideEffect.startTime.minute,
+                                endHours = sideEffect.endTime.hour,
+                                endMinutes = sideEffect.endTime.minute,
+                                dateInMillis = sideEffect.date.toEpochMillis()
+                            )
+                        )
                     }
                     is HappeningDetailSideEffect.Back -> {
                         navController.popBackStack()

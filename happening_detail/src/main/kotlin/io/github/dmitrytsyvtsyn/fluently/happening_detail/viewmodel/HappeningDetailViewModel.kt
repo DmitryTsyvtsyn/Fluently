@@ -204,7 +204,8 @@ internal class HappeningDetailViewModel : ViewModel() {
         _effect.emit(
             HappeningDetailSideEffect.TimePicker(
                 startTime = currentState.startDateTime.time,
-                endTime = currentState.endDateTime.time
+                endTime = currentState.endDateTime.time,
+                date = currentState.startDateTime.date
             )
         )
     }

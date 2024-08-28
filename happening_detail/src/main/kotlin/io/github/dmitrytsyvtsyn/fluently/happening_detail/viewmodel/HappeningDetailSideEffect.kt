@@ -12,7 +12,8 @@ internal sealed interface HappeningDetailSideEffect {
 
     class TimePicker(
         val startTime: LocalTime,
-        val endTime: LocalTime
+        val endTime: LocalTime,
+        val date: LocalDate
     ) : HappeningDetailSideEffect
 
     data object Back : HappeningDetailSideEffect
