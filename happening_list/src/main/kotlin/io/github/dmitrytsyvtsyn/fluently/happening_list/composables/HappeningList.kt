@@ -46,7 +46,8 @@ internal fun HappeningList(
                 is HappeningListItemState.Title -> {
                     FluentlyText(
                         text = listItemState.value,
-                        style = FluentlyTheme.typography.caption3
+                        style = FluentlyTheme.typography.caption3,
+                        color = FluentlyTheme.colors.primaryColor
                     )
                 }
                 is HappeningListItemState.Timeline -> {

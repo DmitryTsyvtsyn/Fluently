@@ -7,7 +7,7 @@
     <string name="title_must_not_be_less_three_symbols">Название не должно быть меньше 3-х символов</string>
     <string name="date">Дата:</string>
     <string name="time">Время:</string>
-    <string name="you_have_already_scheduled_events">У вас уже есть запланированные события на это время, выберите свободное время:</string>
+    <string name="you_have_already_scheduled_events">У вас уже есть запланированные события на это время, выберите свободные даты:</string>
     <string name="turn_alarm_or_not">Включить будильник</string>
     <string-array name="month_names_abbreviated">
         <item>янв</item>

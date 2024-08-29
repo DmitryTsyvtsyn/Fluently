@@ -37,7 +37,7 @@ enum class ThemeColorVariant(val lightColors: Colors, val darkColors: Colors) {
     ),
     DARK_PURPLE(
         lightColors = Colors.Light.copy(
-            primaryColor = Color(0xFF2E073F),
+            primaryColor = Color(0xFF66118C),
             primaryContainerColor = Color(0xFFb921fc),
             secondaryColor = Color(0xFFb921fc),
             backgroundColor = Color(0xFFf4edf7),

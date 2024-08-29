@@ -13,9 +13,9 @@ internal class HappeningRepositoryImpl(
 ) : HappeningRepository {
 
     override suspend fun insert(model: HappeningModel, hasReminder: Boolean) {
-        val happeningId = model.id
+        val happeningEventId = model.eventId
         val updatedHappening = when {
-            happeningId.isEmpty && hasReminder -> {
+            happeningEventId.isEmpty && hasReminder -> {
                 val (eventId, reminderId) = calendarAPI.insertEventWithReminder(
                     model.title,
                     model.startDateTime.toEpochMillis(),
@@ -23,10 +23,9 @@ internal class HappeningRepositoryImpl(
                 )
                 model.copy(eventId = eventId, reminderId = reminderId)
             }
-            happeningId.isNotEmpty && hasReminder -> {
+            happeningEventId.isNotEmpty && hasReminder -> {
                 calendarAPI.updateEventWithReminder(
-                    model.eventId,
-                    model.reminderId,
+                    happeningEventId,
                     model.title,
                     model.startDateTime.toEpochMillis(),
                     model.endDateTime.toEpochMillis()
@@ -34,7 +33,8 @@ internal class HappeningRepositoryImpl(
                 model
             }
             else -> {
-                model
+                calendarAPI.removeEventWithReminder(model.eventId, model.reminderId)
+                model.copy(eventId = IdLong.Empty, reminderId = IdLong.Empty)
             }
         }
 

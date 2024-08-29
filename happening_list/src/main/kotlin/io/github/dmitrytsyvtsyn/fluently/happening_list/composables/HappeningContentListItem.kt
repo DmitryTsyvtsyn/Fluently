@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,7 +49,7 @@ internal fun HappeningContentListItem(
     val dropdownExpanded = remember { mutableStateOf(false) }
 
     val model = item.model
-    Box(
+    Column(
         modifier = Modifier
             .alpha(
                 when (item.timingStatus) {
@@ -72,75 +70,16 @@ internal fun HappeningContentListItem(
             )
             .padding(16.dp)
     ) {
-        Column {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             FluentlyText(
                 text = model.title,
-                style = FluentlyTheme.typography.body2
+                style = FluentlyTheme.typography.body2,
+                maxLines = 2,
+                modifier = Modifier.weight(1f)
             )
 
-            Spacer(modifier = Modifier.size(8.dp))
+            Spacer(modifier = Modifier.size(4.dp))
 
-            Row(verticalAlignment = Alignment.Bottom) {
-                if (item.dayStatus == HappeningDayStatus.TODAY_AND_YESTERDAY) {
-                    FluentlyText(
-                        modifier = Modifier
-                            .clip(FluentlyTheme.shapes.xsmall)
-                            .clickable(onClick = goToYesterday)
-                            .padding(horizontal = 4.dp),
-                        text = stringResource(id = R.string.yesterday),
-                        style = FluentlyTheme.typography.caption3,
-                        color = FluentlyTheme.colors.primaryColor
-                    )
-                    Spacer(modifier = Modifier.size(4.dp))
-                }
-
-                val startDateTimeString = model.startDateTime.time.toHoursMinutesString()
-                val endDateTimeString = model.endDateTime.time.toHoursMinutesString()
-                FluentlyText(
-                    text = "$startDateTimeString - $endDateTimeString",
-                    textDecoration = if (item.timingStatus != HappeningRunningStatus.ACTUAL) TextDecoration.LineThrough else null,
-                    style = FluentlyTheme.typography.body3
-                )
-
-                if (item.dayStatus == HappeningDayStatus.TODAY_AND_TOMORROW) {
-                    Spacer(modifier = Modifier.size(4.dp))
-                    FluentlyText(
-                        modifier = Modifier
-                            .clip(FluentlyTheme.shapes.xsmall)
-                            .clickable(onClick = goToTomorrow)
-                            .padding(horizontal = 4.dp),
-                        text = stringResource(id = R.string.tomorrow),
-                        style = FluentlyTheme.typography.caption3,
-                        color = FluentlyTheme.colors.primaryColor
-                    )
-                }
-            }
-
-            if (dropdownExpanded.value) {
-                DropdownMenu(
-                    expanded = true,
-                    onDismissRequest = { dropdownExpanded.value = false }
-                ) {
-                    DropdownMenuItem(
-                        text = {  Text(stringResource(id = R.string.remove_event)) },
-                        onClick = {
-                            onRemove.invoke(model)
-                            dropdownExpanded.value = false
-                        }
-                    )
-                    if (model.eventId.isNotEmpty) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(id = R.string.show_event)) },
-                            onClick = {
-                                onCalendarView.invoke(model)
-                                dropdownExpanded.value = false
-                            }
-                        )
-                    }
-                }
-            }
-        }
-        Row(modifier = Modifier.align(Alignment.TopEnd), verticalAlignment = Alignment.CenterVertically) {
             if (model.reminderId.isNotEmpty) {
                 FluentlyIcon(
                     painter = painterResource(id = R.drawable.ic_notification),
@@ -161,6 +100,79 @@ internal fun HappeningContentListItem(
                 color = FluentlyTheme.colors.onPrimaryColor,
                 style = FluentlyTheme.typography.caption4
             )
+        }
+
+        Spacer(modifier = Modifier.size(8.dp))
+
+        Row(verticalAlignment = Alignment.Bottom) {
+            if (item.dayStatus == HappeningDayStatus.TODAY_AND_YESTERDAY) {
+                FluentlyText(
+                    modifier = Modifier
+                        .clip(FluentlyTheme.shapes.xsmall)
+                        .clickable(onClick = goToYesterday)
+                        .padding(horizontal = 4.dp),
+                    text = stringResource(id = R.string.yesterday),
+                    style = FluentlyTheme.typography.caption3,
+                    color = FluentlyTheme.colors.primaryColor
+                )
+                Spacer(modifier = Modifier.size(4.dp))
+            }
+
+            val startDateTimeString = model.startDateTime.time.toHoursMinutesString()
+            val endDateTimeString = model.endDateTime.time.toHoursMinutesString()
+            FluentlyText(
+                text = "$startDateTimeString - $endDateTimeString",
+                textDecoration = if (item.timingStatus != HappeningRunningStatus.ACTUAL) TextDecoration.LineThrough else null,
+                style = FluentlyTheme.typography.body3
+            )
+
+            if (item.dayStatus == HappeningDayStatus.TODAY_AND_TOMORROW) {
+                Spacer(modifier = Modifier.size(4.dp))
+                FluentlyText(
+                    modifier = Modifier
+                        .clip(FluentlyTheme.shapes.xsmall)
+                        .clickable(onClick = goToTomorrow)
+                        .padding(horizontal = 4.dp),
+                    text = stringResource(id = R.string.tomorrow),
+                    style = FluentlyTheme.typography.caption3,
+                    color = FluentlyTheme.colors.primaryColor
+                )
+            }
+        }
+
+        if (dropdownExpanded.value) {
+            DropdownMenu(
+                expanded = true,
+                onDismissRequest = { dropdownExpanded.value = false },
+                modifier = Modifier.background(FluentlyTheme.colors.secondaryContainerColor)
+            ) {
+                DropdownMenuItem(
+                    text = {
+                        FluentlyText(
+                            text = stringResource(id = R.string.remove_event),
+                            style = FluentlyTheme.typography.caption4
+                        )
+                    },
+                    onClick = {
+                        onRemove.invoke(model)
+                        dropdownExpanded.value = false
+                    },
+                )
+                if (model.eventId.isNotEmpty) {
+                    DropdownMenuItem(
+                        text = {
+                            FluentlyText(
+                                text = stringResource(id = R.string.show_event),
+                                style = FluentlyTheme.typography.caption4
+                            )
+                        },
+                        onClick = {
+                            onCalendarView.invoke(model)
+                            dropdownExpanded.value = false
+                        }
+                    )
+                }
+            }
         }
     }
 }

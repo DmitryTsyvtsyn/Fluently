@@ -170,110 +170,110 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
                     .fillMaxWidth()
                     .padding(16.dp),
             ) {
-                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                    FluentlyTextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .focusable(true),
-                        placeholder = {
-                            FluentlyText(
-                                text = stringResource(id = R.string.interview_company_name)
-                            )
-                        },
-                        singleLine = true,
-                        isError = state.titleError,
-                        value = state.title,
-                        onValueChange = { title ->
-                            viewModel.handleEvent(HappeningDetailEvent.TitleChanged(title))
-                        }
-                    )
-
-                    if (state.titleError) {
-                        Spacer(modifier = Modifier.size(8.dp))
+                FluentlyTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusable(true),
+                    placeholder = {
                         FluentlyText(
-                            text = stringResource(id = R.string.title_must_not_be_less_three_symbols),
-                            style = FluentlyTheme.typography.caption4,
-                            color = FluentlyTheme.colors.errorColor
+                            text = stringResource(id = R.string.interview_company_name)
                         )
+                    },
+                    singleLine = true,
+                    isError = state.titleError,
+                    value = state.title,
+                    onValueChange = { title ->
+                        viewModel.handleEvent(HappeningDetailEvent.TitleChanged(title))
                     }
+                )
 
-                    Spacer(modifier = Modifier.size(24.dp))
-
-                    FluentlyText(
-                        text = stringResource(id = R.string.date),
-                        style = FluentlyTheme.typography.body2
-                    )
-
+                if (state.titleError) {
                     Spacer(modifier = Modifier.size(8.dp))
-
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = rememberRipple(bounded = true),
-                            ) {
-                                viewModel.handleEvent(HappeningDetailEvent.ShowDatePicker)
-                            }
-                            .padding(8.dp)
-
-                    ) {
-                        FluentlyText(
-                            text = state.startDateTime.date.toDayMonthYearAbbreviatedString(),
-                            style = FluentlyTheme.typography.body3
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.size(16.dp))
-
                     FluentlyText(
-                        text = stringResource(id = R.string.time),
-                        style = FluentlyTheme.typography.body2
+                        text = stringResource(id = R.string.title_must_not_be_less_three_symbols),
+                        style = FluentlyTheme.typography.caption4,
+                        color = FluentlyTheme.colors.errorColor
                     )
-
-                    Spacer(modifier = Modifier.size(8.dp))
-
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = rememberRipple(bounded = true),
-                            ) {
-                                viewModel.handleEvent(HappeningDetailEvent.ShowTimePicker)
-                            }
-                            .padding(8.dp)
-
-                    ) {
-                        val startTimeString = state.startDateTime.time.toHoursMinutesString()
-                        val endTimeString = state.endDateTime.time.toHoursMinutesString()
-                        FluentlyText(
-                            text = "$startTimeString - $endTimeString",
-                            style = FluentlyTheme.typography.body3
-                        )
-                    }
-
-                    when (val suggestionsState = state.suggestionsState) {
-                        is HappeningSuggestionsState.NoSuggestions -> {}
-                        is HappeningSuggestionsState.Suggestions -> {
-                            Spacer(Modifier.size(12.dp))
-                            Suggestions(
-                                suggestionRanges = suggestionsState.ranges,
-                                onSuggestionClick = { startDateTime, endDateTime ->
-                                    viewModel.handleEvent(
-                                        HappeningDetailEvent.DateTimeChanged(
-                                            startDateTime = startDateTime,
-                                            endDateTime = endDateTime
-                                        )
-                                    )
-                                }
-                            )
-                        }
-                    }
-
                 }
 
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.size(24.dp))
+
+                FluentlyText(
+                    text = stringResource(id = R.string.date),
+                    style = FluentlyTheme.typography.body2
+                )
+
+                Spacer(modifier = Modifier.size(8.dp))
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = rememberRipple(bounded = true),
+                        ) {
+                            viewModel.handleEvent(HappeningDetailEvent.ShowDatePicker)
+                        }
+                        .padding(8.dp)
+
+                ) {
+                    FluentlyText(
+                        text = state.startDateTime.date.toDayMonthYearAbbreviatedString(),
+                        style = FluentlyTheme.typography.body3
+                    )
+                }
+
+                Spacer(modifier = Modifier.size(16.dp))
+
+                FluentlyText(
+                    text = stringResource(id = R.string.time),
+                    style = FluentlyTheme.typography.body2
+                )
+
+                Spacer(modifier = Modifier.size(8.dp))
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = rememberRipple(bounded = true),
+                        ) {
+                            viewModel.handleEvent(HappeningDetailEvent.ShowTimePicker)
+                        }
+                        .padding(8.dp)
+                ) {
+                    val startTimeString = state.startDateTime.time.toHoursMinutesString()
+                    val endTimeString = state.endDateTime.time.toHoursMinutesString()
+                    FluentlyText(
+                        text = "$startTimeString - $endTimeString",
+                        style = FluentlyTheme.typography.body3
+                    )
+                }
+
+                when (val suggestionsState = state.suggestionsState) {
+                    is HappeningSuggestionsState.NoSuggestions -> {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                    is HappeningSuggestionsState.Suggestions -> {
+                        Spacer(Modifier.size(12.dp))
+                        Suggestions(
+                            modifier = Modifier
+                                .weight(1f)
+                                .verticalScroll(rememberScrollState()),
+                            suggestionRanges = suggestionsState.ranges,
+                            onSuggestionClick = { startDateTime, endDateTime ->
+                                viewModel.handleEvent(
+                                    HappeningDetailEvent.DateTimeChanged(
+                                        startDateTime = startDateTime,
+                                        endDateTime = endDateTime
+                                    )
+                                )
+                            }
+                        )
+                        Spacer(Modifier.size(12.dp))
+                    }
+                }
 
                 if (state.startDateTime > DateTimeExtensions.nowDateTime()) {
                     Row(

@@ -153,7 +153,7 @@ internal class HappeningDetailViewModel : ViewModel() {
         if (event.allowed) {
             _viewState.update { copy(hasPermissionCalendarAllowed = true) }
         } else {
-            _viewState.update { copy(hasReminder = false) }
+            _viewState.update { copy(hasReminder = !hasReminder) }
         }
     }
 

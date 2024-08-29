@@ -10,7 +10,6 @@ interface PlatformCalendarAPI {
 
     suspend fun updateEventWithReminder(
         eventId: IdLong,
-        reminderId: IdLong,
         title: String,
         startDate: Long,
         endDate: Long

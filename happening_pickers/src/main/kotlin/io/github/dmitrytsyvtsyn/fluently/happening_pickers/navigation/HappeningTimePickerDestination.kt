@@ -53,7 +53,11 @@ data object HappeningTimePickerDestination : NavigationDestination<HappeningTime
         val dateInMillis: Long
     ) : NavigationParams {
 
-        override val route: String = "$NAME?$START_HOURS=$startHours&$START_MINUTES=$startMinutes&$END_HOURS=$endHours&$END_MINUTES=$endMinutes&$DATE_IN_MILLIS=$dateInMillis"
+        override val route: String = "$NAME?$START_HOURS=$startHours" +
+                "&$START_MINUTES=$startMinutes" +
+                "&$END_HOURS=$endHours" +
+                "&$END_MINUTES=$endMinutes" +
+                "&$DATE_IN_MILLIS=$dateInMillis"
 
     }
 
