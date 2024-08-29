@@ -153,7 +153,7 @@ internal class HappeningDetailViewModel : ViewModel() {
         if (event.allowed) {
             _viewState.update { copy(hasPermissionCalendarAllowed = true) }
         } else {
-            _viewState.update { copy(hasReminder = false) }
+            _viewState.update { copy(hasReminder = !hasReminder) }
         }
     }
 
@@ -204,7 +204,8 @@ internal class HappeningDetailViewModel : ViewModel() {
         _effect.emit(
             HappeningDetailSideEffect.TimePicker(
                 startTime = currentState.startDateTime.time,
-                endTime = currentState.endDateTime.time
+                endTime = currentState.endDateTime.time,
+                date = currentState.startDateTime.date
             )
         )
     }

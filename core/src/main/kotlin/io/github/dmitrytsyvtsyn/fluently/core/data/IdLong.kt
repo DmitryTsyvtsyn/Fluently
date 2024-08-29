@@ -19,7 +19,7 @@ fun Long.toIdLong(): IdLong {
 @JvmInline
 value class IdLong(val value: Long) {
     val isEmpty: Boolean
-        get() = value == MIN_POSSIBLE_VALUE
+        get() = value <= MIN_POSSIBLE_VALUE
     val isNotEmpty: Boolean
         get() = !isEmpty
 

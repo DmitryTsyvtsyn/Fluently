@@ -47,11 +47,11 @@ internal class PlatformCalendarAPIImpl(context: Context): PlatformCalendarAPI {
 
     override suspend fun updateEventWithReminder(
         eventId: IdLong,
-        reminderId: IdLong,
         title: String,
         startDate: Long,
         endDate: Long
     ) = withContext(Dispatchers.Default) {
+        if (eventId.isEmpty) return@withContext false
         val values = ContentValues()
         with(values) {
             put(CalendarContract.Events.TITLE, title)

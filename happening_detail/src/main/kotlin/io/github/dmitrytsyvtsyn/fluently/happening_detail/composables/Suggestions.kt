@@ -21,11 +21,12 @@ import kotlinx.datetime.LocalDateTime
 
 @Composable
 fun Suggestions(
+    modifier: Modifier = Modifier,
     suggestionRanges: PersistentList<ClosedRange<LocalDateTime>>,
     onSuggestionClick: (startDateTime: LocalDateTime, endDateTime: LocalDateTime) -> Unit,
     maxSuggestionsShowed: Int = 3
 ) {
-    Column {
+    Column(modifier = modifier) {
         FluentlyText(
             text = stringResource(id = R.string.you_have_already_scheduled_events),
             color = FluentlyTheme.colors.errorColor,
@@ -39,7 +40,10 @@ fun Suggestions(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        onSuggestionClick.invoke(suggestionRange.start, suggestionRange.endInclusive)
+                        onSuggestionClick.invoke(
+                            suggestionRange.start,
+                            suggestionRange.endInclusive
+                        )
                     }
                     .background(
                         color = FluentlyTheme.colors.primaryContainerColor,

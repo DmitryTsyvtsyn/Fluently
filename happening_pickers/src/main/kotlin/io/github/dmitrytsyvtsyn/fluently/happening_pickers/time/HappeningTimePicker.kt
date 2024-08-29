@@ -26,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.DateTimeExtensions
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.toEpochMillis
 import io.github.dmitrytsyvtsyn.fluently.core.theme.FluentlyTheme
 import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyText
 import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyTextButton
@@ -52,14 +53,12 @@ internal fun HappeningTimePicker(
     )
     val confirmEnabled = remember {
         derivedStateOf {
-            val startTime = startTimeState.toMillis()
-            val endTime = endTimeState.toMillis()
-
-            val currentTime = DateTimeExtensions.nowTimeMillis()
-
+            val nowDateTime = DateTimeExtensions.nowDateTime()
+            val nowDateInMillis = nowDateTime.date.toEpochMillis()
+            val nowTimeInMillis = nowDateTime.time.toMillisecondOfDay()
             when {
-                startTime < currentTime && endTime < currentTime && startTime > endTime -> false
-                startTime > currentTime && endTime > currentTime && startTime > endTime -> false
+                nowDateInMillis > params.dateInMillis -> false
+                nowDateInMillis == params.dateInMillis -> startTimeState.toMillis() > nowTimeInMillis
                 else -> true
             }
         }

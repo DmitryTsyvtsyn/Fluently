@@ -19,6 +19,8 @@ data object HappeningTimePickerDestination : NavigationDestination<HappeningTime
     private const val END_HOURS = "${NAME}_end_hours"
     private const val END_MINUTES = "${NAME}_end_minutes"
 
+    private const val DATE_IN_MILLIS = "${NAME}_date_in_millis"
+
     override val name: String = NAME
     override val defaultResult: Result = Result()
     override val navArguments: List<NamedNavArgument>
@@ -26,7 +28,8 @@ data object HappeningTimePickerDestination : NavigationDestination<HappeningTime
             navArgument(START_HOURS) { type = NavType.IntType },
             navArgument(START_MINUTES) { type = NavType.IntType },
             navArgument(END_HOURS) { type = NavType.IntType },
-            navArgument(END_MINUTES) { type = NavType.IntType }
+            navArgument(END_MINUTES) { type = NavType.IntType },
+            navArgument(DATE_IN_MILLIS) { type = NavType.LongType }
         )
 
     override fun params(backStackEntry: NavBackStackEntry): Params {
@@ -36,7 +39,8 @@ data object HappeningTimePickerDestination : NavigationDestination<HappeningTime
             startHours = arguments.getInt(START_HOURS),
             startMinutes = arguments.getInt(START_MINUTES),
             endHours = arguments.getInt(END_HOURS),
-            endMinutes = arguments.getInt(END_MINUTES)
+            endMinutes = arguments.getInt(END_MINUTES),
+            dateInMillis = arguments.getLong(DATE_IN_MILLIS)
         )
     }
 
@@ -45,10 +49,15 @@ data object HappeningTimePickerDestination : NavigationDestination<HappeningTime
         val startHours: Int,
         val startMinutes: Int,
         val endHours: Int,
-        val endMinutes: Int
+        val endMinutes: Int,
+        val dateInMillis: Long
     ) : NavigationParams {
 
-        override val route: String = "$NAME?$START_HOURS=$startHours&$START_MINUTES=$startMinutes&$END_HOURS=$endHours&$END_MINUTES=$endMinutes"
+        override val route: String = "$NAME?$START_HOURS=$startHours" +
+                "&$START_MINUTES=$startMinutes" +
+                "&$END_HOURS=$endHours" +
+                "&$END_MINUTES=$endMinutes" +
+                "&$DATE_IN_MILLIS=$dateInMillis"
 
     }
 
