@@ -17,9 +17,11 @@ enum class ThemeColorVariant(val lightColors: Colors, val darkColors: Colors) {
             secondaryContainerColor = Color(0xFFDDDDDD)
         ),
         darkColors = Colors.Dark.copy(
-            primaryColor = Color(0xFF55679C),
-            primaryContainerColor = Color(0xFF879FE6),
-            secondaryColor = Color(0xFF879FE6)
+            primaryColor = Color(0xFF879FE6),
+            primaryContainerColor = Color(0xFF55679C),
+            secondaryColor = Color(0xFF879FE6),
+            onPrimaryColor = Color(0xFF55679C),
+            onPrimaryContainerColor = Color(0xFF879FE6)
         )
     ),
     LIGHT_RED(
@@ -32,7 +34,9 @@ enum class ThemeColorVariant(val lightColors: Colors, val darkColors: Colors) {
         darkColors = Colors.Dark.copy(
             primaryColor = Color(0xFFFF8A8A),
             primaryContainerColor = Color(0xFFB54C4C),
-            secondaryColor = Color(0xFFF0BBBB)
+            secondaryColor = Color(0xFFFF8A8A),
+            onPrimaryColor = Color(0xFFB54C4C),
+            onPrimaryContainerColor = Color(0xFFFF8A8A)
         )
     ),
     DARK_PURPLE(
@@ -44,9 +48,11 @@ enum class ThemeColorVariant(val lightColors: Colors, val darkColors: Colors) {
             secondaryContainerColor = Color(0xFFDDDDDD)
         ),
         darkColors = Colors.Dark.copy(
-            primaryColor = Color(0xFF560E75),
-            primaryContainerColor = Color(0xFFb921fc),
+            primaryColor = Color(0xFFb921fc),
+            primaryContainerColor = Color(0xFF560E75),
             secondaryColor = Color(0xFFb921fc),
+            onPrimaryColor = Color(0xFF560E75),
+            onPrimaryContainerColor = Color(0xFFb921fc)
         )
     ),
 }
