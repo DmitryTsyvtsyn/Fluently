@@ -23,7 +23,7 @@ fun FluentlySlider(
     colors: SliderColors = SliderDefaults.colors(
         thumbColor = FluentlyTheme.colors.primaryColor,
         activeTrackColor = FluentlyTheme.colors.primaryColor,
-        inactiveTrackColor = FluentlyTheme.colors.secondaryColor
+        inactiveTrackColor = FluentlyTheme.colors.secondaryContainerColor
     ),
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() }
 ) {

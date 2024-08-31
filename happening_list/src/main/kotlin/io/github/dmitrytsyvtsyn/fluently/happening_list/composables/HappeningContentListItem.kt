@@ -74,6 +74,7 @@ internal fun HappeningContentListItem(
             FluentlyText(
                 text = model.title,
                 style = FluentlyTheme.typography.body2,
+                color = FluentlyTheme.colors.onPrimaryContainerColor,
                 maxLines = 2,
                 modifier = Modifier.weight(1f)
             )
@@ -123,7 +124,8 @@ internal fun HappeningContentListItem(
             FluentlyText(
                 text = "$startDateTimeString - $endDateTimeString",
                 textDecoration = if (item.timingStatus != HappeningRunningStatus.ACTUAL) TextDecoration.LineThrough else null,
-                style = FluentlyTheme.typography.body3
+                style = FluentlyTheme.typography.body3,
+                color = FluentlyTheme.colors.onPrimaryContainerColor,
             )
 
             if (item.dayStatus == HappeningDayStatus.TODAY_AND_TOMORROW) {
