@@ -26,11 +26,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.dmitrytsyvtsyn.fluently.core.compose.configurations
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.DateTimeExtensions
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.toEpochMillis
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.toHoursMinutesString
@@ -55,8 +57,6 @@ import io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel.HappeningDet
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel.HappeningSuggestionsState
 import io.github.dmitrytsyvtsyn.fluently.happening_pickers.navigation.HappeningDatePickerDestination
 import io.github.dmitrytsyvtsyn.fluently.happening_pickers.navigation.HappeningTimePickerDestination
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.onEach
 import kotlinx.datetime.LocalTime
 import io.github.dmitrytsyvtsyn.fluently.core.R as CoreRes
 
@@ -65,10 +65,62 @@ import io.github.dmitrytsyvtsyn.fluently.core.R as CoreRes
 internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
     val viewModel: HappeningDetailViewModel = viewModel()
 
-    val navController = LocalNavController.current
-
     LaunchedEffect(key1 = Unit) {
         viewModel.handleEvent(HappeningDetailEvent.Init(params.id, params.initialDate.toLocalDateTime()))
+    }
+
+    val navController = LocalNavController.current
+    val newSelectedDate = HappeningDatePickerDestination.fetchResult(navController).collectAsState()
+    LaunchedEffect(key1 = newSelectedDate.value) {
+        val date = newSelectedDate.value
+        if (date > 0) {
+            viewModel.handleEvent(HappeningDetailEvent.DateChanged(date.toLocalDateTime()))
+        }
+    }
+    val newSelectedTime = HappeningTimePickerDestination.fetchResult(navController).collectAsState()
+    LaunchedEffect(key1 = newSelectedTime.value) {
+        val time = newSelectedTime.value
+        if (time.isNotEmpty) {
+            viewModel.handleEvent(HappeningDetailEvent.TimeChanged(
+                startTime = LocalTime(hour = time.startHours, minute = time.startMinutes),
+                endTime = LocalTime(hour = time.endHours, minute = time.endMinutes)
+            ))
+        }
+    }
+
+    val calendarPermissionsRequester = rememberCalendarPermissionsRequester { isAllowed ->
+        viewModel.handleEvent(HappeningDetailEvent.ChangeCalendarPermissionsStatus(isAllowed))
+    }
+
+    LaunchedEffect(key1 = "side_effects") {
+        viewModel.effect.collect { sideEffect ->
+            when (sideEffect) {
+                is HappeningDetailSideEffect.DatePicker -> {
+                    navController.navigate(
+                        HappeningDatePickerDestination.Params(
+                            initialDate = sideEffect.initialDate.toEpochMillis(),
+                            minDate = sideEffect.minDate.toEpochMillis()
+                        ))
+                }
+                is HappeningDetailSideEffect.TimePicker -> {
+                    navController.navigate(
+                        HappeningTimePickerDestination.Params(
+                            startHours = sideEffect.startTime.hour,
+                            startMinutes = sideEffect.startTime.minute,
+                            endHours = sideEffect.endTime.hour,
+                            endMinutes = sideEffect.endTime.minute,
+                            dateInMillis = sideEffect.date.toEpochMillis()
+                        )
+                    )
+                }
+                is HappeningDetailSideEffect.Back -> {
+                    navController.popBackStack()
+                }
+                is HappeningDetailSideEffect.CheckCalendarPermission -> {
+                    calendarPermissionsRequester.requestPermissions()
+                }
+            }
+        }
     }
 
     FluentlyScaffold(
@@ -110,65 +162,16 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
     ) { innerPadding ->
         val state by viewModel.viewState.collectAsState()
 
-        val newSelectedDate = HappeningDatePickerDestination.fetchResult(navController).collectAsState()
-        LaunchedEffect(key1 = newSelectedDate.value) {
-            val date = newSelectedDate.value
-            if (date > 0) {
-                viewModel.handleEvent(HappeningDetailEvent.DateChanged(date.toLocalDateTime()))
-            }
-        }
-
-        val newSelectedTime = HappeningTimePickerDestination.fetchResult(navController).collectAsState()
-        LaunchedEffect(key1 = newSelectedTime.value) {
-            val time = newSelectedTime.value
-            if (time.isNotEmpty) {
-                viewModel.handleEvent(HappeningDetailEvent.TimeChanged(
-                    startTime = LocalTime(hour = time.startHours, minute = time.startMinutes),
-                    endTime = LocalTime(hour = time.endHours, minute = time.endMinutes)
-                ))
-            }
-        }
-
-        val calendarPermissionsRequester = rememberCalendarPermissionsRequester { isAllowed ->
-            viewModel.handleEvent(HappeningDetailEvent.ChangeCalendarPermissionsStatus(isAllowed))
-        }
-
-        LaunchedEffect(key1 = "side_effects") {
-            viewModel.effect.onEach { sideEffect ->
-                when (sideEffect) {
-                    is HappeningDetailSideEffect.DatePicker -> {
-                        navController.navigate(
-                            HappeningDatePickerDestination.Params(
-                            initialDate = sideEffect.initialDate.toEpochMillis(),
-                            minDate = sideEffect.minDate.toEpochMillis()
-                        ))
-                    }
-                    is HappeningDetailSideEffect.TimePicker -> {
-                        navController.navigate(
-                            HappeningTimePickerDestination.Params(
-                                startHours = sideEffect.startTime.hour,
-                                startMinutes = sideEffect.startTime.minute,
-                                endHours = sideEffect.endTime.hour,
-                                endMinutes = sideEffect.endTime.minute,
-                                dateInMillis = sideEffect.date.toEpochMillis()
-                            )
-                        )
-                    }
-                    is HappeningDetailSideEffect.Back -> {
-                        navController.popBackStack()
-                    }
-                    is HappeningDetailSideEffect.CheckCalendarPermission -> {
-                        calendarPermissionsRequester.requestPermissions()
-                    }
-                }
-            }.collect()
-        }
-
+        val configuration = LocalConfiguration.current
         Box(modifier = Modifier.padding(innerPadding)) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(16.dp)
+                    .configurations(
+                        configuration = configuration,
+                        landscape = Modifier.verticalScroll(rememberScrollState())
+                    ),
             ) {
                 FluentlyTextField(
                     modifier = Modifier
@@ -251,6 +254,15 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
                     )
                 }
 
+                if (state.timeError) {
+                    Spacer(modifier = Modifier.size(8.dp))
+                    FluentlyText(
+                        text = stringResource(id = R.string.date_time_must_not_be_earlier_now),
+                        style = FluentlyTheme.typography.caption4,
+                        color = FluentlyTheme.colors.errorColor
+                    )
+                }
+
                 when (val suggestionsState = state.suggestionsState) {
                     is HappeningSuggestionsState.NoSuggestions -> {
                         Spacer(modifier = Modifier.weight(1f))
@@ -259,8 +271,13 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
                         Spacer(Modifier.size(12.dp))
                         Suggestions(
                             modifier = Modifier
-                                .weight(1f)
-                                .verticalScroll(rememberScrollState()),
+                                .fillMaxWidth()
+                                .configurations(
+                                    configuration = configuration,
+                                    portrait = Modifier
+                                        .weight(1f)
+                                        .verticalScroll(rememberScrollState())
+                                ),
                             suggestionRanges = suggestionsState.ranges,
                             onSuggestionClick = { startDateTime, endDateTime ->
                                 viewModel.handleEvent(

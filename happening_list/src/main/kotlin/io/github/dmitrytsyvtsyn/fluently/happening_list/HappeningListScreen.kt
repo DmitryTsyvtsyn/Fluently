@@ -75,7 +75,7 @@ internal fun HappeningListScreen() {
     }
 
     LaunchedEffect(key1 = "side_effects") {
-        viewModel.effect.onEach { sideEffect ->
+        viewModel.effect.collect { sideEffect ->
             when (sideEffect) {
                 is HappeningListSideEffect.ShowCalendar -> {
                     val uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, sideEffect.id.value)
@@ -94,7 +94,7 @@ internal fun HappeningListScreen() {
                     ))
                 }
             }
-        }.collect()
+        }
     }
 
     LaunchedEffect(key1 = navController.currentBackStackEntry) {

@@ -55,7 +55,7 @@ fun Suggestions(
                 val endDateTimeString = suggestionRange.endInclusive.toDayMonthYearHoursMinutesAbbreviatedString()
                 FluentlyText(
                     text = "$startDateTimeString - $endDateTimeString",
-                    color = FluentlyTheme.colors.onPrimaryColor,
+                    color = FluentlyTheme.colors.onPrimaryContainerColor,
                     style = FluentlyTheme.typography.caption3
                 )
             }

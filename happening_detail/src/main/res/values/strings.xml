@@ -5,6 +5,7 @@
     <string name="interview_company_name">Название события</string>
     <string name="save">Сохранить</string>
     <string name="title_must_not_be_less_three_symbols">Название не должно быть меньше 3-х символов</string>
+    <string name="date_time_must_not_be_earlier_now">Дата и время начала события не должны быть раньше текущих</string>
     <string name="date">Дата:</string>
     <string name="time">Время:</string>
     <string name="you_have_already_scheduled_events">У вас уже есть запланированные события на это время, выберите свободные даты:</string>

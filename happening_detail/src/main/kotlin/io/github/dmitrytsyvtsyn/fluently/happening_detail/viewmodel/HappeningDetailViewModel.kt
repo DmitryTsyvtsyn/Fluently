@@ -12,7 +12,6 @@ import io.github.dmitrytsyvtsyn.fluently.data.HappeningRepository
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.usecases.HappeningFetchSuggestionsUseCase
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.usecases.HappeningFetchUseCase
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.usecases.HappeningInsertUseCase
-import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -80,7 +79,9 @@ internal class HappeningDetailViewModel : ViewModel() {
             _viewState.update {
                 copy(
                     startDateTime = initialDate.plus(5, DateTimeUnit.MINUTE),
-                    endDateTime = initialDate.plus(65, DateTimeUnit.MINUTE)
+                    endDateTime = initialDate.plus(65, DateTimeUnit.MINUTE),
+                    titleError = false,
+                    timeError = false
                 )
             }
         }
@@ -100,7 +101,8 @@ internal class HappeningDetailViewModel : ViewModel() {
             val newDate = event.dateTime.date
             copy(
                 startDateTime = startDateTime.withDate(newDate),
-                endDateTime = endDateTime.withDate(newDate)
+                endDateTime = endDateTime.withDate(newDate),
+                timeError = false
             )
         }
     }
@@ -136,7 +138,8 @@ internal class HappeningDetailViewModel : ViewModel() {
         _viewState.update {
             copy(
                 startDateTime = actualStartDateTime,
-                endDateTime = actualEndDateTime
+                endDateTime = actualEndDateTime,
+                timeError = false
             )
         }
     }
@@ -158,11 +161,15 @@ internal class HappeningDetailViewModel : ViewModel() {
     }
 
     private fun handleEvent(event: HappeningDetailEvent.SaveHappening) {
-        val minimumTitleSize = 3
-
         val currentState = _viewState.value
-        if (currentState.title.length < minimumTitleSize) {
+
+        if (currentState.title.length < 3) {
             _viewState.update { copy(titleError = true) }
+            return
+        }
+
+        if (currentState.startDateTime < DateTimeExtensions.nowDateTime()) {
+            _viewState.update { copy(timeError = true) }
             return
         }
 
@@ -172,20 +179,8 @@ internal class HappeningDetailViewModel : ViewModel() {
                 endDateTime = currentState.endDateTime
             )
 
-            var isFreeRange = true
-            if (suggestionsResult is HappeningFetchSuggestionsUseCase.FetchSuggestionsUseCaseResult.Suggestions) {
-                val plannedHappenings = suggestionsResult.plannedHappenings
-                if (plannedHappenings.size > 1 || plannedHappenings.first() != currentState.happening) {
-                    _viewState.update {
-                        copy(
-                            suggestionsState = HappeningSuggestionsState.Suggestions(suggestionsResult.ranges.toPersistentList())
-                        )
-                    }
-                    isFreeRange = false
-                }
-            }
-
-            if (isFreeRange) {
+            val suggestionRanges = suggestionsResult.toSuggestionRanges(currentState.happening)
+            if (suggestionRanges.isEmpty()) {
                 diComponent.insertUseCase.execute(
                     model = currentState.happening.copy(
                         title = currentState.title,
@@ -195,6 +190,8 @@ internal class HappeningDetailViewModel : ViewModel() {
                     hasReminder = currentState.hasReminder
                 )
                 _effect.emit(HappeningDetailSideEffect.Back)
+            } else {
+                _viewState.update { copy(suggestionsState = HappeningSuggestionsState.Suggestions(suggestionRanges)) }
             }
         }
     }
