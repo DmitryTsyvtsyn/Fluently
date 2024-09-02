@@ -168,7 +168,7 @@ internal class HappeningDetailViewModel : ViewModel() {
             return
         }
 
-        if (currentState.startDateTime < DateTimeExtensions.nowDateTime()) {
+        if (!currentState.isStartEndDateTimesValid) {
             _viewState.update { copy(timeError = true) }
             return
         }

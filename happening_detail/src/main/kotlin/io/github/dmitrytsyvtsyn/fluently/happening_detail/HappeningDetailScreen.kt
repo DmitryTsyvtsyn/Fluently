@@ -257,7 +257,7 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
                 if (state.timeError) {
                     Spacer(modifier = Modifier.size(8.dp))
                     FluentlyText(
-                        text = stringResource(id = R.string.date_time_must_not_be_earlier_now),
+                        text = stringResource(id = R.string.date_time_must_be_actual),
                         style = FluentlyTheme.typography.caption4,
                         color = FluentlyTheme.colors.errorColor
                     )

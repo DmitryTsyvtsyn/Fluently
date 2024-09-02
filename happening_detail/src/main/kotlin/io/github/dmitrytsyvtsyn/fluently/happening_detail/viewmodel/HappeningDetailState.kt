@@ -1,10 +1,11 @@
 package io.github.dmitrytsyvtsyn.fluently.happening_detail.viewmodel
 
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.DateTimeExtensions
 import io.github.dmitrytsyvtsyn.fluently.data.model.HappeningModel
 import kotlinx.datetime.LocalDateTime
 
 internal data class HappeningDetailState(
-    val happening: HappeningModel = HappeningModel(),
+    val happening: HappeningModel = HappeningModel.Empty,
     val title: String = "",
     val startDateTime: LocalDateTime,
     val endDateTime: LocalDateTime,
@@ -13,5 +14,22 @@ internal data class HappeningDetailState(
     val suggestionsState: HappeningSuggestionsState = HappeningSuggestionsState.NoSuggestions,
     val hasReminder: Boolean = false,
     val hasPermissionCalendarAllowed: Boolean = false,
-)
+) {
+    
+    val isStartEndDateTimesValid: Boolean
+        get() {
+            val isDateTimeChanged = if (happening != HappeningModel.Empty) {
+                happening.startDateTime != startDateTime || happening.endDateTime != endDateTime
+            } else {
+                true
+            }
+            
+            return if (isDateTimeChanged) {
+                startDateTime > DateTimeExtensions.nowDateTime()
+            } else {
+                true
+            }
+        }
+    
+}
 
