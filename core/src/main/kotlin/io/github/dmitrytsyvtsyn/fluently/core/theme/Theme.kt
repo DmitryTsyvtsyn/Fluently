@@ -2,6 +2,7 @@ package io.github.dmitrytsyvtsyn.fluently.core.theme
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
@@ -41,7 +42,13 @@ fun FluentlyTheme(
     CompositionLocalProvider(
         LocalColors provides colors,
         LocalShapes provides shapes,
-        LocalTypography provides typography,
-        content = content
-    )
+        LocalTypography provides typography
+    ) {
+        MaterialTheme(
+            colorScheme = MaterialTheme.colorScheme.copy(
+                primary = colors.primaryColor
+            ),
+            content = content
+        )
+    }
 }

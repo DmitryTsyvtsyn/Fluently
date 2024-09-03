@@ -6,7 +6,6 @@ import androidx.compose.ui.graphics.Color
 data class Colors(
     val primaryColor: Color = Color.Unspecified,
     val primaryContainerColor: Color,
-    val secondaryColor: Color,
     val secondaryContainerColor: Color,
     val onPrimaryColor: Color,
     val onPrimaryContainerColor: Color,
@@ -18,7 +17,6 @@ data class Colors(
         val Light = Colors(
             primaryColor = Color(0xFF426833),
             primaryContainerColor = Color(0xFFC3EFAD),
-            secondaryColor = Color(0xFFA8D293),
             secondaryContainerColor = Color(0xFFE7E7E7),
             onPrimaryColor = Color(0xFFFFFFFF),
             onPrimaryContainerColor = Color(0xFF000000),
@@ -29,7 +27,6 @@ data class Colors(
         val Dark = Colors(
             primaryColor = Color(0xFFC3EFAD),
             primaryContainerColor = Color(0xFF2B4F1E),
-            secondaryColor = Color(0xFF426833),
             secondaryContainerColor = Color(0xFF303030),
             onPrimaryColor = Color(0xFF2B4F1E),
             onPrimaryContainerColor = Color(0xFFC3EFAD),
