@@ -69,7 +69,8 @@ internal class HappeningDetailViewModel : ViewModel() {
                         startDateTime = happening.startDateTime,
                         endDateTime = happening.endDateTime,
                         titleError = false,
-                        timeError = false,
+                        timeActualError = false,
+                        timePeriodError = false,
                         hasReminder = happening.reminderId.isNotEmpty
                     )
                 }
@@ -81,7 +82,8 @@ internal class HappeningDetailViewModel : ViewModel() {
                     startDateTime = initialDate.plus(5, DateTimeUnit.MINUTE),
                     endDateTime = initialDate.plus(65, DateTimeUnit.MINUTE),
                     titleError = false,
-                    timeError = false
+                    timeActualError = false,
+                    timePeriodError = false
                 )
             }
         }
@@ -102,7 +104,7 @@ internal class HappeningDetailViewModel : ViewModel() {
             copy(
                 startDateTime = startDateTime.withDate(newDate),
                 endDateTime = endDateTime.withDate(newDate),
-                timeError = false
+                timeActualError = false
             )
         }
     }
@@ -124,9 +126,6 @@ internal class HappeningDetailViewModel : ViewModel() {
 
     private fun setActualizedStartEndDates(startDateTime: LocalDateTime, endDateTime: LocalDateTime) {
         val (actualStartDateTime, actualEndDateTime) = when {
-            DateTimeExtensions.nowDateTime() > startDateTime -> {
-                startDateTime.plus(1, DateTimeUnit.DAY) to endDateTime.plus(1, DateTimeUnit.DAY)
-            }
             startDateTime > endDateTime -> {
                 startDateTime to endDateTime.plus(1, DateTimeUnit.DAY)
             }
@@ -139,7 +138,8 @@ internal class HappeningDetailViewModel : ViewModel() {
             copy(
                 startDateTime = actualStartDateTime,
                 endDateTime = actualEndDateTime,
-                timeError = false
+                timeActualError = false,
+                timePeriodError = false
             )
         }
     }
@@ -163,13 +163,20 @@ internal class HappeningDetailViewModel : ViewModel() {
     private fun handleEvent(event: HappeningDetailEvent.SaveHappening) {
         val currentState = _viewState.value
 
+        _viewState.update { copy(suggestionsState = HappeningSuggestionsState.NoSuggestions) }
+
         if (currentState.title.length < 3) {
             _viewState.update { copy(titleError = true) }
             return
         }
 
+        if (currentState.startDateTime == currentState.endDateTime) {
+            _viewState.update { copy(timePeriodError = true) }
+            return
+        }
+
         if (!currentState.isStartEndDateTimesValid) {
-            _viewState.update { copy(timeError = true) }
+            _viewState.update { copy(timeActualError = true) }
             return
         }
 

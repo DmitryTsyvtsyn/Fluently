@@ -6,6 +6,7 @@
     <string name="save">Сохранить</string>
     <string name="title_must_not_be_less_three_symbols">Название не должно быть меньше 3-х символов</string>
     <string name="date_time_must_be_actual">Дата и время события должны быть актуальными</string>
+    <string name="date_time_must_be_different">Время начала и завершения события должны быть разные</string>
     <string name="date">Дата:</string>
     <string name="time">Время:</string>
     <string name="you_have_already_scheduled_events">У вас уже есть запланированные события на это время, выберите свободные даты:</string>

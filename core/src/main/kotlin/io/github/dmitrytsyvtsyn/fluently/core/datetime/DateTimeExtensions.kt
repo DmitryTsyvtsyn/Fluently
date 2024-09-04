@@ -18,6 +18,7 @@ import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 
 object DateTimeExtensions {
+
     fun nowDateTime(): LocalDateTime {
         return Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
     }
@@ -26,9 +27,6 @@ object DateTimeExtensions {
         return Clock.System.now().toEpochMilliseconds()
     }
 
-    fun nowTimeMillis(): Int {
-        return nowDateTime().time.toMillisecondOfDay()
-    }
 }
 
 fun Long.toLocalDateTime(): LocalDateTime {
@@ -42,6 +40,10 @@ fun LocalDateTime.toEpochMillis(): Long {
 
 fun LocalDate.toEpochMillis(): Long {
     return atStartOfDayIn(TimeZone.currentSystemDefault()).toEpochMilliseconds()
+}
+
+fun LocalDate.toEpochMillisInUTC(): Long {
+    return atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
 }
 
 fun LocalDateTime.withDate(date: LocalDate): LocalDateTime {

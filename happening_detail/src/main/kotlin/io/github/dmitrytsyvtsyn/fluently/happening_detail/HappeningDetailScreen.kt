@@ -35,6 +35,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.dmitrytsyvtsyn.fluently.core.compose.configurations
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.DateTimeExtensions
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.toEpochMillis
+import io.github.dmitrytsyvtsyn.fluently.core.datetime.toEpochMillisInUTC
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.toHoursMinutesString
 import io.github.dmitrytsyvtsyn.fluently.core.datetime.toLocalDateTime
 import io.github.dmitrytsyvtsyn.fluently.core.navigation.LocalNavController
@@ -98,9 +99,10 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
                 is HappeningDetailSideEffect.DatePicker -> {
                     navController.navigate(
                         HappeningDatePickerDestination.Params(
-                            initialDate = sideEffect.initialDate.toEpochMillis(),
-                            minDate = sideEffect.minDate.toEpochMillis()
-                        ))
+                            initialDate = sideEffect.initialDate.toEpochMillisInUTC(),
+                            minDate = sideEffect.minDate.toEpochMillisInUTC()
+                        )
+                    )
                 }
                 is HappeningDetailSideEffect.TimePicker -> {
                     navController.navigate(
@@ -254,10 +256,19 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
                     )
                 }
 
-                if (state.timeError) {
+                if (state.timeActualError) {
                     Spacer(modifier = Modifier.size(8.dp))
                     FluentlyText(
                         text = stringResource(id = R.string.date_time_must_be_actual),
+                        style = FluentlyTheme.typography.caption4,
+                        color = FluentlyTheme.colors.errorColor
+                    )
+                }
+
+                if (state.timePeriodError) {
+                    Spacer(modifier = Modifier.size(8.dp))
+                    FluentlyText(
+                        text = stringResource(id = R.string.date_time_must_be_different),
                         style = FluentlyTheme.typography.caption4,
                         color = FluentlyTheme.colors.errorColor
                     )
