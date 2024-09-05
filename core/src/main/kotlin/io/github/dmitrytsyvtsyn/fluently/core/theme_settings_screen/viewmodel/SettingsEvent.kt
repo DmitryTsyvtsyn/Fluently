@@ -4,7 +4,13 @@ import io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.models.Theme
 import io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.models.ThemeShapeCoefficient
 
 sealed interface SettingsEvent {
+
     data object Init : SettingsEvent
+
     class ChangeThemeColorVariant(val variant: ThemeColorVariant) : SettingsEvent
+
     class ChangeThemeShapeCoefficient(val coefficient: ThemeShapeCoefficient) : SettingsEvent
+
+    data object Back : SettingsEvent
+
 }

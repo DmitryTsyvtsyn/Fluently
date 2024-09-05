@@ -7,5 +7,6 @@ import kotlinx.collections.immutable.PersistentList
 data class SettingsViewState(
     val themeColorVariant: ThemeColorVariant,
     val themeColorVariants: PersistentList<ThemeColorVariant>,
-    val themeShapeCoefficient: ThemeShapeCoefficient
+    val themeShapeCoefficient: ThemeShapeCoefficient,
+    val isBackNavigationButtonEnabled: Boolean = true
 )

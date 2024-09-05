@@ -1,5 +1,6 @@
 package io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,6 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -34,6 +36,7 @@ import io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.composables.
 import io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.models.ThemeShapeCoefficient
 import io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.models.toThemeShapeCoefficient
 import io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.viewmodel.SettingsEvent
+import io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.viewmodel.SettingsSideEffect
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,6 +44,25 @@ internal fun ThemeSettingsScreen() {
     val navController = LocalNavController.current
     val viewModel = LocalSettingsViewModel.current
 
+    LaunchedEffect(key1 = "side_effects") {
+        viewModel.effect.collect { effect ->
+            when(effect) {
+                is SettingsSideEffect.Back -> {
+                    navController.popBackStack()
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(key1 = Unit) {
+        viewModel.handleEvent(SettingsEvent.Init)
+    }
+
+    BackHandler {
+        viewModel.handleEvent(SettingsEvent.Back)
+    }
+
+    val state by viewModel.viewState.collectAsState()
     FluentlyScaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -55,8 +77,9 @@ internal fun ThemeSettingsScreen() {
                 navigationIcon = {
                     FluentlyIconButton(
                         onClick = {
-                            navController.popBackStack()
-                        }
+                            viewModel.handleEvent(SettingsEvent.Back)
+                        },
+                        enabled = state.isBackNavigationButtonEnabled
                     ) {
                         FluentlyIcon(
                             painter = painterResource(id = R.drawable.ic_back),
@@ -83,8 +106,6 @@ internal fun ThemeSettingsScreen() {
             )
 
             Spacer(modifier = Modifier.size(8.dp))
-
-            val state by viewModel.viewState.collectAsState()
 
             ThemeSelectionColorsRow(
                 themeColorVariant = state.themeColorVariant,

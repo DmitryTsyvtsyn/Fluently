@@ -15,6 +15,7 @@ internal data class HappeningDetailState(
     val suggestionsState: HappeningSuggestionsState = HappeningSuggestionsState.NoSuggestions,
     val hasReminder: Boolean = false,
     val hasPermissionCalendarAllowed: Boolean = false,
+    val isBackNavigationButtonEnabled: Boolean = true
 ) {
     
     val isStartEndDateTimesValid: Boolean

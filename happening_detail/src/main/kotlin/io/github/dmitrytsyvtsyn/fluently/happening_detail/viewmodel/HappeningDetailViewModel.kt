@@ -224,6 +224,9 @@ internal class HappeningDetailViewModel : ViewModel() {
     }
 
     private fun handleEvent(event: HappeningDetailEvent.Back) = viewModelScope.launch {
+        _viewState.update {
+            copy(isBackNavigationButtonEnabled = false)
+        }
         _effect.emit(HappeningDetailSideEffect.Back)
     }
 

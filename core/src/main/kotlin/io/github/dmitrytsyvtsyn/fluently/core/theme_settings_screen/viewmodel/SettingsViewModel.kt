@@ -12,8 +12,10 @@ import io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.usecases.Fet
 import io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.usecases.SaveThemeColorVariantUseCase
 import io.github.dmitrytsyvtsyn.fluently.core.theme_settings_screen.usecases.SaveThemeShapeCoefficientUseCase
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 class SettingsViewModel : ViewModel() {
@@ -27,6 +29,9 @@ class SettingsViewModel : ViewModel() {
     )
     val viewState: StateFlow<SettingsViewState> = _viewState
 
+    private val _effect = MutableSharedFlow<SettingsSideEffect>()
+    val effect = _effect.asSharedFlow()
+
     private val diComponent = object {
         private val repository = DI.get<SettingsRepository>()
 
@@ -37,15 +42,12 @@ class SettingsViewModel : ViewModel() {
         val fetchThemeShapeCoefficientUseCase = FetchThemeShapeCoefficientUseCase(repository)
     }
 
-    init {
-        handleEvent(SettingsEvent.Init)
-    }
-
     fun handleEvent(event: SettingsEvent) {
         when(event) {
             is SettingsEvent.Init -> handleEvent(event)
             is SettingsEvent.ChangeThemeColorVariant -> handleEvent(event)
             is SettingsEvent.ChangeThemeShapeCoefficient -> handleEvent(event)
+            is SettingsEvent.Back -> handleEvent(event)
         }
     }
 
@@ -56,7 +58,8 @@ class SettingsViewModel : ViewModel() {
             _viewState.update {
                 copy(
                     themeColorVariant = themeColorVariant,
-                    themeShapeCoefficient = themeShapeCoefficient
+                    themeShapeCoefficient = themeShapeCoefficient,
+                    isBackNavigationButtonEnabled = true
                 )
             }
         }
@@ -79,6 +82,13 @@ class SettingsViewModel : ViewModel() {
         viewModelScope.launch {
             diComponent.saveThemeShapeCoefficientUseCase.execute(themeShapeCoefficient)
             _viewState.update { copy(themeShapeCoefficient = themeShapeCoefficient) }
+        }
+    }
+
+    private fun handleEvent(event: SettingsEvent.Back) {
+        viewModelScope.launch {
+            _viewState.update { copy(isBackNavigationButtonEnabled = false) }
+            _effect.emit(SettingsSideEffect.Back)
         }
     }
 

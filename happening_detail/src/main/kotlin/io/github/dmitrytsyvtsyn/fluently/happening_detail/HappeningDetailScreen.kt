@@ -1,5 +1,6 @@
 package io.github.dmitrytsyvtsyn.fluently.happening_detail
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -92,7 +93,6 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
     val calendarPermissionsRequester = rememberCalendarPermissionsRequester { isAllowed ->
         viewModel.handleEvent(HappeningDetailEvent.ChangeCalendarPermissionsStatus(isAllowed))
     }
-
     LaunchedEffect(key1 = "side_effects") {
         viewModel.effect.collect { sideEffect ->
             when (sideEffect) {
@@ -125,6 +125,11 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
         }
     }
 
+    BackHandler {
+        viewModel.handleEvent(HappeningDetailEvent.Back)
+    }
+
+    val state by viewModel.viewState.collectAsState()
     FluentlyScaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -145,7 +150,8 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
                     FluentlyIconButton(
                         onClick = {
                             viewModel.handleEvent(HappeningDetailEvent.Back)
-                        }
+                        },
+                        enabled = state.isBackNavigationButtonEnabled
                     ) {
                         Icon(painter = painterResource(id = CoreRes.drawable.ic_back), contentDescription = "")
                     }
@@ -162,8 +168,6 @@ internal fun HappeningDetailScreen(params: HappeningDetailDestination.Params) {
             )
         },
     ) { innerPadding ->
-        val state by viewModel.viewState.collectAsState()
-
         val configuration = LocalConfiguration.current
         Box(modifier = Modifier.padding(innerPadding)) {
             Column(
