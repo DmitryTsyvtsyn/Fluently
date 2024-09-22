@@ -42,7 +42,7 @@ internal class PlatformCalendarAPIImpl(context: Context): PlatformCalendarAPI {
             values
         )?.lastPathSegment.toIdLong()
 
-        InsertEventResult(eventId, reminderId)
+        PlatformCalendarAPI.InsertEventResult(eventId, reminderId)
     }
 
     override suspend fun updateEventWithReminder(

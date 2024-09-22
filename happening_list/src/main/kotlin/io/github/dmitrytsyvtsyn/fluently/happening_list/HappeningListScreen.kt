@@ -41,18 +41,16 @@ import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyIconButt
 import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyScaffold
 import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyText
 import io.github.dmitrytsyvtsyn.fluently.happening_detail.navigation.HappeningDetailDestination
-import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningWeekend
-import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningList
+import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.weekend.HappeningWeekend
+import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.list.HappeningList
 import io.github.dmitrytsyvtsyn.fluently.happening_list.models.HappeningTabModel
-import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.HappeningTabs
+import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.tabs.HappeningTabs
 import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.toDateMonthString
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningListEvent
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningListViewModel
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningListSideEffect
 import io.github.dmitrytsyvtsyn.fluently.happening_pickers.navigation.HappeningDatePickerDestination
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DateTimeUnit
 

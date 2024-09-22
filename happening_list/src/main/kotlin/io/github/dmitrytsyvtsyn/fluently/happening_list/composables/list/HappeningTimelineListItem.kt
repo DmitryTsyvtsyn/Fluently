@@ -1,4 +1,4 @@
-package io.github.dmitrytsyvtsyn.fluently.happening_list.composables
+package io.github.dmitrytsyvtsyn.fluently.happening_list.composables.list
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,12 +16,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import io.github.dmitrytsyvtsyn.fluently.core.theme.FluentlyTheme
+import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.toHoursMinutesString
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningListItemState
 
 private const val TIMELINE_SIZE_FACTOR = 24f
 
 @Composable
-internal fun TimelineListItem(
+internal fun HappeningTimelineListItem(
     textStyle: TextStyle = FluentlyTheme.typography.body4,
     paddingHorizontal: Dp = 16.dp,
     textMargin: Dp = 8.dp,

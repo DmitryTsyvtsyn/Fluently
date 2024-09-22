@@ -1,4 +1,4 @@
-package io.github.dmitrytsyvtsyn.fluently.happening_list.composables
+package io.github.dmitrytsyvtsyn.fluently.happening_list.composables.weekend
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column

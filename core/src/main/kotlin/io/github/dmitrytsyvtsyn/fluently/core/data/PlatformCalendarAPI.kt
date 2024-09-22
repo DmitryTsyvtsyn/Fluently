@@ -17,10 +17,9 @@ interface PlatformCalendarAPI {
 
     suspend fun removeEventWithReminder(eventId: IdLong, reminderId: IdLong): Boolean
 
-}
+    class InsertEventResult(val eventId: IdLong, val reminderId: IdLong) {
+        operator fun component1() = eventId
+        operator fun component2() = reminderId
+    }
 
-class InsertEventResult(val eventId: IdLong, val reminderId: IdLong) {
-    operator fun component1() = eventId
-    operator fun component2() = reminderId
 }
-

@@ -1,4 +1,4 @@
-package io.github.dmitrytsyvtsyn.fluently.happening_list.composables
+package io.github.dmitrytsyvtsyn.fluently.happening_list.composables.list
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -51,7 +51,7 @@ internal fun HappeningList(
                     )
                 }
                 is HappeningListItemState.Timeline -> {
-                    TimelineListItem(timeline = listItemState)
+                    HappeningTimelineListItem(timeline = listItemState)
                 }
             }
         }

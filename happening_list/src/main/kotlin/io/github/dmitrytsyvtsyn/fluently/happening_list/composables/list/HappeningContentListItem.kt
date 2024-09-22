@@ -1,4 +1,4 @@
-package io.github.dmitrytsyvtsyn.fluently.happening_list.composables
+package io.github.dmitrytsyvtsyn.fluently.happening_list.composables.list
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -32,6 +32,7 @@ import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyIcon
 import io.github.dmitrytsyvtsyn.fluently.core.theme.composables.FluentlyText
 import io.github.dmitrytsyvtsyn.fluently.data.model.HappeningModel
 import io.github.dmitrytsyvtsyn.fluently.happening_list.R
+import io.github.dmitrytsyvtsyn.fluently.happening_list.composables.toHoursMinutesString
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningDayStatus
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningListItemState
 import io.github.dmitrytsyvtsyn.fluently.happening_list.viewmodel.HappeningRunningStatus
