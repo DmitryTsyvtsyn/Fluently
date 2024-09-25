@@ -14,7 +14,7 @@ dependencies {
     implementation(libs.jetbrains.immutable.collections)
 
     api(libs.androidx.compose.navigation)
-    api(libs.androidx.core.ktx)
     api(libs.koin)
     api(libs.kotlinx.datetime)
+    api(libs.coroutines.core)
 }
